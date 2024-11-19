@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from "react";
+import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+const TransactionsTable = ({ showSidebar }) => {
+  const containerHeight = window.innerHeight - 60;
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [merchant, setMerchant] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+
+  const transactions = [
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+   
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+   
+    
+ 
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      iban: "DE6820050000",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      amount: "₹ 5000",
+      merchantName: "Shubh Exchange",
+      status: "Verified",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      iban: "BM7355353124",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      amount: "₹ 2400",
+      merchantName: "Book Fair",
+      status: "Declined",
+    },
+   
+  ];
+
+  const getStatusClass = (status) => {
+    if (status === "Verified")
+      return "bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium";
+    if (status === "Declined")
+      return "bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium";
+    return "bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium";
+  };
+
+  const handleSearch = () => {
+    const filtered = transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date);
+      const isDateInRange =
+        (!startDate || transactionDate >= startDate) &&
+        (!endDate || transactionDate <= endDate);
+
+      const isMerchantMatch =
+        !merchant || transaction.merchantName === merchant;
+
+      const isSearchMatch =
+        !searchQuery ||
+        transaction.merchantName
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+      return isDateInRange && isMerchantMatch && isSearchMatch;
+    });
+    setFilteredTransactions(filtered);
+  };
+
+  // Run search whenever criteria change
+  React.useEffect(() => {
+    handleSearch();
+  }, [startDate, endDate, merchant, searchQuery]);
+
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
+
+  return (
+    // <div className="p-10 bg-gray-100">
+    <div
+      className={`bg-[#ECF0FA] pb-3 rounded transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
+      style={{ minHeight: `${containerHeight}px` }}
+    >
+      <div className="flex justify-between items-center ">
+        <p className="text-[18px] font-[600] pt-3 pl-6">All Transactions</p>
+        <p className="text-[#7987A1] text-[15px] font-[400] pt-3 pr-6">
+          Dashboard - Data Table
+        </p>
+      </div>
+      <div className="bg-white  rounded-lg p-4 mx-6 my-4 ">
+        {/* Filters Section */}
+        <div className="">
+          <div className="flex items-center justify-between pb-3">
+            {/* Title */}
+            <div className="">
+              <p className="text-black font-medium  text-lg">
+                List of all Transactions
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex border items-center rounded-md">
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  className="border-none px-2 text-[13px] w-20 text-gray-700 focus:outline-none focus:none focus:none"
+                  placeholderText="Start Date"
+                  dateFormat="yyyy-MM-dd"
+                />
+                <span className=" py-1 text-[13px] font-[600]">To</span>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  className="border-none px-2 text-[13px]  w-20 text-gray-700 focus:outline-none focus:none focus:none"
+                  placeholderText="End Date"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+              {/* Search Input */}
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border w-30 border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              {/* Merchant Dropdown */}
+              <div className="flex flex-col">
+                <select
+                  value={merchant}
+                  onChange={(e) => setMerchant(e.target.value)}
+                  className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="">Merchant</option>
+                  <option value="Shubh Exchange">Shubh Exchange</option>
+                  <option value="Radhe Exchange">Radhe Exchange</option>
+                  <option value="Book Fair">Book Fair</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transactions Table */}
+        <table className="w-full border">
+          <thead>
+            <tr className="bg-[#ECF0FA] text-left text-[12px]  text-gray-700">
+              <th className="p-4">TRN-ID</th>
+              <th className="p-4">BANK NAME</th>
+              <th className="p-4">IBAN</th>
+              <th className="p-4">DATE</th>
+              <th className="p-4">AMOUNT</th>
+              <th className="p-4">MERCHANT NAME</th>
+              <th className="p-4">STATUS</th>
+              <th className="p-4">ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map((transaction) => (
+                <tr
+                  key={transaction.id}
+                  className="text-gray-800  text-sm border-b"
+                >
+                  <td className="p-4 text-[11px] font-[600] text-[#000000B2]">{transaction.id}</td>
+                  <td className="p-4 text-[12px] font-[700] text-black">{transaction.bankName}</td>
+                  <td className="p-4 text-[11px] font-[600] text-[#000000B2]">{transaction.iban}</td>
+                  <td className="p-4 text-[11px] font-[600] text-[#000000B2]">{transaction.date}</td>
+                  <td className="p-4 text-[11px] font-[700] text-[#000000B2]">{transaction.amount}</td>
+                  <td className="p-4 text-[11px] font-[700] text-[#0864E8]">{transaction.merchantName}</td>
+                  <td className="p-4">
+                    <span className={getStatusClass(transaction.status)}>
+                      {transaction.status}
+                    </span>
+                  </td>
+                  <td className="p-4 flex space-x-2">
+                    <button
+                      className="bg-blue-100 text-blue-600 rounded px-2 py-1"
+                      title="View"
+                    >
+                      <FiEye />
+                    </button>
+                    <button
+                      className="bg-green-100 text-green-600 rounded px-2 py-1"
+                      title="Edit"
+                    >
+                      <FiEdit />
+                    </button>
+                    <button
+                      className="bg-red-100 text-red-600 rounded px-2 py-1"
+                      title="Delete"
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="p-4 text-center text-gray-500">
+                  No transactions found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default TransactionsTable;
