@@ -4,14 +4,17 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
+import { useNavigate } from "react-router-dom";
+import { Pagination } from "antd";
 
 const TransactionsTable = ({ showSidebar }) => {
-  const containerHeight = window.innerHeight - 60;
+  const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [merchant, setMerchant] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const navigate = useNavigate();
 
   const transactions = [
     {
@@ -190,17 +193,25 @@ const TransactionsTable = ({ showSidebar }) => {
 
   return (
     <div
-      className={`bg-[#ECF0FA] pb-3 rounded transition-all duration-500 ${
+      className={`bg-gray-100 transition-all duration-500 pb-6  ${
         showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
       }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
-      <div className="flex justify-between items-center">
-        <p className="text-[18px] font-[600] pt-3 pl-6">All Transactions</p>
-        <p className="text-[#7987A1] text-[15px] font-[400] pt-3 pr-6">
-          Dashboard - Data Table
-        </p>
+      <div className="p-4 md:p-7">
+        <div className="flex justify-between items-center space-x-2 md:space-x-4">
+          <h1 className="text-[20px] md:text-[25px] font-[500]">
+            All Transaction
+          </h1>
+          <p
+            onClick={() => navigate("/MerchantManagement")}
+            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
+          >
+            Dashboard - Data Table
+          </p>
+        </div>
       </div>
+
       <div className="bg-white rounded-lg p-4 mx-6 mt-4 mb-4">
         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
           <div>
@@ -248,14 +259,23 @@ const TransactionsTable = ({ showSidebar }) => {
                 onChange={(e) => setMerchant(e.target.value)}
                 className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                <option className="text-[10px] text-gray-400" value="">Merchant</option>
-                <option className="text-[10px] text-gray-400" value="Shubh Exchange">Shubh Exchange</option>
-                <option className="text-[10px] text-gray-400" value="Book Fair">Book Fair</option>
+                <option className="text-[10px] text-gray-400" value="">
+                  Merchant
+                </option>
+                <option
+                  className="text-[10px] text-gray-400"
+                  value="Shubh Exchange"
+                >
+                  Shubh Exchange
+                </option>
+                <option className="text-[10px] text-gray-400" value="Book Fair">
+                  Book Fair
+                </option>
               </select>
             </div>
           </div>
         </div>
-        <div className="w-full border-t-[1px] border-[#DDDDDD80] mb-4"></div>
+        <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
         <div className="overflow-x-auto">
           <table className="min-w-full border">
             <thead>
@@ -267,7 +287,7 @@ const TransactionsTable = ({ showSidebar }) => {
                 <th className="p-4">AMOUNT</th>
                 <th className="p-4">MERCHANT NAME</th>
                 <th className="p-4">STATUS</th>
-                <th className="p-4">ACTION</th>
+                <th className="p-4 cursor-pointer">ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -309,19 +329,19 @@ const TransactionsTable = ({ showSidebar }) => {
                     </td>
                     <td className="p-4 flex space-x-2">
                       <button
-                        className="bg-blue-100 text-blue-600 rounded px-2 py-1"
+                        className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
                         title="View"
                       >
                         <FiEye />
                       </button>
                       <button
-                        className="bg-green-100 text-green-600 rounded px-2 py-1"
+                        className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
                         title="Edit"
                       >
                         <FiEdit />
                       </button>
                       <button
-                        className="bg-red-100 text-red-600 rounded px-2 py-1"
+                        className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                         title="Delete"
                       >
                         <FiTrash2 />
@@ -339,9 +359,16 @@ const TransactionsTable = ({ showSidebar }) => {
             </tbody>
           </table>
         </div>
-        <div className="flex items-center  p-4 justify-between">
-        <p className="text-[13px] font-[500] text-gray-500">Showing 1 to 10 of 17 entries</p>
-        <div className="text-[13px] font-[500] text-gray-700">pagination</div>
+        <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
+          <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left">
+            Showing 1 to 10 of 17 entries
+          </p>
+          <Pagination
+            className="self-center md:self-auto"
+            onChange={() => navigate("/MerchantManagement")}
+            defaultCurrent={1}
+            total={50}
+          />
         </div>
       </div>
     </div>
