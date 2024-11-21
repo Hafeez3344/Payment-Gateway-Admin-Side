@@ -1,20 +1,19 @@
-import React, { useState } from "react";
-import { Routes, Route } from "react-router-dom";
 import "./App.css";
-import SideBar from "./Components/Sidebar/SideBar";
-import NavBar from "./Components/NabBar/NavBar";
+import React, { useState } from "react";
 import Home from "./Components/Home/Home";
+import NavBar from "./Components/NabBar/NavBar";
 import Footer from "./Components/Footer/Footer";
+import { Routes, Route } from "react-router-dom";
+import SideBar from "./Components/Sidebar/SideBar";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
-import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
+import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
 
 function App() {
   const [showSidebar, setShowSide] = useState(
     window.innerWidth > 760 ? true : false
   );
-
   return (
     <>
       <SideBar showSidebar={showSidebar} setShowSide={setShowSide} />
