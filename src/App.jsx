@@ -7,6 +7,8 @@ import Home from "./Components/Home/Home";
 import Footer from "./Components/Footer/Footer";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
+import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
+import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
 
 function App() {
   const [showSidebar, setShowSide] = useState(
@@ -29,6 +31,12 @@ function App() {
           />
           <Route path="/MerchantManagement"
           element={<MerchantManagement showSidebar={showSidebar}/>}
+          />
+          <Route path="/SupportHelpCenter"
+          element={<SupportHelpCenter showSidebar={showSidebar}/>}
+          />
+          <Route path="/SystemConfigurationIntegration"
+          element={<SystemConfigurationIntegration showSidebar={showSidebar}/>}
           />
         </Routes>
         <Footer showSide={setShowSide} showSidebar={showSidebar} />

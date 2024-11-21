@@ -4,4 +4,21 @@
   --bred:#F15A29;
 }
 
+.input-placeholder-black::placeholder {
+  color: black; /* Placeholder color */
+}
 
+/* Hide scrollbar for WebKit browsers */
+textarea::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
+}
+
+/* Hide scrollbar for Firefox */
+textarea {
+  scrollbar-width: none; /* for Firefox */
+}
+
+/* Optionally, you can set a minimum height for your textarea */
+textarea {
+  min-height: 100px; /* Adjust this height as needed */
+}

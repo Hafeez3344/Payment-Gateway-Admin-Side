@@ -16,7 +16,7 @@ const SideBar = ({showSidebar, setShowSide}) => {
         <div className="">
           <img className="w-8 h-8" src={logo} alt="" />
         </div>
-        <div className=" font-roboto text-[20px] font-[600]">BetPay</div>
+        <div    className=" font-roboto text-[20px] font-[600]">BetPay</div>
         <button className="bg-gray-200 h-[25px] w-[25px] rounded-sm flex md:hidden justify-center ml-20 items-center" onClick={fn_controlSidebar}>X</button>
       </div>
       <div className="mt-[10px]">

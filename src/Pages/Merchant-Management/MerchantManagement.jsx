@@ -4,19 +4,10 @@ import Rectangle from "../../assets/Rectangle.jpg";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input } from "antd";
+import logo from "../../assets/logo.png";
 
 const MerchantManagement = ({ showSidebar }) => {
   const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
-  const showLoading = () => {
-    setOpen(true);
-    setLoading(true);
-
-    // Simple loading mock. You should add cleanup logic in real world.
-    setTimeout(() => {
-      setLoading(false);
-    });
-  };
   const { TextArea } = Input;
 
   const navigate = useNavigate();
@@ -97,7 +88,7 @@ const MerchantManagement = ({ showSidebar }) => {
         <div className="flex justify-between items-center">
           <h1 className="text-[25px] font-[500]">Merchant Management</h1>
           <p
-            onClick={() => navigate("/Home")}
+            onClick={() => navigate("/SupportHelpCenter")}
             className="text-[#7987A1] text-[15px] font-[400] cursor-pointer"
           >
             Dashboard - Data Table
@@ -107,50 +98,53 @@ const MerchantManagement = ({ showSidebar }) => {
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 pt-4 lg:pt-7">
           {/* Left side card */}
           <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
-            <div className="flex flex-col">
+            <div className="flex flex-col z-[-1] items-center">
               <img
                 src={Rectangle}
                 alt="Logo"
                 className="h-[130px] object-cover w-full rounded-t-lg"
               />
+              <div className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[99]" style={{boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)"}}>
+                <img src={logo} alt="logo" className="w-[75px]" />
+              </div>
             </div>
-            <h2 className="text-[17px] font-[600] mt-4 text-center">BetPay</h2>
+            <h2 className="text-[19px] font-[700] mt-4 text-center">BetPay</h2>
             <p className="text-gray-500 text-[13px] text-center">@betpayllc</p>
-            <div className="m-3">
-              <h3 className="text-[18px] font-[600] border-b pb-2">
+            <div className="m-3 mt-6">
+              <h3 className="text-[17px] font-[700] border-b pb-2">
                 Personal Info
               </h3>
               <div className="space-y-3 pt-3">
-                <div className="grid grid-cols-2">
-                  <span className="text-[14px] font-[600]">Full Name:</span>
-                  <span className="text-[13px] font-[600] text-left text-[#505050]">
+                <div className="flex">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">Full Name:</span>
+                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
                     Bet Pay Inc
                   </span>
                 </div>
-                <div className="grid grid-cols-2">
-                  <span className="text-[14px] font-[600]">Email:</span>
-                  <span className="text-[13px] font-[600] text-left text-[#505050]">
+                <div className="flex">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">Email:</span>
+                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
                     willjontex@gmail.com
                   </span>
                 </div>
-                <div className="grid grid-cols-2">
-                  <span className="text-[14px] font-[600]">Phone Number:</span>
-                  <span className="text-[13px] font-[600] text-left text-[#505050]">
+                <div className="flex">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">Phone Number:</span>
+                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
                     +91 9036 2361 236
                   </span>
                 </div>
-                <div className="grid grid-cols-2">
-                  <span className="text-[14px] font-[600]">Website:</span>
+                <div className="flex">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">Website:</span>
                   <a
                     href="https://www.betpay.com"
-                    className="text-[13px] font-[600] text-left text-[#505050]"
+                    className="text-[12px] font-[600] text-left text-[#505050] w-full"
                   >
                     www.betpay.com
                   </a>
                 </div>
-                <div className="grid grid-cols-2">
-                  <span className="text-[14px] font-[600]">Bio:</span>
-                  <span className="text-[13px] font-[600] text-left text-[#505050]">
+                <div className="flex">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">Bio:</span>
+                  <span className="text-[12px] font-[600] text-[#505050] w-full">
                     BetPay is Largest Payment Provider in Betting Industry
                     across the World
                   </span>
@@ -178,11 +172,13 @@ const MerchantManagement = ({ showSidebar }) => {
 
               {/* Search Input and Add Merchant Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                <Button type="primary" onClick={showLoading}>
+                <Button type="primary" onClick={() => setOpen(true)}>
                   Add Merchant
                 </Button>
                 <Modal
                   centered
+                  width={600}
+                  style={{fontFamily: 'sans-serif'}}
                   title={
                     <p className="text-[16px] font-[700]">
                       Add New Merchant Account
@@ -196,14 +192,15 @@ const MerchantManagement = ({ showSidebar }) => {
                       <Button
                         className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
                         type=""
+                        onClick={() => setOpen(false)}
                       >
                         Cancel
                       </Button>
                     </div>
                   }
-                  loading={loading}
                   open={open}
                   onCancel={() => setOpen(false)}
+                  onClose={() => setOpen(false)}
                 >
                   <div className="flex gap-4 ">
                     <div className="flex-1 my-2">

@@ -2,24 +2,10 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
-import { Button, Modal, Input } from "antd";
 
 const Home = ({ showSidebar }) => {
-  const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
-  const showLoading = () => {
-    setOpen(true);
-    setLoading(true);
-
-    // Simple loading mock. You should add cleanup logic in real world.
-    setTimeout(() => {
-      setLoading(false);
-    });
-  };
-
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
-  const { TextArea } = Input;
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -41,34 +27,9 @@ const Home = ({ showSidebar }) => {
               onClick={() => navigate("/TransactionsTable")}
               className="bg-blue-500 text-white w-[70px] sm:w-[70px] p-1 rounded"
             >
-              NEXT
+              NEXT PAGE
             </button>
-            <Button type="primary" onClick={showLoading}>
-              Open Modal
-            </Button>
-            <Modal
-              centered
-              title={<p className="text-[16px] font-[700]">Add New Ticket</p>}
-              footer={
-                <Button className="flex start px-10" type="primary">
-                  Save
-                </Button>
-              }
-              loading={loading}
-              open={open}
-              onCancel={() => setOpen(false)}
-            >
-              <p className="text-[12px] font-[500] pb-1">Subject</p>
-              <Input className="text-[12px] " placeholder="Choose a subject" />
 
-              <p className="text-[12px] font-[500] pt-4 pb-1">Description</p>
-              <TextArea
-                className="text-[12px]"
-                rows={6}
-                placeholder="Please describe your issue"
-                maxLength={50}
-              />
-            </Modal>
             <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
               TODAY
             </button>
