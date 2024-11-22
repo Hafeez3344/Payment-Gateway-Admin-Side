@@ -5,10 +5,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
-import { Pagination, Switch, Button, Modal, Input } from "antd";
-import stcpay from "../../assets/stcpay.jpg";
+import { Pagination} from "antd";
 
-const TransactionsTable = ({ showSidebar }) => {
+const DeclinedTransactions = ({ showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -17,7 +16,6 @@ const TransactionsTable = ({ showSidebar }) => {
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
-  const { TextArea } = Input;
 
   const transactions = [
     {
@@ -185,7 +183,6 @@ const TransactionsTable = ({ showSidebar }) => {
     setFilteredTransactions(filtered);
   };
 
-  // Run search whenever criteria change
   useEffect(() => {
     handleSearch();
   }, [startDate, endDate, merchant, searchQuery]);
@@ -203,9 +200,9 @@ const TransactionsTable = ({ showSidebar }) => {
     >
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">All Transaction</h1>
+          <h1 className="text-[25px] font-[500]">Declined Transactions</h1>
           <p
-            onClick={() => navigate("/VerifiedTransactions")}
+            onClick={() => navigate("/MerchantManagement")}
             className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
           >
             Dashboard - Data Table
@@ -215,106 +212,9 @@ const TransactionsTable = ({ showSidebar }) => {
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div>
               <p className="text-black font-medium text-lg">
-                List of all Transactions
+              List of Declined Transactions
               </p>
             </div>
-            <Button type="primary" onClick={() => setOpen(true)}>
-            Transaction Details
-            </Button>
-
-            <Modal
-              centered
-              footer={null}
-              width={900}
-              style={{ fontFamily: "sans-serif", padding: "20px" }}
-              title={
-                <p className="text-[16px] font-[700]">Transaction Details</p>
-              }
-              open={open}
-              onCancel={() => setOpen(false)}
-              onClose={() => setOpen(false)}
-            >
-              <div className="flex flex-col md:flex-row">
-                {/* Left side input fields */}
-                <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-                  {/* Repeated field structure for inputs */}
-                  {[
-                    { label: "Amount:", placeholder: "₹ 5000" },
-                    { label: "Account Holder:", placeholder: "Sorav Gopta" },
-                    { label: "UTR#:", placeholder: "#323032038826" },
-                    { label: "IBAN#:", placeholder: "COB94750934876767" },
-                    {
-                      label: "Date & Time:",
-                      placeholder: "01 Jan 2024, 11:30 AM",
-                    },
-                    {
-                      label: "Bank Name:",
-                      options: [
-                        "Select a bank",
-                        "Bank of Baroda",
-                        "State Bank of India",
-                        "HDFC Bank",
-                        "Axis Bank",
-                        "ICICI Bank",
-                      ],
-                    },
-                    {
-                      label: "Description:",
-                      placeholder:
-                        "IMPS-426713610684-EMIRATES NBD BANK MUMB AI-EBIL-XXXXXXXXXXX0005-REMITTANCE FROM INDIAN NON-RESIDENC",
-                      isTextarea: true,
-                    },
-                  ].map((field, index) => (
-                    <div className="flex items-center gap-4" key={index}>
-                      <p className="text-[12px] font-[600] w-[150px]">
-                        {field.label}
-                      </p>
-                      {field.options ? (
-                        <select className="w-[50%] text-[12px] border outline-none rounded p-1 input-placeholder-black">
-                          {field.options.map((option, idx) => (
-                            <option key={idx} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      ) : field.isTextarea ? (
-                        <textarea
-                          className="w-[50%] text-[11px] border rounded p-1 resize-none outline-none input-placeholder-black overflow-hidden"
-                          placeholder={field.placeholder}
-                          rows={3}
-                          style={{ overflow: "auto", resize: "none" }}
-                        />
-                      ) : (
-                        <Input
-                          className="w-[50%] text-[12px] input-placeholder-black"
-                          placeholder={field.placeholder}
-                        />
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Bottom Divider and Activity */}
-                  <div className="border-b w-[370px] mt-8"></div>
-                  <p className="text-[12px] font-[600]">Activity</p>
-                  <p className="text-[9px] font-[600] leading-10">
-                    Transaction ID:{" "}
-                    <span className="text-[9px] font-[600] text-[#00000080]">
-                      98714987971982
-                    </span>
-                  </p>
-                </div>
-
-                {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l-2 my-10 md:mt-0 pl-0 md:pl-6 flex items-center justify-center">
-                  <img
-                    src={stcpay}
-                    alt="Payment Image"
-                    className="max-h-full"
-                  />
-                </div>
-              </div>
-            </Modal>
-
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
               <div className="flex border items-center rounded-md">
                 <DatePicker
@@ -475,4 +375,4 @@ const TransactionsTable = ({ showSidebar }) => {
   );
 };
 
-export default TransactionsTable;
+export default DeclinedTransactions;
