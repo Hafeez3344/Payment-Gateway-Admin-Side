@@ -15,7 +15,6 @@ const TransactionsTable = ({ showSidebar }) => {
   const [merchant, setMerchant] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
   const { TextArea } = Input;
 
@@ -205,8 +204,7 @@ const TransactionsTable = ({ showSidebar }) => {
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">All Transaction</h1>
           <p
-            onClick={() => navigate("/VerifiedTransactions")}
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
+            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
           >
             Dashboard - Data Table
           </p>
@@ -219,7 +217,7 @@ const TransactionsTable = ({ showSidebar }) => {
               </p>
             </div>
             <Button type="primary" onClick={() => setOpen(true)}>
-            Transaction Details
+              Transaction Details
             </Button>
 
             <Modal
@@ -399,16 +397,17 @@ const TransactionsTable = ({ showSidebar }) => {
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.id}
                       </td>
-                      <td className="p-4 flex items-center space-x-2">
+                      <td className="p-4 flex items-center">
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full"
+                          className="w-6 h-6 rounded-full mr-2" // Adjusted to add margin-right
                         />
-                        <span className="text-[12px] font-[700] text-black">
+                        <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
                         </span>
                       </td>
+
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.iban}
                       </td>

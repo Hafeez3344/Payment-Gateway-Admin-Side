@@ -37,7 +37,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -57,7 +57,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -77,7 +77,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -97,7 +97,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -117,7 +117,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -137,7 +137,7 @@ const VerifiedTransactions = ({ showSidebar }) => {
       time: "10:55 AM",
       amount: "₹ 2400",
       merchantName: "Book Fair",
-      status: "Declined",
+      status: "Verified",
     },
     {
       id: "9780924782474",
@@ -302,16 +302,17 @@ const VerifiedTransactions = ({ showSidebar }) => {
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.id}
                       </td>
-                      <td className="p-4 flex items-center space-x-2">
+                      <td className="p-4 flex items-center">
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full"
+                          className="w-6 h-6 rounded-full mr-2" // Adjusted to add margin-right
                         />
-                        <span className="text-[12px] font-[700] text-black">
+                        <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
                         </span>
                       </td>
+
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.iban}
                       </td>

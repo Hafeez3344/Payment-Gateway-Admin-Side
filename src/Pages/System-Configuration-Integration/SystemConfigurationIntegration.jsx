@@ -57,7 +57,7 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
     >
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">
+          <h1 className="text-[20px] md:text-[25px] font-[500]">
             System Configuration Integration
           </h1>
           <p
@@ -72,8 +72,8 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
         <div className="bg-white rounded-lg p-4">
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div>
-              <p className="text-black text-[14px] font-[600]">API Keys</p>
-              <span className="text-[13px] font-[500]">Your API Keys</span>
+              <p className="text-black text-[11px] font-[600]">API Keys</p>
+              <span className="text-[13px] font-[600]">Your API Keys</span>
             </div>
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-300">

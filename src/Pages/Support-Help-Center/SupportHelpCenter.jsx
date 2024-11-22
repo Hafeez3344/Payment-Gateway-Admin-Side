@@ -10,7 +10,6 @@ const SupportHelpCenter = ({ showSidebar }) => {
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [open, setOpen] = useState(false);
   const { TextArea } = Input;
-  const navigate = useNavigate();
 
   const transactions = [
     {
@@ -45,11 +44,17 @@ const SupportHelpCenter = ({ showSidebar }) => {
 
   const getStatusClass = (status) => {
     const statusClasses = {
-      "New Ticket": "bg-[#00000080] text-white px-3 py-1 rounded-full text-[11px] font-[500] ",
-      "In Progress": "bg-[#0864E833] text-[#0864E8] px-3 py-1 rounded-full text-[11px] font-[500] ",
-      Solved: "bg-green-100 text-green-800 px-3 py-1 rounded-full text-[11px] font-[500] ",
+      "New Ticket":
+        "bg-[#00000080] text-white px-2  rounded-full text-[11px] font-[500] ",
+      "In Progress":
+        "bg-[#0864E833] text-[#0864E8] px-2  rounded-full text-[11px] font-[500] ",
+      Solved:
+        "bg-green-100 text-green-800 px-[18px]  rounded-full text-[11px] font-[500] ",
     };
-    return statusClasses[status] || "bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-medium";
+    return (
+      statusClasses[status] ||
+      "bg-gray-100 text-gray-800 px-3 py-1 rounded-full font-medium"
+    );
   };
 
   const handleSearch = () => {
@@ -74,15 +79,14 @@ const SupportHelpCenter = ({ showSidebar }) => {
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Support / Help Center</h1>
           <p
-            onClick={() => navigate("/SystemConfigurationIntegration")}
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
+            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
           >
             Dashboard - Data Table
           </p>
         </div>
         <div className="bg-white rounded-lg p-4">
-          <div className="flex items-center justify-between pb-3">
-            <p className="text-black font-medium text-lg">Tickets</p>
+          <div className="flex items-center justify-between">
+            <p className="text-black text-[15px] font-[600]">Tickets</p>
             <Button type="primary" onClick={() => setOpen(true)}>
               Add New Ticket
             </Button>
@@ -111,31 +115,46 @@ const SupportHelpCenter = ({ showSidebar }) => {
           </Modal>
           <div className="bg-white rounded-lg mt-4">
             <div className="overflow-x-auto rounded-lg border border-gray-300">
-              <table className="min-w-full">
+              <table className="min-w-full table-auto">
                 <thead>
                   <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                    <th className="p-4">Ticket ID</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Title</th>
-                    <th className="p-4">Ticket Open</th>
-                    <th className="p-4">Ticket Close</th>
-                    <th className="p-4">Action</th>
+                    <th className="p-4 whitespace-nowrap">Ticket ID</th>
+                    <th className="p-4 whitespace-nowrap">Status</th>
+                    <th className="p-4 whitespace-nowrap">Title</th>
+                    <th className="p-4 whitespace-nowrap">Ticket Open</th>
+                    <th className="p-4 whitespace-nowrap">Ticket Close</th>
+                    <th className="p-4 whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTransactions.length > 0 ? (
                     filteredTransactions.map((transaction) => (
-                      <tr key={transaction.id} className="text-gray-800 text-sm border-b">
-                        <td className="p-4 text-[11px] font-[600]">{transaction.id}</td>
-                        <td className="p-4">
-                          <span className={getStatusClass(transaction.status)}>
+                      <tr
+                        key={transaction.id}
+                        className="text-gray-800 text-sm border-b hover:bg-gray-50 transition"
+                      >
+                        <td className="p-4 text-[11px] font-[600] whitespace-nowrap">
+                          {transaction.id}
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <span
+                            className={`${getStatusClass(
+                              transaction.status
+                            )} inline-block`}
+                          >
                             {transaction.status}
                           </span>
                         </td>
-                        <td className="p-4 text-[11px] font-[700]">{transaction.title}</td>
-                        <td className="p-4 text-[11px] font-[600]">{transaction.ticketOpen}</td>
-                        <td className="p-4 text-[11px] font-[600]">{transaction.ticketClose}</td>
-                        <td className="p-4 flex space-x-2">
+                        <td className="p-4 text-[11px] font-[600] whitespace-nowrap text-ellipsis overflow-hidden">
+                          {transaction.title}
+                        </td>
+                        <td className="p-4 text-[11px] font-[600] whitespace-nowrap">
+                          {transaction.ticketOpen}
+                        </td>
+                        <td className="p-4 text-[11px] font-[600] whitespace-nowrap">
+                          {transaction.ticketClose}
+                        </td>
+                        <td className="p-3 flex space-x-2 whitespace-nowrap">
                           <button className="bg-blue-100 text-blue-600 rounded-full px-2 py-2">
                             <TbArrowBack />
                           </button>

@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
-import { Pagination} from "antd";
+import { Pagination } from "antd";
 
 const DeclinedTransactions = ({ showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
@@ -26,7 +26,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -46,7 +46,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -66,7 +66,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -86,7 +86,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -106,7 +106,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -126,7 +126,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
     {
       id: "9879827354233",
@@ -146,7 +146,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       time: "11:30 AM",
       amount: "₹ 5000",
       merchantName: "Shubh Exchange",
-      status: "Verified",
+      status: "Declined",
     },
   ];
 
@@ -212,7 +212,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div>
               <p className="text-black font-medium text-lg">
-              List of Declined Transactions
+                List of Declined Transactions
               </p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
@@ -299,16 +299,17 @@ const DeclinedTransactions = ({ showSidebar }) => {
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.id}
                       </td>
-                      <td className="p-4 flex items-center space-x-2">
+                      <td className="p-4 flex items-center">
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full"
+                          className="w-6 h-6 rounded-full mr-2" // Adjusted to add margin-right
                         />
-                        <span className="text-[12px] font-[700] text-black">
+                        <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
                         </span>
                       </td>
+
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.iban}
                       </td>

@@ -4,7 +4,6 @@ import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
 
 const Home = ({ showSidebar }) => {
-  const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
 
   useEffect(() => {
@@ -23,13 +22,6 @@ const Home = ({ showSidebar }) => {
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
-            <button
-              onClick={() => navigate("/TransactionsTable")}
-              className="bg-blue-500 text-white w-[70px] sm:w-[70px] p-1 rounded"
-            >
-              NEXT PAGE
-            </button>
-
             <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
               TODAY
             </button>
@@ -81,7 +73,7 @@ const Home = ({ showSidebar }) => {
         {/* Graph and Recent Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-3">
           {/* Graph Section */}
-          <div className="col-span-2 h-[600px] bg-white p-6 mb-4 md:mb-0 md:mr-4 rounded shadow">
+          <div className="col-span-2  bg-white p-6 mb-4 md:mb-0 md:mr-4 rounded shadow flex-1 h-[100%]">
             <h2 className="text-[16px] font-[700]">TRANSACTION STATS</h2>
             <p className="text-[11px] font-[500] text-gray-500 mt-1">
               Order status and tracking. Track your order from ship date to
@@ -97,7 +89,7 @@ const Home = ({ showSidebar }) => {
           </div>
 
           {/* Recent Transactions Section */}
-          <div className="bg-white p-6 rounded shadow w-full">
+          <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
             <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
             <p className="text-[11px] font-[500] text-gray-500 pt-1">
               Customer is an individual or business that purchases the goods
