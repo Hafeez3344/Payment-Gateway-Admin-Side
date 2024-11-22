@@ -11,16 +11,21 @@ const SideBar = ({ showSidebar, setShowSide }) => {
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
+
   const navigate = useNavigate();
+
+  // Function to check if the screen size is mobile
+  const isMobile = () => window.innerWidth < 1024; 
 
   return (
     <div
       className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
         showSidebar ? "left-0" : "left-[-270px]"
       }`}
+      style={{ zIndex: 9999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
-        <div className="">
+        <div>
           <img className="w-8 h-8" src={logo} alt="" />
         </div>
         <div className="font-roboto text-[20px] font-[600]">BetPay</div>
@@ -33,28 +38,42 @@ const SideBar = ({ showSidebar, setShowSide }) => {
       </div>
       <div className="mt-[10px]">
         <Menu
-          onClick={() => navigate("/")}
+          onClick={() => {
+            navigate("/");
+            if (isMobile()) fn_controlSidebar(); 
+          }}
           label="Dashboard"
           icon={<MdOutlineDashboard className="text-[20px]" />}
         />
-
         <Menu
-          onClick={() => navigate("/TransactionsTable")}
+          onClick={() => {
+            navigate("/TransactionsTable");
+            if (isMobile()) fn_controlSidebar();
+          }}
           label="Transaction History"
           icon={<PiNotebook className="text-[20px]" />}
         />
         <Menu
-          onClick={() => navigate("/MerchantManagement")}
+          onClick={() => {
+            navigate("/MerchantManagement");
+            if (isMobile()) fn_controlSidebar();
+          }}
           label="Merchant Management"
           icon={<FaRegCircleUser className="text-[20px]" />}
         />
         <Menu
-          onClick={() => navigate("/SupportHelpCenter")}
+          onClick={() => {
+            navigate("/SupportHelpCenter");
+            if (isMobile()) fn_controlSidebar();
+          }}
           label="Support / Help Center"
           icon={<FaHeadphones className="text-[20px]" />}
         />
         <Menu
-          onClick={() => navigate("/SystemConfigurationIntegration")}
+          onClick={() => {
+            navigate("/SystemConfigurationIntegration");
+            if (isMobile()) fn_controlSidebar();
+          }}
           label="Setting"
           icon={<IoSettingsOutline className="text-[20px]" />}
         />
