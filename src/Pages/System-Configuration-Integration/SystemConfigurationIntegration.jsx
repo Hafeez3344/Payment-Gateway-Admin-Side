@@ -76,7 +76,7 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
               <span className="text-[13px] font-[500]">Your API Keys</span>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-gray-300">
+          <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
               <thead>
                 <tr className="border-b text-left text-[12px] text-gray-700">
@@ -124,10 +124,10 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
         <div className="bg-white rounded-lg p-4 mt-6">
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div>
-              <p className="text-black font-medium text-lg">Login History</p>
+              <p className="text-black text-[14px] font-[600]">Login History</p>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-gray-300">
+          <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">

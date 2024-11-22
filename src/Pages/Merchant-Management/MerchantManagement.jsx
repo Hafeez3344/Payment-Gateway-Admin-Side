@@ -104,7 +104,7 @@ const MerchantManagement = ({ showSidebar }) => {
                 alt="Logo"
                 className="h-[130px] object-cover w-full rounded-t-lg"
               />
-              <div className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[99]" style={{boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)"}}>
+              <div className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]" style={{boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)"}}>
                 <img src={logo} alt="logo" className="w-[75px]" />
               </div>
             </div>
@@ -302,7 +302,7 @@ const MerchantManagement = ({ showSidebar }) => {
                       {/* Status */}
                       <td className=" text-center">
                         <button
-                          className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[13px] font-[600] ${
+                          className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
                             merchant.status === "Active"
                               ? "bg-[#10CB0026] text-[#0DA000]"
                               : "bg-[#FF173D33] text-[#D50000]"

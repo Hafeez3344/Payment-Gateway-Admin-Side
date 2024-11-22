@@ -13,11 +13,11 @@ const Home = ({ showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
-      style={{ minHeight: `${containerHeight}px` }}
-    >
+    className={`bg-gray-100 transition-all duration-500 ${
+      showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+    }`}
+    style={{ minHeight: `${containerHeight}px` }}
+  >
       <div className="p-7">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">

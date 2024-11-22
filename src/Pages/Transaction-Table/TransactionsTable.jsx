@@ -421,7 +421,7 @@ const TransactionsTable = ({ showSidebar }) => {
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
                         {transaction.merchantName}
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 text-[11px] font-[500]">
                         <span className={getStatusClass(transaction.status)}>
                           {transaction.status}
                         </span>
