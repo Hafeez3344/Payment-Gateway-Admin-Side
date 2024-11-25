@@ -6,6 +6,7 @@ import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination, Switch, Button, Modal, Input } from "antd";
+import { RiFindReplaceLine } from "react-icons/ri";
 import stcpay from "../../assets/stcpay.jpg";
 
 const TransactionsTable = ({ showSidebar }) => {
@@ -203,9 +204,7 @@ const TransactionsTable = ({ showSidebar }) => {
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">All Transaction</h1>
-          <p
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
-          >
+          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
         </div>
@@ -303,29 +302,35 @@ const TransactionsTable = ({ showSidebar }) => {
                 </div>
 
                 {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l-2 my-10 md:mt-0 pl-0 md:pl-6 flex items-center justify-center">
+                <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col items-center justify-center">
                   <img
                     src={stcpay}
                     alt="Payment Image"
                     className="max-h-full"
                   />
+                  {/* Button positioned below the image */}
+                  <button className="mt-4 border flex border-black px-2 py-1 rounded items-center">
+                    <RiFindReplaceLine className="mr-2 text-[#699BF7]" />
+                    Replace Payment Proof
+                  </button>
                 </div>
               </div>
             </Modal>
 
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="flex border items-center rounded-md">
+              <div className="flex border border-gray-300 items-center bg-white rounded">
+                {/* 2px border radius */}
                 <DatePicker
                   selected={startDate}
                   onChange={(date) => setStartDate(date)}
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none px-2 text-[13px] w-24 text-gray-700 focus:outline-none"
+                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" // 2px rounded left side
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
-                <span className="py-1 text-[13px] font-[600]">To</span>
+                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -333,7 +338,7 @@ const TransactionsTable = ({ showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none px-2 text-[13px] w-24 text-gray-700 focus:outline-none"
+                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
@@ -344,10 +349,10 @@ const TransactionsTable = ({ showSidebar }) => {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border w-32 border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-              <div className="flex flex-col w-full md:w-40">
+              <div className="flex flex-col w-full md:w-32">
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
