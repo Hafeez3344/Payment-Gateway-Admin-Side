@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Checkbox, Form, Grid, Input, Typography, notification } from "antd"; // Import notification from antd
+import { Button, Checkbox, Form, Grid, Input, Typography, notification } from "antd"; 
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
 import { fn_loginAdminApi } from "../../api/api";
@@ -13,23 +13,19 @@ const Login = () => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
-  // Function to handle form submission
   const onFinish = async (values) => {
     try {
       const response = await fn_loginAdminApi(values);
       console.log("response ", response);
       if (response?.status) {
-        // Show success notification
         notification.success({
           message: "Login Successful",
           description: "You have successfully logged in!",
           placement: "topRight",
         });
-        // Save token and navigate
         Cookies.set("token", response?.token);
-        navigate("/"); // Uncomment this line if you want to navigate to the homepage
+        navigate("/"); 
       } else {
-        // Show error notification
         notification.error({
           message: "Login Failed",
           description: response?.message || "Invalid credentials. Please try again.",
@@ -38,7 +34,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login error: ", error);
-      // Show error notification
       notification.error({
         message: "Error",
         description: "An unexpected error occurred. Please try again later.",
