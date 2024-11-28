@@ -1,5 +1,13 @@
 import React from "react";
-import { Button, Checkbox, Form, Grid, Input, Typography, notification } from "antd"; 
+import {
+  Button,
+  Checkbox,
+  Form,
+  Grid,
+  Input,
+  Typography,
+  notification,
+} from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
 import { fn_loginAdminApi } from "../../api/api";
@@ -24,11 +32,12 @@ const Login = () => {
           placement: "topRight",
         });
         Cookies.set("token", response?.token);
-        navigate("/"); 
+        navigate("/");
       } else {
         notification.error({
           message: "Login Failed",
-          description: response?.message || "Invalid credentials. Please try again.",
+          description:
+            response?.message || "Invalid credentials. Please try again.",
           placement: "topRight",
         });
       }
