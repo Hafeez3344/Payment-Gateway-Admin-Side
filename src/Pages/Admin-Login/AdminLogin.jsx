@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Button,
   Checkbox,
@@ -17,9 +17,15 @@ import { useNavigate } from "react-router-dom";
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
 
-const Login = () => {
+const Login = ({authorization, setAuthorization}) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
+
+  useEffect(() => {
+    if(authorization){
+      navigate("/");
+    }
+  }, []);
 
   const onFinish = async (values) => {
     try {
@@ -33,6 +39,7 @@ const Login = () => {
         });
         Cookies.set("token", response?.token);
         navigate("/");
+        setAuthorization(true);
       } else {
         notification.error({
           message: "Login Failed",
@@ -154,7 +161,7 @@ const Login = () => {
               Log in
             </Button>
             <div style={styles.footer}>
-              <Text style={styles.text}>Don't have an account?</Text>{" "}
+              <Text style={styles.text}>Don't have an account?</Text>
               <Link href="#">Sign up now</Link>
             </div>
           </Form.Item>
