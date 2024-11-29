@@ -6,7 +6,7 @@ import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input } from "antd";
 import logo from "../../assets/logo.png";
 
-const MerchantManagement = ({ showSidebar }) => {
+const MerchantManagement = ({ authorization, showSidebar }) => {
   const [open, setOpen] = React.useState(false);
   const { TextArea } = Input;
 
@@ -65,6 +65,9 @@ const MerchantManagement = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization){
+      Navigate("/login")
+    }
   }, []);
 
   const handleToggle = (index) => {

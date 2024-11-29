@@ -4,7 +4,7 @@ import { TbArrowBack } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Input } from "antd";
 
-const SupportHelpCenter = ({ showSidebar }) => {
+const SupportHelpCenter = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -14,28 +14,28 @@ const SupportHelpCenter = ({ showSidebar }) => {
   const transactions = [
     {
       id: "9780924782474",
-      title: "Payment Issue",
+      title: "Receipt Issue",
       status: "New Ticket",
       ticketOpen: "01 Jan 2024, 11:30 AM",
       ticketClose: "02 Jan 2024, 03:45 PM",
     },
     {
       id: "9879827354233",
-      title: "Refund Request",
+      title: "Payment Failed",
       status: "In Progress",
       ticketOpen: "02 Jan 2024, 10:00 AM",
       ticketClose: "02 Jan 2024, 02:15 PM",
     },
     {
       id: "9780924782474",
-      title: "Payment Issue",
+      title: "Account Logins",
       status: "Solved",
       ticketOpen: "01 Jan 2024, 11:30 AM",
       ticketClose: "02 Jan 2024, 03:45 PM",
     },
     {
       id: "9879827354233",
-      title: "Refund Request",
+      title: "Balance Declined",
       status: "In Progress",
       ticketOpen: "02 Jan 2024, 10:00 AM",
       ticketClose: "02 Jan 2024, 02:15 PM",
@@ -66,6 +66,9 @@ const SupportHelpCenter = ({ showSidebar }) => {
 
   useEffect(() => {
     handleSearch();
+    if (!authorization){
+      navigate("/login")
+    }
   }, [searchQuery]);
 
   return (

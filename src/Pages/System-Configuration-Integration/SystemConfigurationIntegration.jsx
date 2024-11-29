@@ -1,50 +1,75 @@
-import React, { useEffect } from "react";
+import Cookies from "js-cookie";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fn_getAdminLoginHistoryApi } from "../../api/api";
 
-const SystemConfigurationIntegration = ({ showSidebar }) => {
-  const containerHeight = window.innerHeight - 120;
+const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
+  const containerHeight = window.innerHeight - 120;
+  const [loginData, setLoginData] = useState([]);
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization) {
+      navigate("/login");
+    }
+    fn_getAdminHistory();
   }, []);
 
-  const loginHistory = [
+  const fn_getAdminHistory = async () => {
+    const adminId = Cookies.get("adminId");
+    const response = await fn_getAdminLoginHistoryApi(adminId);
+    console.log("response ", response);
+    if (response?.status) {
+      setLoginData(response?.data);
+    }
+  };
+
+
+
+  const apiKeys = [
+    {
+      version: "V3",
+      apiKey: "********X04rJT",
+      name: "prestashop 1.7",
+      createdOn: "01 Jan 2023",
+    },
+    {
+      version: "V3",
+      apiKey: "********QnbN5",
+      name: "WordPress",
+      createdOn: "15 Feb 2023",
+    },
+  ];
+
+    const loginHistory = [
     {
       loginDate: "01 Jan 2024, 09:00 AM",
       logoutDate: "01 Jan 2024, 05:00 PM",
       ipAddress: "192.168.1.101",
-      isp: "Comcast",
-      city: "New York",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
     {
       loginDate: "02 Jan 2024, 10:00 AM",
       logoutDate: "02 Jan 2024, 06:00 PM",
       ipAddress: "192.168.1.102",
-      isp: "AT&T",
-      city: "San Francisco",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
     {
       loginDate: "03 Jan 2024, 08:30 AM",
       logoutDate: "03 Jan 2024, 04:30 PM",
       ipAddress: "192.168.1.103",
-      isp: "Spectrum",
-      city: "Chicago",
-    },
-  ];
-
-  const apiKeys = [
-    {
-      version: "v1.0",
-      apiKey: "12345-abcde-67890",
-      name: "Main API Key",
-      createdOn: "01 Jan 2023",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
     {
-      version: "v2.0",
-      apiKey: "54321-edcba-09876",
-      name: "Secondary API Key",
-      createdOn: "15 Feb 2023",
+      loginDate: "03 Jan 2024, 08:30 AM",
+      logoutDate: "03 Jan 2024, 04:30 PM",
+      ipAddress: "192.168.1.103",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
   ];
 
@@ -70,11 +95,9 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
 
         {/* API keys section */}
         <div className="bg-white rounded-lg p-4">
-          <div className="flex flex-col md:flex-row items-center justify-between pb-3">
-            <div>
+          <div className="pb-3">
               <p className="text-black text-[11px] font-[600]">API Keys</p>
               <span className="text-[13px] font-[600]">Your API Keys</span>
-            </div>
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
@@ -87,34 +110,26 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
                 </tr>
               </thead>
               <tbody>
-                {apiKeys.length > 0 ? (
-                  apiKeys.map((key, index) => (
-                    <tr key={index} className="text-gray-800 text-sm border-b">
-                      <td className="p-4 flex items-center gap-2 text-[11px] font-[600] text-[#000000B2]">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4"
-                        />
-                        {key.version}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.apiKey}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.name}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.createdOn}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="p-4 text-center text-gray-500">
-                      No API keys found.
+                {apiKeys.map((key, index) => (
+                  <tr key={index} className="text-gray-800 text-sm border-b">
+                    <td className="p-4 flex items-center gap-2 text-[11px] font-[600] text-[#000000B2]">
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-4 w-4"
+                      />
+                      {key.version}
+                    </td>
+                    <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
+                      {key.apiKey}
+                    </td>
+                    <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
+                      {key.name}
+                    </td>
+                    <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
+                      {key.createdOn}
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -122,10 +137,8 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
 
         {/* Login history section */}
         <div className="bg-white rounded-lg p-4 mt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between pb-3">
-            <div>
+          <div className="pb-3">
               <p className="text-black text-[14px] font-[600]">Login History</p>
-            </div>
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
@@ -139,33 +152,26 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
                 </tr>
               </thead>
               <tbody>
-                {loginHistory.length > 0 ? (
-                  loginHistory.map((entry, index) => (
+                {loginData.length > 0 &&
+                  loginData.map((entry, index) => (
                     <tr key={index} className="text-gray-800 text-sm border-b">
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {entry.loginDate}
+                        {entry.loginDate || "1"}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {entry.logoutDate}
+                        {entry.logoutDate || "1"}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {entry.ipAddress}
+                        {entry.ipAddress || "1"}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {entry.isp}
+                        {entry.isp || "1"}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {entry.city}
+                        {entry.city || "1"}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="p-4 text-center text-gray-500">
-                      No login history found.
-                    </td>
-                  </tr>
-                )}
+                  ))}
               </tbody>
             </table>
           </div>

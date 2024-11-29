@@ -5,11 +5,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
-import { Pagination, Switch, Button, Modal, Input } from "antd";
+import { Pagination, Button, Modal, Input } from "antd";
 import { RiFindReplaceLine } from "react-icons/ri";
 import stcpay from "../../assets/stcpay.jpg";
 
-const TransactionsTable = ({ showSidebar }) => {
+const TransactionsTable = ({ authorization, showSidebar}) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -192,6 +192,9 @@ const TransactionsTable = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if(!authorization){
+      navigate("/login")
+    }
   }, []);
 
   return (
@@ -330,7 +333,7 @@ const TransactionsTable = ({ showSidebar }) => {
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
-                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
+                <span className="mt-[3px] text-[11px] font-[600] mr-2">To</span>
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -338,7 +341,7 @@ const TransactionsTable = ({ showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
+                  className="border-none text-[11px] w-12 mb-1  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
@@ -349,10 +352,10 @@ const TransactionsTable = ({ showSidebar }) => {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border w-32 border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-              <div className="flex flex-col w-full md:w-32">
+              <div className="flex flex-col w-full md:w-40">
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}

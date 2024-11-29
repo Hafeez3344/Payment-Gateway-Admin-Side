@@ -7,7 +7,7 @@ import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination } from "antd";
 
-const DeclinedTransactions = ({ showSidebar }) => {
+const DeclinedTransactions = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -189,6 +189,9 @@ const DeclinedTransactions = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization){
+      navigate("/login")
+    }
   }, []);
 
   return (

@@ -22,7 +22,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
       className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
         showSidebar ? "left-0" : "left-[-270px]"
       }`}
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
@@ -47,7 +47,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/TransactionsTable");
+            navigate("/transactions");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Transaction History"
@@ -55,7 +55,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/MerchantManagement");
+            navigate("/merchant-management");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Merchant Management"
@@ -63,7 +63,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/SupportHelpCenter");
+            navigate("/support-help-center");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Support / Help Center"
@@ -71,7 +71,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/SystemConfigurationIntegration");
+            navigate("/system-configuration");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Setting"

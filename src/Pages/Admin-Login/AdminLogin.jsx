@@ -30,7 +30,6 @@ const Login = ({authorization, setAuthorization}) => {
   const onFinish = async (values) => {
     try {
       const response = await fn_loginAdminApi(values);
-      console.log("response ", response);
       if (response?.status) {
         notification.success({
           message: "Login Successful",
@@ -38,6 +37,8 @@ const Login = ({authorization, setAuthorization}) => {
           placement: "topRight",
         });
         Cookies.set("token", response?.token);
+        Cookies.set("adminId", response?.id);
+        
         navigate("/");
         setAuthorization(true);
       } else {
