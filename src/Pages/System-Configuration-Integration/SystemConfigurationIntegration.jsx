@@ -25,8 +25,6 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
     }
   };
 
-
-
   const apiKeys = [
     {
       version: "V3",
@@ -42,7 +40,7 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
     },
   ];
 
-    const loginHistory = [
+  const loginHistory = [
     {
       loginDate: "01 Jan 2024, 09:00 AM",
       logoutDate: "01 Jan 2024, 05:00 PM",
@@ -96,10 +94,10 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
         {/* API keys section */}
         <div className="bg-white rounded-lg p-4">
           <div className="pb-3">
-              <p className="text-black text-[11px] font-[600]">API Keys</p>
-              <span className="text-[13px] font-[600]">Your API Keys</span>
+            <p className="text-black text-[11px] font-[600]">API Keys</p>
+            <span className="text-[13px] font-[600]">Your API Keys</span>
           </div>
-          <div className="overflow-x-auto rounded-lg border border-gray-300">
+          {/* <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
               <thead>
                 <tr className="border-b text-left text-[12px] text-gray-700">
@@ -132,13 +130,75 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                 ))}
               </tbody>
             </table>
+
+            <div className="w-full max-w-lg">
+              <div className="flex mb-3">
+                <div className="w-full mr-4">
+                  <label
+                    htmlFor="apiKey"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    API Key
+                  </label>
+                  <input
+                    type="text"
+                    id="apiKey"
+                    placeholder="Enter API Key"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div className="w-full">
+                  <label
+                    htmlFor="secretKey"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Secret Key
+                  </label>
+                  <input
+                    type="text"
+                    id="secretKey"
+                    placeholder="Enter Secret Key"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+              </div>
+              <button className="w-full bg-blue-500 text-white py-2 rounded-md mt-3">
+                Submit
+              </button>
+            </div>
+          </div> */}
+
+          <div className="overflow-x-auto rounded-lg border border-gray-300 p-4">
+            <div className="w-full max-w-lg">
+              <div className="flex space-x-4 mb-3">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    id="apiKey"
+                    placeholder="Enter API Key"
+                    className="w-full p-2 border rounded-md focus:outline-none focus:border-blue-300 hover:border-blue-300 min-h-[40px]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    id="secretKey"
+                    placeholder="Enter Secret Key"
+                    className="w-full p-2 border rounded-md focus:outline-none focus:border-blue-300 hover:border-blue-300 min-h-[40px]"
+                  />
+                </div>
+              </div>
+              <button className="bg-blue-500 text-white py-2 px-6  rounded-md mt-3">
+                Submit
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Login history section */}
         <div className="bg-white rounded-lg p-4 mt-6">
           <div className="pb-3">
-              <p className="text-black text-[14px] font-[600]">Login History</p>
+            <p className="text-black text-[14px] font-[600]">Login History</p>
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-300">
             <table className="min-w-full">
