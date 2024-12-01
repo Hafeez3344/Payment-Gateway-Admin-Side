@@ -131,6 +131,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     formData.append("websiteUsername", websiteUsername);
     formData.append("website", website);
     formData.append("image", image);
+    console.log(formData)
 
     console.log("Merchant Data:", merchantData);
 
