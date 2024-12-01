@@ -65,8 +65,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
-    if (!authorization){
-      Navigate("/login")
+    if (!authorization) {
+      Navigate("/login");
     }
   }, []);
 
@@ -78,6 +78,64 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     );
   };
 
+  const [merchantName, setMerchantName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [accountLimit, setAccountLimit] = useState("");
+  const [websiteName, setWebsiteName] = useState("");
+  const [websiteUsername, setWebsiteUsername] = useState("");
+  const [website, setWebsite] = useState("");
+  const [image, setImage] = useState(null);
+  const [errors, setErrors] = useState({});
+
+  const handleSave = () => {
+    const newErrors = {};
+
+    // Validation rules
+    if (!merchantName.trim())
+      newErrors.merchantName = "Merchant Name is required.";
+    if (!phone.trim()) newErrors.phone = "Phone Number is required.";
+    if (!email.trim()) newErrors.email = "Email is required.";
+    if (!accountLimit.trim())
+      newErrors.accountLimit = "Account Limit is required.";
+    if (!websiteName.trim())
+      newErrors.websiteName = "Website Name is required.";
+    if (!websiteUsername.trim())
+      newErrors.websiteUsername = "Website Username is required.";
+    if (!website.trim()) newErrors.website = "Website is required.";
+    if (!image) newErrors.image = "Image is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    const merchantData = {
+      merchantName,
+      phone,
+      email,
+      accountLimit,
+      websiteName,
+      websiteUsername,
+      website,
+      image,
+    };
+
+    const formData = new FormData();
+    formData.append("merchantName", merchantName);
+    formData.append("phone", phone);
+    formData.append("email", email);
+    formData.append("accountLimit", accountLimit);
+    formData.append("websiteName", websiteName);
+    formData.append("websiteUsername", websiteUsername);
+    formData.append("website", website);
+    formData.append("image", image);
+
+    console.log("Merchant Data:", merchantData);
+
+    setOpen(false);
+  };
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${
@@ -89,9 +147,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Merchant Management</h1>
-          <p
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
-          >
+          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
         </div>
@@ -195,7 +251,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                 <Modal
                   centered
                   width={600}
-                  style={{ fontFamily: "sans-serif" }}
                   title={
                     <p className="text-[16px] font-[700]">
                       Add New Merchant Account
@@ -203,72 +258,132 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   }
                   footer={
                     <div className="flex gap-4 mt-6">
-                      <Button
-                        className="flex start px-10 text-[12px]"
-                        type="primary"
-                      >
+                      <Button type="primary" onClick={handleSave}>
                         Save
                       </Button>
-                      <Button
-                        className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
-                        type=""
-                        onClick={() => setOpen(false)}
-                      >
-                        Cancel
-                      </Button>
+                      <Button onClick={() => setOpen(false)}>Cancel</Button>
                     </div>
                   }
                   open={open}
                   onCancel={() => setOpen(false)}
-                  onClose={() => setOpen(false)}
                 >
-                  <div className="flex gap-4 ">
+                  <div className="flex gap-4">
                     <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
+                      <p>
                         Merchant Name <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
-                        className="w-full text-[12px]"
                         placeholder="Enter Merchant Name"
+                        value={merchantName}
+                        onChange={(e) => setMerchantName(e.target.value)}
                       />
+                      {errors.merchantName && (
+                        <p className="text-red-500">{errors.merchantName}</p>
+                      )}
                     </div>
                     <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
+                      <p>
                         Phone Number <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
-                        className="w-full  text-[12px]"
                         placeholder="Enter Phone Number"
+                        value={phone}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, ""); // Only allow numbers
+                          setPhone(value);
+                        }}
                       />
+                      {errors.phone && (
+                        <p className="text-red-500">{errors.phone}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-4">
                     <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
+                      <p>
                         Email <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
-                        className="w-full text-[12px]"
                         placeholder="Enter Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
+                      {errors.email && (
+                        <p className="text-red-500">{errors.email}</p>
+                      )}
                     </div>
                     <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
+                      <p>
                         Account Limit <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
-                        className="w-full text-[12px]"
                         placeholder="Enter Account Limit"
+                        value={accountLimit}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, ""); // Only allow numbers
+                          setAccountLimit(value);
+                        }}
                       />
+                      {errors.accountLimit && (
+                        <p className="text-red-500">{errors.accountLimit}</p>
+                      )}
                     </div>
                   </div>
-                  <p className="text-[12px] font-[500] pb-1 mt-2">
-                    API Key <span className="text-[#D50000]">*</span>
-                  </p>
-                  <Input
-                    className="text-[12px]"
-                    placeholder="Enter Merchant API Key"
-                  />
+                  <div className="flex gap-4">
+                    <div className="flex-1 my-2">
+                      <p>
+                        Website Name <span className="text-[#D50000]">*</span>
+                      </p>
+                      <Input
+                        placeholder="Website Name"
+                        value={websiteName}
+                        onChange={(e) => setWebsiteName(e.target.value)}
+                      />
+                      {errors.websiteName && (
+                        <p className="text-red-500">{errors.websiteName}</p>
+                      )}
+                    </div>
+                    <div className="flex-1 my-2">
+                      <p>
+                        Website Username{" "}
+                        <span className="text-[#D50000]">*</span>
+                      </p>
+                      <Input
+                        placeholder="Website Username"
+                        value={websiteUsername}
+                        onChange={(e) => setWebsiteUsername(e.target.value)}
+                      />
+                      {errors.websiteUsername && (
+                        <p className="text-red-500">{errors.websiteUsername}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="my-2">
+                    <p>
+                      Website <span className="text-[#D50000]">*</span>
+                    </p>
+                    <Input
+                      placeholder="Enter Your Website"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                    {errors.website && (
+                      <p className="text-red-500">{errors.website}</p>
+                    )}
+                  </div>
+
+                  <div className="my-2">
+                    <p>
+                      Image <span className="text-[#D50000]">*</span>
+                    </p>
+                    <Input
+                      type="file"
+                      onChange={(e) => setImage(e.target.files[0])}
+                    />
+                    {errors.image && (
+                      <p className="text-red-500">{errors.image}</p>
+                    )}
+                  </div>
                 </Modal>
               </div>
             </div>

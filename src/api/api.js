@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const BACKEND_URL = "http://localhost:8888";
 
@@ -24,7 +25,13 @@ export const fn_loginAdminApi = async (data) => {
 
 export const fn_getAdminLoginHistoryApi = async (adminId) => {
     try {
-        const response = await axios.get(`${BACKEND_URL}/loginHistory/get?adminId=${adminId}`);
+        const token = Cookies.get('token');
+        const response = await axios.get(`${BACKEND_URL}/loginHistory/getAll`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         return {
             status: true,
@@ -38,4 +45,57 @@ export const fn_getAdminLoginHistoryApi = async (adminId) => {
         return { status: false, message: "Network Error" };
     }
 };
+
+export const fn_updateApiKeys = async (apiKey, secretKey) => {
+
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(`${BACKEND_URL}/admin/update`,
+            { apiKey, secretKey },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            message: "API keys updated successfully",
+            data: response
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+
+export const fn_getApiKeys = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.post(`${BACKEND_URL}/admin/get`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+
 
