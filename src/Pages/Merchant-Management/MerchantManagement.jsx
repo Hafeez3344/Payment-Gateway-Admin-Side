@@ -5,10 +5,14 @@ import CanaraBank from "../../assets/CanaraBank.svg";
 import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input, notification } from "antd";
 import logo from "../../assets/logo.png";
-import { fn_createMerchantApi, fn_getMerchantApi } from "../../api/api";
+import {
+  fn_createMerchantApi,
+  fn_getMerchantApi,
+  fn_MerchantUpdate,
+} from "../../api/api";
 
 const MerchantManagement = ({ authorization, showSidebar }) => {
-  // const [merchantsApi, setMerchantsApi] = useState([]);  
+  const [merchantsData, setMerchantsData] = useState([]);
   const [open, setOpen] = React.useState(false);
   const { TextArea } = Input;
   const navigate = useNavigate();
@@ -22,8 +26,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
   const [website, setWebsite] = useState("");
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
-
-
   const [merchants, setMerchants] = useState([
     {
       name: "Shubh Exchange",
@@ -75,19 +77,21 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     },
   ]);
 
-  const fn_getMerchant = async()=>{
+  const fn_getMerchant = async () => {
     const response = await fn_getMerchantApi();
-    if(response?.status){
-      console.log(response)
+    if (response?.status) {
+      setMerchantsData(response?.data?.data);
+    } else {
+      setMerchantsData([]);
     }
-  }
+  };
 
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
     }
-    fn_getMerchant()
+    fn_getMerchant();
   }, []);
 
   const handleToggle = (index) => {
@@ -161,6 +165,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     }
   };
 
+  console.log("merchantsData ", merchantsData);
+
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${
@@ -176,7 +182,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
             Dashboard - Data Table
           </p>
         </div>
-        {/* content */}
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 ">
           {/* Left side card */}
           <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
@@ -250,9 +255,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
           {/* Right side Card */}
           <div className="w-full md:w-3/4 lg:min-h-[550px] bg-white rounded-lg shadow-md border">
-            {/* Reduced padding */}
             <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b space-y-4 md:space-y-0">
-              {/* Merchant Accounts Button */}
               <div className="w-full md:w-auto">
                 <button
                   className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto"
@@ -265,7 +268,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                 </button>
               </div>
 
-              {/* Search Input and Add Merchant Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
                 <button className="text-[10px] text-[#00000080] rounded border border-[#0000001A] px-4 py-2 w-full md:w-auto">
                   Search Merchant...
@@ -314,7 +316,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         placeholder="Enter Phone Number"
                         value={phone}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, ""); // Only allow numbers
+                          const value = e.target.value.replace(/\D/g, ""); 
                           setPhone(value);
                         }}
                       />
@@ -345,7 +347,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         placeholder="Enter Account Limit"
                         value={accountLimit}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, ""); // Only allow numbers
+                          const value = e.target.value.replace(/\D/g, ""); 
                           setAccountLimit(value);
                         }}
                       />
@@ -414,8 +416,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
             </div>
 
             <div className="overflow-x-auto">
-              {" "}
-              {/* Make sure the table can scroll */}
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
@@ -430,74 +430,81 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {merchants.map((merchant, index) => (
-                    <tr
-                      key={index}
-                      className={`border-t border-b ${
-                        index % 2 === 0 ? "bg-white" : ""
-                      }`}
-                    >
-                      <td className="p-3 text-[13px] font-[600]">
-                        <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                          <img
-                            src={CanaraBank} // Placeholder image
-                            alt={`${merchant.name} logo`}
-                            className="w-6 h-6 object-contain"
-                          />
-                          <span className="whitespace-nowrap">
-                            {merchant.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-[13px] pl-8">
-                        {merchant.accounts}
-                      </td>
-                      <td className="p-3 text-[13px]">
-                        <a
-                          href={`https://${merchant.website}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          {merchant.website}
-                        </a>
-                      </td>
-                      <td className="p-3 text-[13px] font-[400]">
-                        {merchant.limit}
-                      </td>
-                      <td className="text-center">
-                        <button
-                          className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                            merchant.status === "Active"
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : merchant.status === "Inactive"
-                              ? "bg-[#FF173D33] text-[#D50000]"
-                              : merchant.status === "Disabled"
-                              ? "bg-[#BDBDBD] "
-                              : ""
-                          }`}
-                        >
-                          {merchant.status === "Active"
-                            ? "Active"
-                            : merchant.status === "Inactive"
-                            ? "Inactive"
-                            : merchant.status === "Disabled"
-                            ? "Disabled"
-                            : ""}
-                        </button>
-                      </td>
-
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center items-center">
-                          <Switch size="small" defaultChecked />
-                          <button
-                            className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                            title="Edit"
+                  {merchantsData?.length > 0 &&
+                    merchantsData.map((merchant, index) => (
+                      <tr
+                        key={index}
+                        className={`border-t border-b ${
+                          index % 2 === 0 ? "bg-white" : ""
+                        }`}
+                      >
+                        <td className="p-3 text-[13px] font-[600]">
+                          <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
+                            {/* <img
+                              src={CanaraBank} // Placeholder image
+                              alt={`${merchant.merchantName} logo`}
+                              className="w-6 h-6 object-contain"
+                            /> */}
+                            <span className="whitespace-nowrap">
+                              {merchant.merchantName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-[13px] pl-8">
+                          {merchant.accounts}
+                        </td>
+                        <td className="p-3 text-[13px]">
+                          <a
+                            href={`https://${merchant.website}`}
+                            className="text-blue-500 hover:underline"
                           >
-                            <FiEdit />
+                            {merchant.website}
+                          </a>
+                        </td>
+                        <td className="p-3 text-[13px] font-[400]">
+                          {merchant.accountLimit}
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                              !merchant.block
+                                ? "bg-[#10CB0026] text-[#0DA000]"
+                                : "bg-[#FF173D33] text-[#D50000]"
+                            }`}
+                          >
+                            {!merchant.block ? "Active" : "Inactive"}
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex justify-center items-center">
+                            <Switch
+                              size="small"
+                              defaultChecked={!merchant?.block}
+                              onChange={async (checked) => {
+                                const response = await fn_MerchantUpdate(
+                                  merchant?._id,
+                                  { block: !checked }
+                                );
+                                if (response?.status) {
+                                  fn_getMerchant();
+                                  notification.success({
+                                    message: "Status",
+                                    description: "Merchant Status Updated!",
+                                    placement: "topRight",
+                                  });
+                                }
+                              }}
+                            />
+                            <button
+                              className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                              title="Edit"
+                            >
+                              <FiEdit />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

@@ -72,7 +72,6 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
     }
 };
 
-
 export const fn_getApiKeys = async () => {
     try {
         const token = Cookies.get("token");
@@ -143,4 +142,26 @@ export const fn_getMerchantApi = async () => {
     }
 };
 
-
+export const fn_MerchantUpdate = async (id, data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(`${BACKEND_URL}/merchant/update/${id}`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
