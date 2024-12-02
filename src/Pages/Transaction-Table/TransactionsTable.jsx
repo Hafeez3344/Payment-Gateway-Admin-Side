@@ -409,7 +409,7 @@ const TransactionsTable = ({ authorization, showSidebar}) => {
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full mr-2" // Adjusted to add margin-right
+                          className="w-6 h-6 rounded-full mr-2" 
                         />
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
