@@ -120,7 +120,7 @@ export const fn_createMerchantApi = async (formdata) => {
     }
 };
 
-export const fn_getStatus = async () => {
+export const fn_getMerchantApi = async () => {
     try {
         const token = Cookies.get("token");
         const response = await axios.get(`${BACKEND_URL}/merchant/getAll`,
