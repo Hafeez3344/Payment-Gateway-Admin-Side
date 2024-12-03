@@ -9,7 +9,7 @@ import { Pagination, Button, Modal, Input } from "antd";
 import { RiFindReplaceLine } from "react-icons/ri";
 import stcpay from "../../assets/stcpay.jpg";
 
-const TransactionsTable = ({ authorization, showSidebar}) => {
+const TransactionsTable = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -185,15 +185,14 @@ const TransactionsTable = ({ authorization, showSidebar}) => {
     setFilteredTransactions(filtered);
   };
 
-  // Run search whenever criteria change
   useEffect(() => {
     handleSearch();
   }, [startDate, endDate, merchant, searchQuery]);
 
   useEffect(() => {
     window.scroll(0, 0);
-    if(!authorization){
-      navigate("/login")
+    if (!authorization) {
+      navigate("/login");
     }
   }, []);
 
@@ -409,7 +408,7 @@ const TransactionsTable = ({ authorization, showSidebar}) => {
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full mr-2" 
+                          className="w-6 h-6 rounded-full mr-2"
                         />
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
