@@ -1,206 +1,131 @@
-import React, { useState, useEffect } from "react";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import CanaraBank from "../../assets/CanaraBank.svg";
-import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
-import { Pagination, Button, Modal, Input } from "antd";
-import { RiFindReplaceLine } from "react-icons/ri";
-import stcpay from "../../assets/stcpay.jpg";
+import React, { useState, useEffect } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import { Pagination, Modal, Input, notification } from "antd";
 
-const TransactionsTable = ({ authorization, showSidebar }) => {
+import { FaRegEdit } from "react-icons/fa";
+import { IoMdCheckmark } from "react-icons/io";
+import { GoCircleSlash } from "react-icons/go";
+import { RiFindReplaceLine } from "react-icons/ri";
+import { FaIndianRupeeSign, } from "react-icons/fa6";
+import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+
+import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
+
+const TransactionsTable = ({authorization, showSidebar }) => {
+
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+
+  const [open, setOpen] = useState(false);
+  const status = searchParams.get('status');
+  const [isEdit, setIsEdit] = useState(false);
+  const [merchant, setMerchant] = useState("");
+  const [endDate, setEndDate] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [merchant, setMerchant] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [open, setOpen] = React.useState(false);
-  const { TextArea } = Input;
+  const [transactions, setTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  const transactions = [
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-    {
-      id: "9879827354233",
-      bankName: "Bank of Baroda",
-      iban: "BM7355353124",
-      date: "2024-01-16",
-      time: "10:55 AM",
-      amount: "₹ 2400",
-      merchantName: "Book Fair",
-      status: "Declined",
-    },
-    {
-      id: "9780924782474",
-      bankName: "Canara Bank",
-      iban: "DE6820050000",
-      date: "2024-01-01",
-      time: "11:30 AM",
-      amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
-      status: "Verified",
-    },
-  ];
-
-  const bankImages = {
-    "Canara Bank": CanaraBank,
-    "Bank of Baroda": BankOfBarodaLogo,
+  const fetchTransactions = async (pageNumber) => {
+    try {
+      const result = await fn_getAllMerchantApi(status || null, pageNumber);
+      if (result?.status) {
+        if (result?.data?.status === "ok") {
+          setTransactions(result?.data?.data);
+          setTotalPages(result?.data?.totalPages);
+        } else {
+          setTransactions([]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setTransactions([]);
+    }
   };
-
-  const getStatusClass = (status) => {
-    if (status === "Verified")
-      return "bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium";
-    if (status === "Declined")
-      return "bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium";
-    return "bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium";
-  };
-
-  const handleSearch = () => {
-    const filtered = transactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.date);
-      const isDateInRange =
-        (!startDate || transactionDate >= startDate) &&
-        (!endDate || transactionDate <= endDate);
-
-      const isMerchantMatch =
-        !merchant || transaction.merchantName === merchant;
-
-      const isSearchMatch =
-        !searchQuery ||
-        transaction.merchantName
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      return isDateInRange && isMerchantMatch && isSearchMatch;
-    });
-    setFilteredTransactions(filtered);
-  };
-
-  useEffect(() => {
-    handleSearch();
-  }, [startDate, endDate, merchant, searchQuery]);
 
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
+      return;
     }
   }, []);
 
+  useEffect(() => {
+    fetchTransactions(currentPage);
+  }, [currentPage]);
+
+  const filteredTransactions = transactions.filter(
+    (transaction) =>
+      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (merchant === "" || transaction?.merchantName === merchant)
+  );
+
+  const handleViewTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setOpen(true);
+  };
+
+  const handleTransactionAction = async (action, transactionId) => {
+    const response = await fn_updateTransactionStatusApi(transactionId, {
+      status: action,
+    });
+    if (response.status) {
+      fetchTransactions(currentPage);
+      notification.success({
+        message: "Success",
+        description: "Transaction Updated!",
+        placement: "topRight",
+      });
+      setIsEdit(false);
+      setOpen(false);
+    } else {
+      setIsEdit(false);
+      console.error(`Failed to ${action} transaction:`, response.message);
+    }
+  };
+
+  const handleEditTransactionAction = async (status, id, amount) => {
+    const response = await fn_updateTransactionStatusApi(id, {
+      status: status,
+      total: parseInt(amount),
+    });
+    if (response.status) {
+      fetchTransactions(currentPage);
+      notification.success({
+        message: "Success",
+        description: "Transaction Updated!",
+        placement: "topRight",
+      });
+      setOpen(false);
+      setIsEdit(false);
+    } else {
+      setIsEdit(false);
+      console.error(`Failed to ${action} transaction:`, response.message);
+    }
+  };
+
+  const fn_deleteTransaction = async (id) => {
+    const response = await fn_deleteTransactionApi(id);
+    if (response?.status) {
+      notification.success({
+        message: "Success",
+        description: "Transaction Deleted!",
+        placement: "topRight",
+      });
+      fetchTransactions(currentPage);
+    }
+  }
+
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -217,108 +142,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 List of all Transactions
               </p>
             </div>
-            <Button type="primary" onClick={() => setOpen(true)}>
-              Transaction Details
-            </Button>
-
-            <Modal
-              centered
-              footer={null}
-              width={900}
-              style={{ fontFamily: "sans-serif", padding: "20px" }}
-              title={
-                <p className="text-[16px] font-[700]">Transaction Details</p>
-              }
-              open={open}
-              onCancel={() => setOpen(false)}
-              onClose={() => setOpen(false)}
-            >
-              <div className="flex flex-col md:flex-row">
-                {/* Left side input fields */}
-                <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-                  {/* Repeated field structure for inputs */}
-                  {[
-                    { label: "Amount:", placeholder: "₹ 5000" },
-                    { label: "Account Holder:", placeholder: "Sorav Gopta" },
-                    { label: "UTR#:", placeholder: "#323032038826" },
-                    { label: "IBAN#:", placeholder: "COB94750934876767" },
-                    {
-                      label: "Date & Time:",
-                      placeholder: "01 Jan 2024, 11:30 AM",
-                    },
-                    {
-                      label: "Bank Name:",
-                      options: [
-                        "Select a bank",
-                        "Bank of Baroda",
-                        "State Bank of India",
-                        "HDFC Bank",
-                        "Axis Bank",
-                        "ICICI Bank",
-                      ],
-                    },
-                    {
-                      label: "Description:",
-                      placeholder:
-                        "IMPS-426713610684-EMIRATES NBD BANK MUMB AI-EBIL-XXXXXXXXXXX0005-REMITTANCE FROM INDIAN NON-RESIDENC",
-                      isTextarea: true,
-                    },
-                  ].map((field, index) => (
-                    <div className="flex items-center gap-4" key={index}>
-                      <p className="text-[12px] font-[600] w-[150px]">
-                        {field.label}
-                      </p>
-                      {field.options ? (
-                        <select className="w-[50%] text-[12px] border outline-none rounded p-1 input-placeholder-black">
-                          {field.options.map((option, idx) => (
-                            <option key={idx} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      ) : field.isTextarea ? (
-                        <textarea
-                          className="w-[50%] text-[11px] border rounded p-1 resize-none outline-none input-placeholder-black overflow-hidden"
-                          placeholder={field.placeholder}
-                          rows={3}
-                          style={{ overflow: "auto", resize: "none" }}
-                        />
-                      ) : (
-                        <Input
-                          className="w-[50%] text-[12px] input-placeholder-black"
-                          placeholder={field.placeholder}
-                        />
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Bottom Divider and Activity */}
-                  <div className="border-b w-[370px] mt-8"></div>
-                  <p className="text-[12px] font-[600]">Activity</p>
-                  <p className="text-[9px] font-[600] leading-10">
-                    Transaction ID:{" "}
-                    <span className="text-[9px] font-[600] text-[#00000080]">
-                      98714987971982
-                    </span>
-                  </p>
-                </div>
-
-                {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col items-center justify-center">
-                  <img
-                    src={stcpay}
-                    alt="Payment Image"
-                    className="max-h-full"
-                  />
-                  {/* Button positioned below the image */}
-                  <button className="mt-4 border flex border-black px-2 py-1 rounded items-center">
-                    <RiFindReplaceLine className="mr-2 text-[#699BF7]" />
-                    Replace Payment Proof
-                  </button>
-                </div>
-              </div>
-            </Modal>
-
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
               <div className="flex border border-gray-300 items-center bg-white rounded">
                 {/* 2px border radius */}
@@ -328,11 +151,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" // 2px rounded left side
+                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l"
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
-                <span className="mt-[3px] text-[11px] font-[600] mr-2">To</span>
+                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -340,11 +163,12 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none text-[11px] w-12 mb-1  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
+                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r"
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
               </div>
+              {/* Search Input */}
               <div className="flex flex-col w-full md:w-40">
                 <input
                   type="text"
@@ -354,11 +178,12 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
+              {/* Merchant Filter */}
               <div className="flex flex-col w-full md:w-40">
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
-                  className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border border-gray-300 rounded py-1 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option className="text-[10px] text-gray-400" value="">
                     Merchant
@@ -386,78 +211,214 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">TRN-ID</th>
                   <th className="p-4">BANK NAME</th>
-                  <th className="p-4">IBAN</th>
                   <th className="p-4">DATE</th>
-                  <th className="p-4">AMOUNT</th>
-                  <th className="p-4">MERCHANT NAME</th>
-                  <th className="p-4">STATUS</th>
-                  <th className="p-4 cursor-pointer">ACTION</th>
+                  <th className="p-4">TOTAL AMOUNT</th>
+                  <th className="p-4">UTR#</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTransactions.length > 0 ? (
                   filteredTransactions.map((transaction) => (
                     <tr
-                      key={transaction.id}
+                      key={transaction?._id}
                       className="text-gray-800 text-sm border-b"
                     >
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {transaction.id}
+                        {transaction?.trnNo}
                       </td>
                       <td className="p-4 flex items-center">
                         <img
-                          src={bankImages[transaction.bankName]}
-                          alt={`${transaction.bankName} Logo`}
+                          src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
+                          alt={`Logo`}
                           className="w-6 h-6 rounded-full mr-2"
                         />
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
-                          {transaction.bankName}
+                          {transaction?.bankId?.bankName || "UPI"}
                         </span>
+                      </td>
+                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {new Date(transaction?.createdAt).toDateString()},{" "}
+                        {new Date(transaction?.createdAt).toLocaleTimeString()}
                       </td>
 
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {transaction.iban}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {transaction.date}
-                      </td>
                       <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
-                        {transaction.amount}
+                        <FaIndianRupeeSign className="inline-block mt-[-1px]" /> {transaction?.total}
                       </td>
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
-                        {transaction.merchantName}
+                        {transaction?.utr}
                       </td>
                       <td className="p-4 text-[11px] font-[500]">
-                        <span className={getStatusClass(transaction.status)}>
-                          {transaction.status}
+                        <span
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                            ? "bg-[#10CB0026] text-[#0DA000]"
+                            : transaction?.status === "Unverified"
+                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#0865e851] text-[#0864E8]" : "bg-[#FF7A8F33] text-[#FF002A]"
+                            }`}
+                        >
+                          {transaction?.status?.charAt(0).toUpperCase() +
+                            transaction?.status?.slice(1)}
                         </span>
                       </td>
-                      <td className="p-4 flex space-x-2">
+                      <td className="p-4 flex space-x-2 transaction-view-model">
                         <button
                           className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
                           title="View"
+                          onClick={() => handleViewTransaction(transaction)}
                         >
                           <FiEye />
                         </button>
-                        <button
+                        <Modal
+                          centered
+                          footer={null}
+                          width={900}
+                          style={{ fontFamily: "sans-serif", padding: "20px" }}
+                          title={
+                            <p className="text-[16px] font-[700]">
+                              Transaction Details
+                            </p>
+                          }
+                          open={open}
+                          onCancel={() => { setOpen(false); setIsEdit(false) }}
+                          onClose={() => { setOpen(false); setIsEdit(false) }}
+                        >
+                          {selectedTransaction && (
+                            <div className="flex flex-col md:flex-row">
+                              {/* Left side input fields */}
+                              <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
+                                {[
+                                  {
+                                    label: "Amount:",
+                                    value: selectedTransaction?.total,
+                                  },
+                                  {
+                                    label: "UTR#:",
+                                    value: selectedTransaction?.utr,
+                                  },
+                                  {
+                                    label: "Date & Time:",
+                                    value: `${new Date(
+                                      selectedTransaction.createdAt
+                                    ).toLocaleString()}`,
+                                  },
+                                  {
+                                    label: "Bank Name:",
+                                    value:
+                                      selectedTransaction.bankId?.bankName ||
+                                      "UPI",
+                                  },
+                                  {
+                                    label: "Description:",
+                                    value:
+                                      selectedTransaction.description || "",
+                                    isTextarea: true,
+                                  },
+                                ].map((field, index) => (
+                                  <div
+                                    className="flex items-center gap-4"
+                                    key={index}
+                                  >
+                                    <p className="text-[12px] font-[600] w-[150px]">
+                                      {field.label}
+                                    </p>
+                                    {field.isTextarea ? (
+                                      <textarea
+                                        className="w-[50%] text-[11px] border rounded p-1 resize-none outline-none input-placeholder-black overflow-hidden"
+                                        value={field.value}
+                                        rows={3}
+                                        readOnly
+                                        style={{
+                                          overflow: "auto",
+                                          resize: "none",
+                                        }}
+                                      />
+                                    ) : (
+                                      <Input
+                                        prefix={
+                                          field.label === "Amount:" ? (
+                                            <FaIndianRupeeSign className="mt-[2px]" />
+                                          ) : null
+                                        }
+                                        className={`w-[50%] text-[12px] input-placeholder-black ${isEdit && field.label === "Amount:"
+                                          ? "bg-white"
+                                          : "bg-gray-200"
+                                          }`}
+                                        readOnly={
+                                          isEdit && field.label === "Amount:"
+                                            ? false
+                                            : true
+                                        }
+                                        value={field?.value}
+                                        onChange={(e) =>
+                                          setSelectedTransaction((prev) => ({
+                                            ...prev,
+                                            total: e.target.value,
+                                          }))
+                                        }
+                                      />
+                                    )}
+                                  </div>
+                                ))}
+
+                                {/* Bottom Divider and Activity */}
+                                <div className="border-b w-[370px] mt-4"></div>
+                                <p className="text-[13px] font-[600] leading-10">
+                                  Transaction ID:
+                                  <span className="text-[12px] ml-2 font-[600] text-[#00000080]">
+                                    {selectedTransaction.trnNo}
+                                  </span>
+                                </p>
+                                <p className="text-[14px] font-[700]">
+                                  Activity
+                                </p>
+                              </div>
+                              {/* Right side with border and image */}
+                              <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
+                                <img
+                                  src={`${BACKEND_URL}/${selectedTransaction?.image}`}
+                                  alt="Payment Proof"
+                                  className="max-h-[400px]"
+                                />
+
+                                {/* <div className="flex">
+                                  <button
+                                    className="mt-4 border flex border-black px-1 py-1 rounded"
+                                    onClick={() => {
+                                      const input =
+                                        document.createElement("input");
+                                      input.type = "file";
+                                      input.click();
+                                    }}
+                                  >
+                                    <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
+                                    <p>Replace Payment Proof</p>
+                                  </button>
+                                </div> */}
+                              </div>
+                            </div>
+                          )}
+                        </Modal>
+                        {/* <button
                           className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
                           title="Edit"
                         >
                           <FiEdit />
-                        </button>
-                        <button
+                        </button> */}
+                        {/* <button
                           className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                           title="Delete"
+                          onClick={() => fn_deleteTransaction(transaction?._id)}
                         >
                           <FiTrash2 />
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td colSpan="8" className="p-4 text-center text-gray-500">
-                      No transactions found.
+                      No Transactions found.
                     </td>
                   </tr>
                 )}
@@ -465,14 +426,12 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
             </table>
           </div>
           <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
-            <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left">
-              Showing 1 to 10 of 17 entries
-            </p>
+            <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
             <Pagination
               className="self-center md:self-auto"
-              onChange={() => navigate("")}
+              onChange={(e) => setCurrentPage(e)}
               defaultCurrent={1}
-              total={50}
+              total={totalPages * 10}
             />
           </div>
         </div>
