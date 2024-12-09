@@ -52,9 +52,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -106,11 +105,10 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
               </button>
               {statusMessage && (
                 <p
-                  className={`mt-2 ${
-                    statusMessage.includes("successfully")
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }`}
+                  className={`mt-2 ${statusMessage.includes("successfully")
+                    ? "text-green-500"
+                    : "text-red-500"
+                    }`}
                 >
                   {statusMessage}
                 </p>
@@ -129,9 +127,9 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">Login Date & Time</th>
-                  <th className="p-4">Logout Date & Time</th>
+                  {/* <th className="p-4">Logout Date & Time</th> */}
                   <th className="p-4">IP Address</th>
-                  <th className="p-4">ISP</th>
+                  {/* <th className="p-4">ISP</th> */}
                   <th className="p-4">City</th>
                 </tr>
               </thead>
@@ -140,9 +138,9 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                   loginData.map((entry, index) => (
                     <tr key={index} className="text-gray-800 text-sm border-b">
                       <td className="p-4">{entry.loginDate || "-"}</td>
-                      <td className="p-4">{entry.logoutDate || "-"}</td>
-                      <td className="p-4">{entry.ipAddress || "-"}</td>
-                      <td className="p-4">{entry.isp || "-"}</td>
+                      {/* <td className="p-4">{entry.logoutDate || "-"}</td> */}
+                      <td className="p-4">{(entry.ip?.split("::ffff:")[1]) || "-"}</td>
+                      {/* <td className="p-4">{entry.isp || "-"}</td> */}
                       <td className="p-4">{entry.city || "-"}</td>
                     </tr>
                   ))

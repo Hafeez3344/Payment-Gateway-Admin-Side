@@ -46,7 +46,7 @@ function App() {
             path="/"
             element={
               <Home authorization={authorization} showSidebar={showSidebar} />
-            }transactions
+            } transactions
           />
           <Route
             path="/transactions"

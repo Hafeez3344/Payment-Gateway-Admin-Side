@@ -173,9 +173,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -441,7 +440,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     <th className="p-3 text-[13px] font-[600]">
                       Merchant Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">Accounts</th>
+                    <th className="p-5 text-[13px] font-[600]">Bank Accounts</th>
                     <th className="p-5 text-[13px] font-[600]">Website</th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
@@ -453,9 +452,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     merchantsData.map((merchant, index) => (
                       <tr
                         key={index}
-                        className={`border-t border-b ${
-                          index % 2 === 0 ? "bg-white" : ""
-                        }`}
+                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                          }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -485,11 +483,10 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                              !merchant.block
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                            }`}
+                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${!merchant.block
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
+                              }`}
                           >
                             {!merchant.block ? "Active" : "Inactive"}
                           </button>
