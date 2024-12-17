@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Rectangle from "../../assets/Rectangle.jpg";
-import CanaraBank from "../../assets/CanaraBank.svg";
 import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input, notification } from "antd";
 import logo from "../../assets/logo.png";
@@ -26,6 +25,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
   const [websiteName, setWebsiteName] = useState("");
   const [websiteUsername, setWebsiteUsername] = useState("");
   const [website, setWebsite] = useState("");
+  const [tax, setTax] = useState("");
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [merchants, setMerchants] = useState([
@@ -120,6 +120,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       newErrors.websiteUsername = "Website Username is required.";
     if (!website.trim()) newErrors.website = "Website is required.";
     if (!image) newErrors.image = "Image is required.";
+    if (!tax.trim()) newErrors.tax = "Tax is required.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -135,12 +136,13 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     formData.append("password", password);
     formData.append("website", website);
     formData.append("accountLimit", accountLimit);
+    formData.append("tax", parseFloat(tax));
 
+    for(const param of formData.entries()){
+      console.log(param);
+    }
     try {
       const response = await fn_createMerchantApi(formData);
-
-      // Log the status in the console
-      console.log("Status:", response?.status);
 
       if (response?.status) {
         setOpen(false);
@@ -168,8 +170,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       });
     }
   };
-
-  console.log("merchantsData ", merchantsData);
 
   return (
     <div
@@ -429,6 +429,22 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       <p className="text-red-500">{errors.image}</p>
                     )}
                   </div>
+
+                  <div className="my-2">
+                    <p>
+                      Tax (%) <span className="text-[#D50000]">*</span>
+                    </p>
+                    <Input
+                      type="number"
+                      suffix={"%"}
+                      step={0.01}
+                      min={0}
+                      onChange={(e) => setTax(e.target.value)}
+                    />
+                    {errors?.tax && (
+                      <p className="text-red-500">{errors?.tax}</p>
+                    )}
+                  </div>
                 </Modal>
               </div>
             </div>
@@ -443,6 +459,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     <th className="p-5 text-[13px] font-[600]">Bank Accounts</th>
                     <th className="p-5 text-[13px] font-[600]">Website</th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
+                    <th className="p-5 text-[13px] font-[600]">Tax</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600]">Action</th>
                   </tr>
@@ -480,6 +497,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
                           {merchant.accountLimit}
+                        </td>
+                        <td className="p-3 text-[13px] font-[400]">
+                          {merchant?.tax}%
                         </td>
                         <td className="text-center">
                           <button

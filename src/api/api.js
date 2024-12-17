@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://192.168.1.21:8888";
+const BACKEND_URL = "http://localhost:8888";
 
 export const fn_loginAdminApi = async (data) => {
     try {
@@ -165,3 +165,87 @@ export const fn_MerchantUpdate = async (id, data) => {
         return { status: false, message: "Network Error" };
     }
 };
+
+export const fn_deleteTransactionApi = async (id) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.delete(`${BACKEND_URL}/ledger/delete/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        return {
+            status: true,
+            message: "Transaction Deleted",
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllMerchantApi = async (status, pageNumber) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}&status=${status || ""}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        console.log(response);
+        return {
+            status: true,
+            message: "Merchants show successfully",
+            data: response.data,
+        };
+    } catch (error) {
+        console.error(error);
+
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_updateTransactionStatusApi = async (transactionId, data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(
+            `${BACKEND_URL}/ledger/update/${transactionId}`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            }
+        );
+
+        return {
+            status: response?.data?.status === "ok",
+            message: response?.data?.message || "Transaction updated successfully",
+            data: response?.data,
+        };
+    } catch (error) {
+        console.error(`Error updating transaction status:`, error?.response || error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "An error occurred",
+        };
+    }
+};
+
+export default BACKEND_URL;
