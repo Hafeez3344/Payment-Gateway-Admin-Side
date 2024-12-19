@@ -1,21 +1,35 @@
-import React from "react";
-import logo from "../../assets/logo.png";
-import { MdOutlineDashboard } from "react-icons/md";
-import { PiNotebook } from "react-icons/pi";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { FaHeadphones } from "react-icons/fa";
-import { IoSettingsOutline } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
 
-const SideBar = ({ showSidebar, setShowSide }) => {
+import Cookies from "js-cookie";
+import React, { useState } from "react";
+import logo from "../../assets/logo.png";
+import { LuLogOut } from "react-icons/lu";
+import { PiNotebook } from "react-icons/pi";
+import { FaHeadphones } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineDashboard } from "react-icons/md";
+import { IoSettingsOutline } from "react-icons/io5";
+
+const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
+  const [selectedPage, setSelectedPage] = useState(""); 
+
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
-
   const navigate = useNavigate();
+  const isMobile = () => window.innerWidth < 1024;
+  const handleMenuClick = (page, path) => {
+    setSelectedPage(page); 
+    navigate(path); 
+    if (isMobile()) fn_controlSidebar(); 
+  };
 
-  // Function to check if the screen size is mobile
-  const isMobile = () => window.innerWidth < 1024; 
+  const fn_logout = () => {
+    Cookies.remove('adminId');
+    Cookies.remove('token');
+    setAuthorization(false);
+    navigate("/login");
+  }
 
   return (
     <div
@@ -38,45 +52,48 @@ const SideBar = ({ showSidebar, setShowSide }) => {
       </div>
       <div className="mt-[10px]">
         <Menu
-          onClick={() => {
-            navigate("/");
-            if (isMobile()) fn_controlSidebar(); 
-          }}
+          onClick={() => handleMenuClick("dashboard", "/")}
           label="Dashboard"
           icon={<MdOutlineDashboard className="text-[20px]" />}
+          isActive={selectedPage === "dashboard"}
         />
         <Menu
-          onClick={() => {
-            navigate("/transactions");
-            if (isMobile()) fn_controlSidebar();
-          }}
+          onClick={() => handleMenuClick("transactions", "/transactions")}
           label="Transaction History"
           icon={<PiNotebook className="text-[20px]" />}
+          isActive={selectedPage === "transactions"}
         />
         <Menu
-          onClick={() => {
-            navigate("/merchant-management");
-            if (isMobile()) fn_controlSidebar();
-          }}
+          onClick={() =>
+            handleMenuClick("merchant-management", "/merchant-management")
+          }
           label="Merchant Management"
           icon={<FaRegCircleUser className="text-[20px]" />}
+          isActive={selectedPage === "merchant-management"}
         />
         <Menu
-          onClick={() => {
-            navigate("/support-help-center");
-            if (isMobile()) fn_controlSidebar();
-          }}
+          onClick={() =>
+            handleMenuClick("support-help-center", "/support-help-center")
+          }
           label="Support / Help Center"
           icon={<FaHeadphones className="text-[20px]" />}
+          isActive={selectedPage === "support-help-center"}
         />
         <Menu
-          onClick={() => {
-            navigate("/system-configuration");
-            if (isMobile()) fn_controlSidebar();
-          }}
+          onClick={() =>
+            handleMenuClick("system-configuration", "/system-configuration")
+          }
           label="Setting"
           icon={<IoSettingsOutline className="text-[20px]" />}
+          isActive={selectedPage === "system-configuration"}
         />
+      </div>
+      <div
+        onClick={fn_logout}
+        className="flex border-t gap-[15px] items-center py-[14px] px-[20px] cursor-pointer absolute bottom-0 w-full"
+      >
+        <div className="text-[rgba(105,155,247,1)]"><LuLogOut className="text-[20px] rotate-180" /></div>
+        <p className="text-[14px] font-[600] text-gray-500">Logout</p>
       </div>
     </div>
   );
@@ -84,10 +101,12 @@ const SideBar = ({ showSidebar, setShowSide }) => {
 
 export default SideBar;
 
-const Menu = ({ label, icon, onClick }) => {
+const Menu = ({ label, icon, onClick, isActive }) => {
   return (
     <div
-      className="flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer"
+      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${
+        isActive ? "bg-blue-50" : ""
+      }`}
       onClick={onClick}
     >
       <div className="text-[rgba(105,155,247,1)]">{icon}</div>

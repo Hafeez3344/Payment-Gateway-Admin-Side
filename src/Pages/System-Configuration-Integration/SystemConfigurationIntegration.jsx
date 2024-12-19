@@ -1,7 +1,12 @@
+import { Input } from "antd";
 import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fn_getAdminLoginHistoryApi, fn_updateApiKeys, fn_getApiKeys } from "../../api/api";
+import {
+  fn_getAdminLoginHistoryApi,
+  fn_updateApiKeys,
+  fn_getApiKeys,
+} from "../../api/api";
 
 const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -52,8 +57,9 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -72,15 +78,15 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
         {/* API Keys Section */}
         <div className="bg-white rounded-lg p-4">
           <div className="pb-3">
-            <p className="text-black text-[11px] font-[600]">API Keys</p>
-            <span className="text-[13px] font-[600]">Your API Keys</span>
+            <p className="text-black text-[14px] font-[600]">API Keys</p>
+            <span className="text-[16px] font-[600]">Your API Keys</span>
           </div>
           <div className="overflow-x-auto rounded-lg border border-gray-300 p-4">
-            <div className="w-full max-w-lg">
+            <div className="w-full">
               <div className="flex space-x-4 mb-3">
                 <div className="flex-1">
-                  <input
-                    type="text"
+                  <Input.Password
+                    type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="Enter API Key"
@@ -88,8 +94,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                   />
                 </div>
                 <div className="flex-1">
-                  <input
-                    type="text"
+                  <Input.Password
+                    type="password"
                     value={secretKey}
                     onChange={(e) => setSecretKey(e.target.value)}
                     placeholder="Enter Secret Key"
@@ -97,22 +103,25 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                   />
                 </div>
               </div>
-              <button
-                onClick={handleApiKeySubmission}
-                className="bg-blue-500 text-white py-2 px-6 rounded-md mt-3"
-              >
-                Submit
-              </button>
-              {statusMessage && (
-                <p
-                  className={`mt-2 ${statusMessage.includes("successfully")
-                    ? "text-green-500"
-                    : "text-red-500"
-                    }`}
+              <div className="flex">
+                <button
+                  onClick={handleApiKeySubmission}
+                  className="bg-[#0864E8] text-white px-10 rounded-md hover:bg-[#065BCC]"
                 >
-                  {statusMessage}
-                </p>
-              )}
+                  <p className="text-[14px] py-2 px-3">Save</p>
+                </button>
+                {statusMessage && (
+                  <p
+                    className={`mt-2 ml-2 text-[14px] ${
+                      statusMessage.includes("Admin Verified Successfully")
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {statusMessage}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -139,7 +148,9 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                     <tr key={index} className="text-gray-800 text-sm border-b">
                       <td className="p-4">{entry.loginDate || "-"}</td>
                       {/* <td className="p-4">{entry.logoutDate || "-"}</td> */}
-                      <td className="p-4">{(entry.ip?.split("::ffff:")[1]) || "-"}</td>
+                      <td className="p-4">
+                        {entry.ip?.split("::ffff:")[1] || "-"}
+                      </td>
                       {/* <td className="p-4">{entry.isp || "-"}</td> */}
                       <td className="p-4">{entry.city || "-"}</td>
                     </tr>
@@ -161,4 +172,3 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
 };
 
 export default SystemConfigurationIntegration;
-

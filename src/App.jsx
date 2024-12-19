@@ -26,7 +26,7 @@ function App() {
   return (
     <>
       {authorization && (
-        <SideBar showSidebar={showSidebar} setShowSide={setShowSide} />
+        <SideBar showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} />
       )}
       <div>
         {authorization && (

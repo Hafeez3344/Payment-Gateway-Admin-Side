@@ -496,7 +496,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                           </a>
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          {merchant.accountLimit}
+                         ₹ {merchant.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
                           {merchant?.tax}%

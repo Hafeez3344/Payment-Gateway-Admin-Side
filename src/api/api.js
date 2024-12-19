@@ -61,7 +61,7 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
         );
         return {
             status: true,
-            message: "API keys updated successfully",
+            message: "Admin Verified Successfully",
             data: response
         };
     } catch (error) {
