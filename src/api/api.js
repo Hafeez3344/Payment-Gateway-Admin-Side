@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://localhost:8888";
+const BACKEND_URL = "https://backend.royal247.org";
 
 export const fn_loginAdminApi = async (data) => {
     try {

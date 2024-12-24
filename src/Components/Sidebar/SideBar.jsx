@@ -83,7 +83,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           onClick={() =>
             handleMenuClick("system-configuration", "/system-configuration")
           }
-          label="Setting"
+          label="Settings"
           icon={<IoSettingsOutline className="text-[20px]" />}
           isActive={selectedPage === "system-configuration"}
         />
