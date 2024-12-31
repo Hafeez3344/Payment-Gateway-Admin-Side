@@ -10,6 +10,7 @@ import {
   fn_MerchantUpdate,
 } from "../../api/api";
 
+
 const MerchantManagement = ({ authorization, showSidebar }) => {
   const [merchantsData, setMerchantsData] = useState([]);
   const [open, setOpen] = React.useState(false);
@@ -113,10 +114,11 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     if (!password.trim()) newErrors.password = "Password is required.";
     if (!accountLimit.trim())
       newErrors.accountLimit = "Account Limit is required.";
-    if (!websiteUseForPayment.trim())
-      newErrors.websiteUseForPayment = "Website Use for Payment is required.";
-    if (!merchantWebsite.trim())
-      newErrors.merchantWebsite = "Merchant Website is required.";
+    if (!websiteName.trim())
+      newErrors.websiteName = "Website Name is required.";
+    if (!websiteUsername.trim())
+      newErrors.websiteUsername = "Website Username is required.";
+    if (!website.trim()) newErrors.website = "Website is required.";
     if (!image) newErrors.image = "Image is required.";
     if (!tax.trim()) newErrors.tax = "Tax is required.";
 
@@ -126,31 +128,17 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     }
 
     setErrors({});
-
-    console.log({
-      merchantName,
-      phone,
-      email,
-      password,
-      accountLimit,
-      websiteUseForPayment,
-      merchantWebsite,
-      image,
-      tax,
-    });
-
     const formData = new FormData();
     formData.append("image", image);
     formData.append("merchantName", merchantName);
     formData.append("phone", phone);
     formData.append("email", email);
     formData.append("password", password);
-    formData.append("website", websiteUseForPayment);
+    formData.append("website", website);
     formData.append("accountLimit", accountLimit);
-    formData.append("merchantWebsite", merchantWebsite);
     formData.append("tax", parseFloat(tax));
 
-    for (const param of formData.entries()) {
+    for(const param of formData.entries()){
       console.log(param);
     }
     try {
@@ -185,9 +173,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -388,20 +375,15 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     </div>
                     <div className="flex-1 my-2">
                       <p>
-                        Website Used For Payments{" "}
-                        <span className="text-[#D50000]">*</span>
+                        Website Used For Payments <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         placeholder="Website use for payment"
                         value={websiteUseForPayment}
-                        onChange={(e) =>
-                          setWebsiteUseForPayment(e.target.value)
-                        }
+                        onChange={(e) => setWebsite(e.target.value)}
                       />
                       {errors.websiteUseForPayment && (
-                        <p className="text-red-500">
-                          {errors.websiteUseForPayment}
-                        </p>
+                        <p className="text-red-500">{errors.website}</p>
                       )}
                     </div>
                   </div>
@@ -410,13 +392,13 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       Merchant Website <span className="text-[#D50000]">*</span>
                     </p>
                     <Input
-                      placeholder="Enter merchant website here"
-                      value={merchantWebsite}
-                      onChange={(e) => setMerchantWebsite(e.target.value)}
-                    />
-                    {errors.merchantWebsite && (
-                      <p className="text-red-500">{errors.merchantWebsite}</p>
-                    )}
+                        placeholder="Enter merchant website here"
+                        value={merchantWebsite}
+                        onChange={(e) => setWebsite(e.target.value)}
+                      />
+                      {errors.merchantWebsite && (
+                        <p className="text-red-500">{errors.website}</p>
+                      )}
                   </div>
 
                   <div className="my-2">
@@ -458,15 +440,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     <th className="p-3 text-[13px] font-[600]">
                       Merchant Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
-                      Bank Accounts
-                    </th>
-                    <th className="p-5 text-[13px] font-[600]">
-                      Merchant Website
-                    </th>
-                    <th className="p-5 text-[13px] font-[600]">
-                      Website For Payment
-                    </th>
+                    <th className="p-5 text-[13px] font-[600]">Bank Accounts</th>
+                    <th className="p-5 text-[13px] font-[600]">Website</th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
                     <th className="p-5 text-[13px] font-[600]">Tax</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
@@ -478,12 +453,16 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     merchantsData.map((merchant, index) => (
                       <tr
                         key={index}
-                        className={`border-t border-b ${
-                          index % 2 === 0 ? "bg-white" : ""
-                        }`}
+                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                          }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
+                            {/* <img
+                              src={CanaraBank} // Placeholder image
+                              alt={`${merchant.merchantName} logo`}
+                              className="w-6 h-6 object-contain"
+                            /> */}
                             <span className="whitespace-nowrap">
                               {merchant.merchantName}
                             </span>
@@ -494,30 +473,24 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         </td>
                         <td className="p-3 text-[13px]">
                           <a
-                            href={`https://${merchant.merchantWebsite}`}
-                            className="text-blue-500 hover:underline pl-2"
+                            href={`https://${merchant.website}`}
+                            className="text-blue-500 hover:underline"
                           >
-                            {merchant.merchantWebsite}
+                            {merchant.website}
                           </a>
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          <span className="pl-2">
-                            {merchant.website}
-                          </span>
+                         ₹ {merchant.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          ₹ {merchant.accountLimit}
-                        </td>
-                        <td className="p-3 text-[13px] font-[400]">
-                          {merchant.tax}%
+                          {merchant?.tax}%
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                              !merchant.block
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                            }`}
+                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${!merchant.block
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
+                              }`}
                           >
                             {!merchant.block ? "Active" : "Inactive"}
                           </button>
@@ -563,3 +536,4 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 };
 
 export default MerchantManagement;
+

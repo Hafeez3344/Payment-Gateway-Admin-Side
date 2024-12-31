@@ -1,0 +1,116 @@
+import Cookies from "js-cookie";
+import React, { useState } from "react";
+import logo from "../../assets/logo.png";
+import { LuLogOut } from "react-icons/lu";
+import { PiNotebook } from "react-icons/pi";
+import { FaHeadphones } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineDashboard } from "react-icons/md";
+import { IoSettingsOutline } from "react-icons/io5";
+
+const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
+  const [selectedPage, setSelectedPage] = useState(""); 
+
+  const fn_controlSidebar = () => {
+    setShowSide(!showSidebar);
+  };
+  const navigate = useNavigate();
+  const isMobile = () => window.innerWidth < 1024;
+  
+  const handleMenuClick = (page, path) => {
+    setSelectedPage(page); 
+    navigate(path); 
+    if (isMobile()) fn_controlSidebar(); 
+  };
+
+  const fn_logout = () => {
+    Cookies.remove('adminId');
+    Cookies.remove('token');
+    setAuthorization(false);
+    navigate("/login");
+  }
+
+  return (
+    <div
+      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
+        showSidebar ? "left-0" : "left-[-270px]"
+      }`}
+      style={{ zIndex: 999 }}
+    >
+      <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
+        <div>
+          <img className="w-8 h-8" src={logo} alt="" />
+        </div>
+        <div className="font-roboto text-[20px] font-[600]">BetPay</div>
+        <button
+          className="bg-gray-200 h-[25px] w-[25px] rounded-sm flex md:hidden justify-center ml-20 items-center"
+          onClick={fn_controlSidebar}
+        >
+          X
+        </button>
+      </div>
+      <div className="mt-[10px]">
+        <Menu
+          onClick={() => handleMenuClick("dashboard", "/")}
+          label="Dashboard"
+          icon={<MdOutlineDashboard className="text-[20px]" />}
+          isActive={selectedPage === "dashboard"}
+        />
+        <Menu
+          onClick={() => handleMenuClick("transactions", "/transactions")}
+          label="Transaction History"
+          icon={<PiNotebook className="text-[20px]" />}
+          isActive={selectedPage === "transactions"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("merchant-management", "/merchant-management")
+          }
+          label="Merchant Management"
+          icon={<FaRegCircleUser className="text-[20px]" />}
+          isActive={selectedPage === "merchant-management"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("support-help-center", "/support-help-center")
+          }
+          label="Support / Help Center"
+          icon={<FaHeadphones className="text-[20px]" />}
+          isActive={selectedPage === "support-help-center"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("system-configuration", "/system-configuration")
+          }
+          label="Settings"
+          icon={<IoSettingsOutline className="text-[20px]" />}
+          isActive={selectedPage === "system-configuration"}
+        />
+      </div>
+      <div
+        onClick={fn_logout}
+        className="flex border-t gap-[15px] items-center py-[14px] px-[20px] cursor-pointer absolute bottom-0 w-full"
+      >
+        <div className="text-[rgba(105,155,247,1)]"><LuLogOut className="text-[20px] rotate-180" /></div>
+        <p className="text-[14px] font-[600] text-gray-500">Logout</p>
+      </div>
+    </div>
+  );
+};
+
+export default SideBar;
+
+const Menu = ({ label, icon, onClick, isActive }) => {
+  return (
+    <div
+      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${
+        isActive ? "bg-blue-50" : ""
+      }`}
+      onClick={onClick}
+    >
+      <div className="text-[rgba(105,155,247,1)]">{icon}</div>
+      <p className="text-[14px] font-[600] text-gray-500">{label}</p>
+    </div>
+  );
+};
