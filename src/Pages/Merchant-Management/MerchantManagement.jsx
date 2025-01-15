@@ -455,16 +455,16 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
-                    <th className="p-3 text-[13px] font-[600]">
+                    <th className="p-3 text-[13px] font-[600] text-nowrap">
                       Merchant Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Bank Accounts
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Merchant Website
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Website For Payment
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
@@ -505,7 +505,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                             {merchant.website}
                           </span>
                         </td>
-                        <td className="p-3 text-[13px] font-[400]">
+                        <td className="p-3 text-[13px] font-[400] text-nowrap">
                           ₹ {merchant.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">

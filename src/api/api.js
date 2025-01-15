@@ -3,6 +3,8 @@ import Cookies from "js-cookie";
 
 const BACKEND_URL = "https://backend.royal247.org";
 // const BACKEND_URL = "http://46.202.166.64:8000";
+// export const BACKEND_URL = "http://192.168.1.18:8888"
+
 
 export const fn_loginAdminApi = async (data) => {
     try {

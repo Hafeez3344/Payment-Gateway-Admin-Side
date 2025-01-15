@@ -209,13 +209,13 @@ const TransactionsTable = ({authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">TRN-ID</th>
-                  <th className="p-4">BANK NAME</th>
-                  <th className="p-4">DATE</th>
-                  <th className="p-4">TOTAL AMOUNT</th>
-                  <th className="p-4">UTR#</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 cursor-pointer">Action</th>
+                  <th className="p-4 text-nowrap">TRN-ID</th>
+                  <th className="p-4 text-nowrap">BANK NAME</th>
+                  <th className="p-4 text-nowrap">DATE</th>
+                  <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
+                  <th className="p-4 text-nowrap">UTR#</th>
+                  <th className="p-4 text-nowrap">Status</th>
+                  <th className="p-4 text-nowrap cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
