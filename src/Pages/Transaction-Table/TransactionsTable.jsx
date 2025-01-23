@@ -1,31 +1,38 @@
-import DatePicker from "react-datepicker";
-import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification } from "antd";
-
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { RiFindReplaceLine } from "react-icons/ri";
-import { FaIndianRupeeSign, } from "react-icons/fa6";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+import {
+  Pagination,
+  Modal,
+  Input,
+  notification,
+  DatePicker,
+  Space,
+} from "antd";
+import BACKEND_URL, {
+  fn_deleteTransactionApi,
+  fn_getAllMerchantApi,
+  fn_updateTransactionStatusApi,
+} from "../../api/api";
 
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
-
-const TransactionsTable = ({authorization, showSidebar }) => {
-
+const TransactionsTable = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
+  const { RangePicker } = DatePicker;
+  const [dateRange, setDateRange] = useState([null, null]);
   const [open, setOpen] = useState(false);
-  const status = searchParams.get('status');
+  const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
   const [merchant, setMerchant] = useState("");
-  const [endDate, setEndDate] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
-  const [startDate, setStartDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
@@ -60,12 +67,24 @@ const TransactionsTable = ({authorization, showSidebar }) => {
     fetchTransactions(currentPage);
   }, [currentPage]);
 
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
-      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant)
-  );
+  const filteredTransactions = transactions.filter((transaction) => {
+    const transactionDate = new Date(transaction.createdAt);
 
+    const adjustedEndDate = dateRange[1] ? new Date(dateRange[1]) : null;
+    if (adjustedEndDate) {
+      adjustedEndDate.setHours(23, 59, 59, 999);
+    }
+
+    const isWithinDateRange =
+      (!dateRange[0] || transactionDate >= dateRange[0]) &&
+      (!adjustedEndDate || transactionDate <= adjustedEndDate);
+
+    return (
+      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (merchant === "" || transaction?.merchantName === merchant) &&
+      isWithinDateRange
+    );
+  });
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setOpen(true);
@@ -120,12 +139,13 @@ const TransactionsTable = ({authorization, showSidebar }) => {
       });
       fetchTransactions(currentPage);
     }
-  }
+  };
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -143,65 +163,25 @@ const TransactionsTable = ({authorization, showSidebar }) => {
               </p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="flex border border-gray-300 items-center bg-white rounded">
-                {/* 2px border radius */}
-                <DatePicker
-                  selected={startDate}
-                  onChange={(date) => setStartDate(date)}
-                  selectsStart
-                  startDate={startDate}
-                  endDate={endDate}
-                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l"
-                  placeholderText="Start Date"
-                  dateFormat="yyyy-MM-dd"
+              <Space direction="vertical" size={10}>
+                <RangePicker
+                  value={dateRange}
+                  onChange={(dates) => {
+                    setDateRange(dates);
+                  }}
                 />
-                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
-                <DatePicker
-                  selected={endDate}
-                  onChange={(date) => setEndDate(date)}
-                  selectsEnd
-                  startDate={startDate}
-                  endDate={endDate}
-                  minDate={startDate}
-                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r"
-                  placeholderText="End Date"
-                  dateFormat="yyyy-MM-dd"
-                />
-              </div>
+              </Space>
               {/* Search Input */}
               <div className="flex flex-col w-full md:w-40">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search by UTR"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-              {/* Merchant Filter */}
-              <div className="flex flex-col w-full md:w-40">
-                <select
-                  value={merchant}
-                  onChange={(e) => setMerchant(e.target.value)}
-                  className="border border-gray-300 rounded py-1 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option className="text-[10px] text-gray-400" value="">
-                    Merchant
-                  </option>
-                  <option
-                    className="text-[10px] text-gray-400"
-                    value="Shubh Exchange"
-                  >
-                    Shubh Exchange
-                  </option>
-                  <option
-                    className="text-[10px] text-gray-400"
-                    value="Book Fair"
-                  >
-                    Book Fair
-                  </option>
-                </select>
-              </div>
+            
             </div>
           </div>
           <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
@@ -209,13 +189,14 @@ const TransactionsTable = ({authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">TRN-ID</th>
-                  <th className="p-4">BANK NAME</th>
-                  <th className="p-4">DATE</th>
-                  <th className="p-4">TOTAL AMOUNT</th>
-                  <th className="p-4">UTR#</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 cursor-pointer">Action</th>
+                  <th className="p-4 text-nowrap">TRN-ID</th>
+                  <th className="p-4 text-nowrap">User Name</th>
+                  <th className="p-4 text-nowrap">BANK NAME</th>
+                  <th className="p-4 text-nowrap">DATE</th>
+                  <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
+                  <th className="p-4 text-nowrap">UTR#</th>
+                  <th className="p-4 text-nowrap">Status</th>
+                  <th className="p-4 text-nowrap cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -227,6 +208,11 @@ const TransactionsTable = ({authorization, showSidebar }) => {
                     >
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction?.trnNo}
+                      </td>
+                      <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                        {transaction?.username && transaction?.username !== ""
+                          ? transaction?.username
+                          : "GUEST"}
                       </td>
                       <td className="p-4 flex items-center">
                         <img
@@ -244,18 +230,23 @@ const TransactionsTable = ({authorization, showSidebar }) => {
                       </td>
 
                       <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
-                        <FaIndianRupeeSign className="inline-block mt-[-1px]" /> {transaction?.total}
+                        <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
+                        {transaction?.total}
                       </td>
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
                         {transaction?.utr}
                       </td>
                       <td className="p-4 text-[11px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
-                            ? "bg-[#10CB0026] text-[#0DA000]"
-                            : transaction?.status === "Unverified"
-                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#0865e851] text-[#0864E8]" : "bg-[#FF7A8F33] text-[#FF002A]"
-                            }`}
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${
+                            transaction?.status === "Verified"
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : transaction?.status === "Unverified"
+                              ? "bg-[#FFC70126] text-[#FFB800]"
+                              : transaction?.status === "Manual Verified"
+                              ? "bg-[#0865e851] text-[#0864E8]"
+                              : "bg-[#FF7A8F33] text-[#FF002A]"
+                          }`}
                         >
                           {transaction?.status?.charAt(0).toUpperCase() +
                             transaction?.status?.slice(1)}
@@ -280,8 +271,14 @@ const TransactionsTable = ({authorization, showSidebar }) => {
                             </p>
                           }
                           open={open}
-                          onCancel={() => { setOpen(false); setIsEdit(false) }}
-                          onClose={() => { setOpen(false); setIsEdit(false) }}
+                          onCancel={() => {
+                            setOpen(false);
+                            setIsEdit(false);
+                          }}
+                          onClose={() => {
+                            setOpen(false);
+                            setIsEdit(false);
+                          }}
                         >
                           {selectedTransaction && (
                             <div className="flex flex-col md:flex-row">
@@ -340,10 +337,11 @@ const TransactionsTable = ({authorization, showSidebar }) => {
                                             <FaIndianRupeeSign className="mt-[2px]" />
                                           ) : null
                                         }
-                                        className={`w-[50%] text-[12px] input-placeholder-black ${isEdit && field.label === "Amount:"
-                                          ? "bg-white"
-                                          : "bg-gray-200"
-                                          }`}
+                                        className={`w-[50%] text-[12px] input-placeholder-black ${
+                                          isEdit && field.label === "Amount:"
+                                            ? "bg-white"
+                                            : "bg-gray-200"
+                                        }`}
                                         readOnly={
                                           isEdit && field.label === "Amount:"
                                             ? false

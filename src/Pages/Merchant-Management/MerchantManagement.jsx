@@ -1,83 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Rectangle from "../../assets/Rectangle.jpg";
 import { FiEdit } from "react-icons/fi";
-import { Switch, Button, Modal, Input, notification } from "antd";
 import logo from "../../assets/logo.png";
-import {
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import Rectangle from "../../assets/Rectangle.jpg";
+import { Switch, Button, Modal, Input, notification } from "antd";
+import BACKEND_URL, {
   fn_createMerchantApi,
   fn_getMerchantApi,
   fn_MerchantUpdate,
 } from "../../api/api";
 
 const MerchantManagement = ({ authorization, showSidebar }) => {
-  const [merchantsData, setMerchantsData] = useState([]);
-  const [open, setOpen] = React.useState(false);
   const { TextArea } = Input;
   const navigate = useNavigate();
-  const containerHeight = window.innerHeight - 120;
-  const [merchantName, setMerchantName] = useState("");
+  const [tax, setTax] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [accountLimit, setAccountLimit] = useState("");
-  const [websiteUseForPayment, setWebsiteUseForPayment] = useState("");
-  const [merchantWebsite, setMerchantWebsite] = useState("");
-  const [website, setWebsite] = useState("");
-  const [tax, setTax] = useState("");
-  const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
-  const [merchants, setMerchants] = useState([
-    {
-      name: "Shubh Exchange",
-      accounts: 5,
-      website: "www.sizuh.exchange",
-      limit: "₹150000",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "BetXFair",
-      accounts: 7,
-      website: "www.bet2fair.com",
-      limit: "₹300000",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "Book Fair",
-      accounts: 4,
-      website: "www.bookfair.com",
-      limit: "₹120000",
-      status: "Inactive",
-      isToggled: false,
-    },
-    {
-      name: "All Exchange",
-      accounts: 9,
-      website: "www.allexchange.com",
-      limit: "₹780000",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "New Bet Exchange",
-      accounts: 9,
-      website: "www.newbetexchange.com",
-      limit: "₹350000",
-      status: "Disabled",
-      isToggled: false,
-    },
-    {
-      name: "All Exchange",
-      accounts: 9,
-      website: "www.allexchange.com",
-      limit: "₹780000",
-      status: "Active",
-      isToggled: false,
-    },
-  ]);
+  const [image, setImage] = useState(null);
+  const [website, setWebsite] = useState("");
+  const [password, setPassword] = useState("");
+  const [open, setOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const containerHeight = window.innerHeight - 120;
+  const [accountLimit, setAccountLimit] = useState("");
+  const [merchantName, setMerchantName] = useState("");
+  const [merchantsData, setMerchantsData] = useState([]);
+  const [merchantWebsite, setMerchantWebsite] = useState("");
+  const [websiteUseForPayment, setWebsiteUseForPayment] = useState("");
+  const [selectedMerchant, setSelectedMerchant] = useState(null);
+  // const firstMerchant = merchantsData.length > 0 ? merchantsData[0] : null;
+  const firstMerchant =
+    selectedMerchant || (merchantsData.length > 0 ? merchantsData[0] : null);
 
+  const filteredMerchants = merchantsData.filter((merchant) =>
+    merchant.merchantName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const fn_getMerchant = async () => {
     const response = await fn_getMerchantApi();
     if (response?.status) {
@@ -102,42 +60,28 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       )
     );
   };
-
   const handleSave = async () => {
     const newErrors = {};
 
-    if (!merchantName.trim())
+    if (!String(merchantName).trim())
       newErrors.merchantName = "Merchant Name is required.";
-    if (!phone.trim()) newErrors.phone = "Phone Number is required.";
-    if (!email.trim()) newErrors.email = "Email is required.";
-    if (!password.trim()) newErrors.password = "Password is required.";
-    if (!accountLimit.trim())
+    if (!String(phone).trim()) newErrors.phone = "Phone Number is required.";
+    if (!String(email).trim()) newErrors.email = "Email is required.";
+    if (!String(password).trim()) newErrors.password = "Password is required.";
+    if (!String(accountLimit).trim())
       newErrors.accountLimit = "Account Limit is required.";
-    if (!websiteUseForPayment.trim())
+    if (!String(websiteUseForPayment).trim())
       newErrors.websiteUseForPayment = "Website Use for Payment is required.";
-    if (!merchantWebsite.trim())
+    if (!String(merchantWebsite).trim())
       newErrors.merchantWebsite = "Merchant Website is required.";
     if (!image) newErrors.image = "Image is required.";
-    if (!tax.trim()) newErrors.tax = "Tax is required.";
+    if (!String(tax).trim()) newErrors.tax = "Tax is required.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
     setErrors({});
-
-    console.log({
-      merchantName,
-      phone,
-      email,
-      password,
-      accountLimit,
-      websiteUseForPayment,
-      merchantWebsite,
-      image,
-      tax,
-    });
 
     const formData = new FormData();
     formData.append("image", image);
@@ -150,31 +94,45 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     formData.append("merchantWebsite", merchantWebsite);
     formData.append("tax", parseFloat(tax));
 
-    for (const param of formData.entries()) {
-      console.log(param);
-    }
     try {
-      const response = await fn_createMerchantApi(formData);
+      let response;
+      if (selectedMerchant) {
+        // Update existing merchant
+        response = await fn_MerchantUpdate(selectedMerchant._id, formData);
+      } else {
+        // Create new merchant
+        response = await fn_createMerchantApi(formData);
+      }
 
       if (response?.status) {
-        setOpen(false);
-
         notification.success({
           message: "Success",
-          description: "Merchant Created Successfully!",
+          description: selectedMerchant
+            ? "Merchant Updated Successfully!"
+            : "Merchant Created Successfully!",
           placement: "topRight",
         });
+        setOpen(false);
+        setSelectedMerchant(null); // Reset selected merchant
+        // Reset form fields
+        setMerchantName("");
+        setPhone("");
+        setEmail("");
+        setPassword("");
+        setAccountLimit("");
+        setWebsiteUseForPayment("");
+        setMerchantWebsite("");
+        setTax("");
+        setImage(null);
+        fn_getMerchant(); // Refresh the merchant list
       } else {
-        console.log("API Response Status:", response?.status);
         notification.error({
           message: "Error",
-          description: response?.message || "Failed to create merchant.",
+          description: response?.message || "Failed to save merchant.",
           placement: "topRight",
         });
       }
     } catch (error) {
-      console.error("Error creating merchant:", error);
-
       notification.error({
         message: "Error",
         description: "An unexpected error occurred. Please try again later.",
@@ -209,13 +167,20 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
               />
               <div
                 className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]"
-                style={{ boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)" }}
+                style={{ boxShadow: "0px  0px 10px 0px rgba(0, 0, 0, 0.15)" }}
               >
-                <img src={logo} alt="logo" className="w-[75px]" />
+                {firstMerchant && firstMerchant.image && (
+                  <img
+                    src={`${BACKEND_URL}/${firstMerchant.image}`} 
+                    alt="Merchant Logo"
+                    className="w-[75px] rounded-full"
+                  />
+                )}
               </div>
             </div>
-            <h2 className="text-[19px] font-[700] mt-4 text-center">BetPay</h2>
-            <p className="text-gray-500 text-[13px] text-center">@betpayllc</p>
+            <h2 className="text-[19px] font-[700] mt-4 text-center">
+              {firstMerchant ? firstMerchant.merchantName : "No Merchant"}
+            </h2>
             <div className="m-3 mt-6">
               <h3 className="text-[17px] font-[700] border-b pb-2">
                 Personal Info
@@ -223,18 +188,10 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
               <div className="space-y-3 pt-3">
                 <div className="flex">
                   <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
-                    Full Name:
-                  </span>
-                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    Bet Pay Inc
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
                     Email:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    willjontex@gmail.com
+                    {firstMerchant ? firstMerchant.email : "N/A"}
                   </span>
                 </div>
                 <div className="flex">
@@ -242,7 +199,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     Phone Number:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    +91 9036 2361 236
+                    {firstMerchant ? firstMerchant.phone : "N/A"}
                   </span>
                 </div>
                 <div className="flex">
@@ -250,25 +207,21 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     Website:
                   </span>
                   <a
-                    href="https://www.betpay.com"
+                    href={
+                      firstMerchant
+                        ? `https://${firstMerchant.merchantWebsite}`
+                        : "#"
+                    }
                     className="text-[12px] font-[600] text-left text-[#505050] w-full"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    www.betpay.com
+                    {firstMerchant ? firstMerchant.merchantWebsite : "N/A"}
                   </a>
-                </div>
-                <div className="flex">
-                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
-                    Bio:
-                  </span>
-                  <span className="text-[12px] font-[600] text-[#505050] w-full">
-                    BetPay is Largest Payment Provider in Betting Industry
-                    across the World
-                  </span>
                 </div>
               </div>
             </div>
           </div>
-
           {/* Right side Card */}
           <div className="w-full md:w-3/4 lg:min-h-[550px] bg-white rounded-lg shadow-md border">
             <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b space-y-4 md:space-y-0">
@@ -285,9 +238,12 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
               </div>
 
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                <button className="text-[10px] text-[#00000080] rounded border border-[#0000001A] px-4 py-2 w-full md:w-auto">
-                  Search Merchant...
-                </button>
+                <Input
+                  placeholder="Search Merchant..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ width: "140px" }}
+                />
                 <Button type="primary" onClick={() => setOpen(true)}>
                   Add Merchant
                 </Button>
@@ -296,7 +252,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   width={600}
                   title={
                     <p className="text-[16px] font-[700]">
-                      Add New Merchant Account
+                      {selectedMerchant
+                        ? "Edit Merchant Account"
+                        : "Add New Merchant Account"}
                     </p>
                   }
                   footer={
@@ -304,11 +262,41 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       <Button type="primary" onClick={handleSave}>
                         Save
                       </Button>
-                      <Button onClick={() => setOpen(false)}>Cancel</Button>
+                      <Button
+                        onClick={() => {
+                          setOpen(false);
+                          setSelectedMerchant(null); // Reset selected merchant
+                          // Reset form fields
+                          setMerchantName("");
+                          setPhone("");
+                          setEmail("");
+                          setPassword("");
+                          setAccountLimit("");
+                          setWebsiteUseForPayment("");
+                          setMerchantWebsite("");
+                          setTax("");
+                          setImage(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   }
                   open={open}
-                  onCancel={() => setOpen(false)}
+                  onCancel={() => {
+                    setOpen(false);
+                    setSelectedMerchant(null); // Reset selected merchant
+                    // Reset form fields
+                    setMerchantName("");
+                    setPhone("");
+                    setEmail("");
+                    setPassword("");
+                    setAccountLimit("");
+                    setWebsiteUseForPayment("");
+                    setMerchantWebsite("");
+                    setTax("");
+                    setImage(null);
+                  }}
                 >
                   <div className="flex gap-4">
                     <div className="flex-1 my-2">
@@ -378,8 +366,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         placeholder="Enter Account Limit"
                         value={accountLimit}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "");
-                          setAccountLimit(value);
+                          const value = e.target.value.replace(/\D/g, ""); // Remove non-digit characters
+                          setAccountLimit(value); // Ensure this is a string
                         }}
                       />
                       {errors.accountLimit && (
@@ -455,16 +443,16 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
-                    <th className="p-3 text-[13px] font-[600]">
+                    <th className="p-3 text-[13px] font-[600] text-nowrap">
                       Merchant Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Bank Accounts
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Merchant Website
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Website For Payment
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
@@ -474,8 +462,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {merchantsData?.length > 0 &&
-                    merchantsData.map((merchant, index) => (
+                  {filteredMerchants?.length > 0 ? (
+                    filteredMerchants.map((merchant, index) => (
                       <tr
                         key={index}
                         className={`border-t border-b ${
@@ -501,11 +489,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                           </a>
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          <span className="pl-2">
-                            {merchant.website}
-                          </span>
+                          <span className="pl-2">{merchant.website}</span>
                         </td>
-                        <td className="p-3 text-[13px] font-[400]">
+                        <td className="p-3 text-[13px] font-[400] text-nowrap">
                           ₹ {merchant.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
@@ -545,13 +531,32 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                             <button
                               className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
                               title="Edit"
+                              onClick={() => {
+                                setSelectedMerchant(merchant);
+                                setMerchantName(merchant.merchantName);
+                                setPhone(merchant.phone);
+                                setEmail(merchant.email);
+                                setPassword(merchant.password);
+                                setAccountLimit(merchant.accountLimit);
+                                setWebsiteUseForPayment(merchant.website);
+                                setMerchantWebsite(merchant.merchantWebsite);
+                                setTax(merchant.tax);
+                                setOpen(true);
+                              }}
                             >
                               <FiEdit />
                             </button>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="text-center p-3">
+                        No merchants found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
