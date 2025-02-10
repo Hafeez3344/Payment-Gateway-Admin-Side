@@ -7,13 +7,14 @@ import Footer from "./Components/Footer/Footer";
 import SideBar from "./Components/Sidebar/SideBar";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
-import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
 import VerifiedTransactions from "./Pages/Verified-Transactions/VerifiedTransactions";
 import ManualVerifiedTransactions from "./Pages/Manual-Verified-Transactions/ManualVerifiedTransactions";
 import UnverifiedTransactions from "./Pages/Unverified-Transactions/UnverifiedTransactions";
 import DeclinedTransactions from "./Pages/Declined-Transactions/DeclinedTransactions";
 import Login from "./Pages/Admin-Login/AdminLogin";
+import BankManagement from "./Pages/Banks/Banks";
+import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -88,6 +89,15 @@ function App() {
             path="/declined-transactions"
             element={
               <DeclinedTransactions
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/banks-management"
+            element={
+              <BankManagement
                 authorization={authorization}
                 showSidebar={showSidebar}
               />

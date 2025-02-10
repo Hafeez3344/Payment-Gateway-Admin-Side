@@ -26,6 +26,90 @@ export const fn_loginAdminApi = async (data) => {
     }
 };
 
+export const fn_BankUpdate = async (id, data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.post(`${BACKEND_URL}/bank/active?id=${id}&accountType=${data?.accountType}`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getBankByAccountTypeApi = async (accountType) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(`${BACKEND_URL}/bank/getAll?accountType=${accountType}`, // accountType="bank","upi"
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response?.data,
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getMerchantData = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const merchantId = Cookies.get("merchantId");
+        const response = await axios.get(`${BACKEND_URL}/merchant/get/${merchantId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllBanksData = async (accountType) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/bank/getAll?accountType=${accountType}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export const fn_getAdminLoginHistoryApi = async (adminId) => {
     try {
         const token = Cookies.get('token');
@@ -194,7 +278,7 @@ export const fn_deleteTransactionApi = async (id) => {
     }
 };
 
-export const fn_getAllMerchantApi = async (status, pageNumber) => {
+export const fn_getAllTransactionApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("token");
         const response = await axios.get(`${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}&status=${status || ""}`,

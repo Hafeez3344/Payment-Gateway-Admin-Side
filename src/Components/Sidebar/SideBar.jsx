@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineDashboard } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
+import { BsBank } from "react-icons/bs";
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const location = useLocation();
@@ -78,6 +79,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           label="Merchant Management"
           icon={<FaRegCircleUser className="text-[20px]" />}
           isActive={selectedPage === "merchant-management"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("banks-management", "/banks-management")
+          }
+          label="Banks Management"
+          icon={<BsBank className="text-[20px]" />}
+          isActive={selectedPage === "banks-management"}
         />
         <Menu
           onClick={() =>
