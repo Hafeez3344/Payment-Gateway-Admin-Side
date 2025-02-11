@@ -43,7 +43,7 @@ const Home = ({ authorization,  showSidebar }) => {
     ],
     datasets: [
       {
-        label: "Verified",
+        label: "Approved",
         data: [
           10300, 15200, 19300, 14500, 5300, 10200, 12200, 7100, 16300, 13500,
           5300, 7400,
@@ -140,7 +140,7 @@ const Home = ({ authorization,  showSidebar }) => {
           <Boxes
             number={"6,273"}
             amount={"876347"}
-            title={"SYSTEM VERIFIED TRANSACTIONS"}
+            title={"SYSTEM APPROVED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
             }
@@ -184,12 +184,12 @@ const Home = ({ authorization,  showSidebar }) => {
                 </p>
                 <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
                   <Stat
-                    label="System Verified"
+                    label="System Approved"
                     value="120,750"
                     color="#029868"
                   />
                   <Stat label="Declined" value="56,108" color="#FF3E5E" />
-                  <Stat label="Unverified" value="32,894" color="#F67A03" />
+                  <Stat label="Pending" value="32,894" color="#F67A03" />
                   <Stat
                     label="Manual Verified"
                     value="51,235"
@@ -215,7 +215,7 @@ const Home = ({ authorization,  showSidebar }) => {
               <RecentTransaction
                 name="Saman Pareet"
                 utrId="Bookfir"
-                status="Verified"
+                status="Approved"
                 color="#029868"
                 amount="₹4,980"
               />
@@ -243,7 +243,7 @@ const Home = ({ authorization,  showSidebar }) => {
               <RecentTransaction
                 name="Aarav Sharma"
                 utrId="Betxfair"
-                status="Verified"
+                status="Approved"
                 color="#FF3F5E"
                 amount="₹8,923"
               />

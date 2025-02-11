@@ -157,7 +157,7 @@ const VerifiedTransactions = ({  authorization, showSidebar}) => {
   };
 
   const getStatusClass = (status) => {
-    if (status === "Verified")
+    if (status === "Approved")
       return "bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium";
     if (status === "Declined")
       return "bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium";

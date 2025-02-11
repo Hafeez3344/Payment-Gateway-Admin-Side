@@ -217,9 +217,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                         <td className="p-4 text-[12px] font-[700] text-[#0864E8]">{transaction?.utr}</td>
                         <td className="p-4 text-[13px] font-[500]">
                           <span
-                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
                               ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status === "Unverified"
+                              : transaction?.status === "Pending"
                                 ? "bg-[#FFC70126] text-[#FFB800]"
                                 : transaction?.status === "Manual Verified"
                                   ? "bg-[#0865e851] text-[#0864E8]"
@@ -377,11 +377,11 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
                   onClick={() =>
                     handleTransactionAction(
-                      "Verified",
+                      "Approved",
                       selectedTransaction?._id
                     )
                   }
-                  disabled={selectedTransaction?.status === "Verified"}
+                  disabled={selectedTransaction?.status === "Approved"}
                 >
                   <IoMdCheckmark className="mt-[3px] mr-[6px]" />
                   Approve Transaction
@@ -389,15 +389,15 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 <button
                   className={`flex p-2 rounded text-[13px] ${declineButtonClicked ? "bg-[#140e0f33] text-black" : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"}`}
                   onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
-                  disabled={selectedTransaction?.status === "Verified"}
-                // onClick={fn_declineButtonClicked}
+                  disabled={selectedTransaction?.status === "Approved"}
+                  // onClick={fn_declineButtonClicked}
                 >
                   <GoCircleSlash className="mt-[3px] mr-[6px]" />
                   Decline TR
                 </button>
                 <button
                   className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                  disabled={selectedTransaction?.status === "Verified"}
+                  disabled={selectedTransaction?.status === "Approved"}
                   onClick={() => {
                     if (!isEdit) {
                       setIsEdit(true);
