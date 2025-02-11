@@ -287,7 +287,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
           <div className="flex flex-col md:flex-row">
             {/* Left side input fields */}
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-              <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">30</span></p>
+              <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
                 {
                   label: "Amount:",
@@ -390,7 +390,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   className={`flex p-2 rounded text-[13px] ${declineButtonClicked ? "bg-[#140e0f33] text-black" : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"}`}
                   onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
                   disabled={selectedTransaction?.status === "Verified"}
-                  // onClick={fn_declineButtonClicked}
+                // onClick={fn_declineButtonClicked}
                 >
                   <GoCircleSlash className="mt-[3px] mr-[6px]" />
                   Decline TR
