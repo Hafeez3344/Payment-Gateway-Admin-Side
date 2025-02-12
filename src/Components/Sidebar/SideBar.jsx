@@ -9,10 +9,11 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineDashboard } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { BsBank } from "react-icons/bs";
+import { TbBookUpload } from "react-icons/tb";
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const location = useLocation();
-  const [selectedPage, setSelectedPage] = useState(""); 
+  const [selectedPage, setSelectedPage] = useState("");
 
   useEffect(() => {
     const path = location.pathname;
@@ -23,14 +24,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
-  
+
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
-  
+
   const handleMenuClick = (page, path) => {
-    setSelectedPage(page); 
-    navigate(path); 
-    if (isMobile()) fn_controlSidebar(); 
+    setSelectedPage(page);
+    navigate(path);
+    if (isMobile()) fn_controlSidebar();
   };
 
   const fn_logout = () => {
@@ -42,9 +43,8 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
 
   return (
     <div
-      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
-        showSidebar ? "left-0" : "left-[-270px]"
-      }`}
+      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${showSidebar ? "left-0" : "left-[-270px]"
+        }`}
       style={{ zIndex: 999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
@@ -97,6 +97,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           isActive={selectedPage === "support-help-center"}
         />
         <Menu
+          onClick={() => {
+            handleMenuClick("upload-statement", "/upload-statement")
+          }}
+          label="Upload Statement"
+          icon={<TbBookUpload className="text-[20px]" />}
+          isActive={selectedPage === "upload-statement"}
+        />
+        <Menu
           onClick={() =>
             handleMenuClick("system-configuration", "/system-configuration")
           }
@@ -123,9 +131,8 @@ export default SideBar;
 const Menu = ({ label, icon, onClick, isActive }) => {
   return (
     <div
-      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${
-        isActive ? "bg-blue-50" : ""
-      }`}
+      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${isActive ? "bg-blue-50" : ""
+        }`}
       onClick={onClick}
     >
       <div className="text-[rgba(105,155,247,1)]">{icon}</div>

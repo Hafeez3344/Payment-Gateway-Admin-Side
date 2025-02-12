@@ -15,6 +15,7 @@ import DeclinedTransactions from "./Pages/Declined-Transactions/DeclinedTransact
 import Login from "./Pages/Admin-Login/AdminLogin";
 import BankManagement from "./Pages/Banks/Banks";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
+import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -29,7 +30,7 @@ function App() {
       {authorization && (
         <SideBar showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} />
       )}
-      <div>
+      <div className="min-h-[100vh]">
         {authorization && (
           <NavBar showSidebar={showSidebar} setShowSide={setShowSide} />
         )}
@@ -116,6 +117,15 @@ function App() {
             path="/support-help-center"
             element={
               <SupportHelpCenter
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/upload-statement"
+            element={
+              <UploadStatement
                 authorization={authorization}
                 showSidebar={showSidebar}
               />

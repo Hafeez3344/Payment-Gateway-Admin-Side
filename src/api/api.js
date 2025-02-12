@@ -2,6 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const BACKEND_URL = "https://backend.royal247.org";
+export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 // const BACKEND_URL = "http://46.202.166.64:8000";
 // export const BACKEND_URL = "http://192.168.1.18:8888"
 
@@ -21,6 +22,77 @@ export const fn_loginAdminApi = async (data) => {
     } catch (error) {
         if (error?.response?.status === 400) {
             return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_compareTransactions = async (data) => {
+    try {
+        const token = Cookies.get("token");
+
+        const response = await axios.post(
+            `${BACKEND_URL}/ledger/compare`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        console.log("Compare API Response:", response?.data);
+
+        return {
+            status: true,
+            message: "Transaction Verified",
+            data: response.data?.data,
+        };
+    } catch (error) {
+        if (error?.response) {
+            console.error("Error during compare API:", error?.response?.data);
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        console.error("Network Error during compare API:", error);
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_crateTransactionSlip = async (data) => {
+    try {
+        const response = await axios.post(`${BACKEND_URL}/slip/create`, data);
+        return {
+            status: true,
+            data: response.data?.data,
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_showTransactionSlipData = async () => {
+    try {
+        const response = await axios.get(`${BACKEND_URL}/slip/getAll`);
+        return {
+            status: true,
+            data: response.data?.data,
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
         }
         return { status: false, message: "Network Error" };
     }
