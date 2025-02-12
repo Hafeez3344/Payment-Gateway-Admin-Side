@@ -5,14 +5,17 @@ import React, { useState, useEffect } from "react";
 import { Switch, Button, Modal, Input, notification } from "antd";
 
 import { FiEdit } from "react-icons/fi";
-import upilogo2 from "../../assets/upilogo2.svg";
 import { FaExclamationCircle } from "react-icons/fa";
+import { MdDoNotDisturb } from "react-icons/md";
+import { FaTrash } from "react-icons/fa";
+import { MdOutlineCheckCircle } from "react-icons/md";
+
+import upilogo2 from "../../assets/upilogo2.svg";
 
 import { Banks } from "../../json-data/banks";
-import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData } from "../../api/api";
+import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData, fn_DeleteBank } from "../../api/api";
 
 const BankManagement = ({ authorization, showSidebar }) => {
-
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [banksData, setBanksData] = useState([]);
@@ -22,7 +25,15 @@ const BankManagement = ({ authorization, showSidebar }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedBank, setSelectedBank] = useState(null);
   const [editAccountId, setEditAccountId] = useState(null);
-  const [data, setData] = useState({ image: null, bankName: "", accountNo: "", accountType: "", iban: "", accountLimit: "", accountHolderName: "" });
+  const [data, setData] = useState({
+    image: null,
+    bankName: "",
+    accountNo: "",
+    accountType: "",
+    iban: "",
+    accountLimit: "",
+    accountHolderName: "",
+  });
 
   const fetchAllBanksData = async (tab) => {
     const result = await fn_getAllBanksData(tab);
@@ -45,7 +56,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
-    };
+    }
     // setSelectedPage("banks-management");
     fetchAllBanksData(activeTab);
   }, [activeTab]);
@@ -151,7 +162,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
       }
       const formData = new FormData();
       if (activeTab === "bank") {
-        if (data?.image) { formData.append("image", data?.image) };
+        if (data?.image) {
+          formData.append("image", data?.image);
+        }
         formData.append("bankName", data?.bankName);
         formData.append("accountNo", data?.accountNo);
         formData.append("accountType", activeTab);
@@ -171,7 +184,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
       const token = Cookies.get("token");
       let response;
       if (isEditMode) {
-        response = await axios.put(`${BACKEND_URL}/bank/update/${editAccountId}`, formData,
+        response = await axios.put(
+          `${BACKEND_URL}/bank/update/${editAccountId}`,
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -189,7 +204,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
         setOpen(false);
         notification.success({
           message: "Success",
-          description: isEditMode ? "Bank Updated Successfully!" : "Bank Created Successfully!",
+          description: isEditMode
+            ? "Bank Updated Successfully!"
+            : "Bank Created Successfully!",
           placement: "topRight",
         });
         setData({
@@ -217,7 +234,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
   return (
     <>
       <div
-        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"}`}
+        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+          }`}
         style={{ minHeight: `${containerHeight}px` }}
       >
         <div className="p-7">
@@ -257,6 +275,19 @@ const BankManagement = ({ authorization, showSidebar }) => {
                   >
                     UPI Accounts
                   </button>
+
+                  <button
+                    className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
+                    style={{
+                      backgroundImage:
+                        activeTab === "disabledBanks"
+                          ? "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))"
+                          : "none",
+                    }}
+                    onClick={() => setActiveTab("disabledBanks")}
+                  >
+                    Disabled Banks
+                  </button>
                 </div>
                 {/* add bank button */}
                 <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
@@ -285,106 +316,234 @@ const BankManagement = ({ authorization, showSidebar }) => {
                         Remaining Limit
                       </th>
                       <th className="p-5 text-[13px] font-[600]">Status</th>
-                      <th className="p-5 text-[13px] font-[600] pl-10">Action</th>
+                      <th className="p-5 text-[13px] font-[600] pl-10">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {banksData?.length > 0 ? banksData?.map((account, index) => {
-                      return (
-                        <tr
-                          key={index}
-                          className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""}`}
-                        >
-                          <td className="p-3 text-[13px] font-[600]">
-                            <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                              {activeTab === "bank" ? (
-                                <div className="flex items-center gap-[3px]">
+                    {banksData?.length > 0 ? (
+                      banksData?.map((account, index) => {
+                        return (
+                          <tr
+                            key={index}
+                            className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                              }`}
+                          >
+                            <td className="p-3 text-[13px] font-[600]">
+                              <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
+                                {activeTab === "bank" ? (
+                                  <div className="flex items-center gap-[3px]">
+                                    <img
+                                      src={
+                                        Banks?.find(
+                                          (bank) =>
+                                            bank?.title === account?.bankName
+                                        )?.img
+                                      }
+                                      alt=""
+                                      className="w-[50px]"
+                                    />
+                                    <span className="whitespace-nowrap">
+                                      {account.bankName}
+                                    </span>
+                                  </div>
+                                ) : (
                                   <img
-                                    src={
-                                      Banks?.find(
-                                        (bank) =>
-                                          bank?.title === account?.bankName
-                                      )?.img
-                                    }
+                                    src={upilogo2}
                                     alt=""
                                     className="w-[50px]"
                                   />
-                                  <span className="whitespace-nowrap">
-                                    {account.bankName}
-                                  </span>
-                                </div>
-                              ) : (
-                                <img src={upilogo2} alt="" className="w-[50px]" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-3 text-[13px]">
-                            <div className="ml-14">
-                              {" "}
-                              <span className="whitespace-nowrap">
-                                {account.iban}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3 text-[13px] whitespace-nowrap">
-                            <div className="ml-2">
-                              {account.accountHolderName}
-                            </div>
-                          </td>
-                          <td className="p-3 text-[13px] font-[400] text-nowrap">
-                            <div className="ml-1">₹ {account.accountLimit}</div>
-                          </td>
-                          <td className="p-3 text-[13px] font-[400]">
-                            <div className="ml-3">₹ {account.remainingLimit}</div>
-                          </td>
-                          <td className="text-center">
-                            <button
-                              className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                                }`}
-                            >
-                              {!account?.block ? "Active" : "Inactive"}
-                            </button>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="flex justify-center items-center ml-6">
-                              <Switch
-                                size="small"
-                                checked={!account?.block}
-                                onChange={async (checked) => {
-                                  const newStatus = checked;
-                                  const response = await fn_BankUpdate(account?._id, { block: !newStatus, accountType: activeTab });
-                                  if (response?.status) {
-                                    fetchAllBanksData(activeTab);
-                                    notification.success({
-                                      message: "Status Updated",
-                                      description: `Bank Status Updated!.`,
-                                      placement: "topRight",
-                                    });
-                                  } else {
-                                    notification.error({
-                                      message: "Error",
-                                      description: response.message || "Failed to update bank status.",
-                                      placement: "topRight",
-                                    });
-                                  }
-                                }}
-                              />
-                              <Button
-                                className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                                title="Edit"
-                                onClick={() => handleEdit(account)}
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px]">
+                              <div className="ml-14">
+                                {" "}
+                                <span className="whitespace-nowrap">
+                                  {account.iban}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px] whitespace-nowrap">
+                              <div className="ml-2">
+                                {account.accountHolderName}
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px] font-[400] text-nowrap">
+                              <div className="ml-1">
+                                ₹ {account.accountLimit}
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px] font-[400]">
+                              <div className="ml-3">
+                                ₹ {account.remainingLimit}
+                              </div>
+                            </td>
+                            <td className="text-center">
+                              <button
+                                className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                                  ? "bg-[#10CB0026] text-[#0DA000]"
+                                  : "bg-[#FF173D33] text-[#D50000]"
+                                  }`}
                               >
-                                <FiEdit />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    }) : (
+                                {!account?.block ? "Active" : "Inactive"}
+                              </button>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex justify-center items-center ml-6">
+                                {activeTab !== "disabledBanks" ? (
+                                  <>
+                                    <Switch
+                                      size="small"
+                                      checked={!account?.block}
+                                      onChange={async (checked) => {
+                                        try {
+                                          const response = await fn_BankUpdate(
+                                            account?._id,
+                                            {
+                                              block: !checked, // When checked is true, block should be false
+                                            }
+                                          );
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Status Updated",
+                                              description: checked ? "Bank Activated" : "Bank Deactivated",
+                                              placement: "topRight",
+                                            });
+                                          } else {
+                                            notification.error({
+                                              message: "Error",
+                                              description: response.message || "Failed to update bank status",
+                                              placement: "topRight",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description: "Failed to update bank status",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    />
+                                    <Button
+                                      className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                                      title="Edit"
+                                      onClick={() => handleEdit(account)}
+                                    >
+                                      <FiEdit />
+                                    </Button>
+                                    <Button
+                                      className="bg-red-100 text-red-600 rounded-full px-2 py-2"
+                                      title="Disable"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fn_BankUpdate(
+                                            account?._id,
+                                            {
+                                              disable: true,
+                                            }
+                                          );
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Status Updated",
+                                              description:
+                                                "Bank has been moved to disabled banks",
+                                              placement: "topRight",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description:
+                                              "Failed to disable bank",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <MdDoNotDisturb size={18} />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      className="bg-green-100 text-green-600 rounded-full px-2 py-2 mr-2"
+                                      title="Enable"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fn_BankUpdate(
+                                            account?._id,
+                                            {
+                                              disable: false,
+                                            }
+                                          );
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Status Updated",
+                                              description: "Bank has been enabled",
+                                              placement: "topRight",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description: "Failed to enable bank",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <MdOutlineCheckCircle size={18} />
+                                    </Button>
+                                    <Button
+                                      className="bg-red-100 text-red-600 rounded-full px-2 py-2"
+                                      title="Delete"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fn_DeleteBank(account?._id);
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Success",
+                                              description: "Bank has been deleted",
+                                              placement: "topRight",
+                                            });
+                                          } else {
+                                            notification.error({
+                                              message: "Error",
+                                              description: response.message || "Failed to delete bank",
+                                              placement: "topRight",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description: "Failed to delete bank",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <FaTrash size={16} />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
                       <tr className="h-[50px]">
-                        <td colSpan="7" className="text-center text-[13px] font-[500] italic text-gray-600">
+                        <td
+                          colSpan="7"
+                          className="text-center text-[13px] font-[500] italic text-gray-600"
+                        >
                           <FaExclamationCircle className="inline-block text-[18px] mt-[-2px] me-[10px]" />
                           No Data Found
                         </td>
@@ -448,7 +607,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                   onChange={handleInputChange}
                   className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
                 >
-                  <option value="" disabled>---Select Bank---</option>
+                  <option value="" disabled>
+                    ---Select Bank---
+                  </option>
                   {Banks.map((item, index) => (
                     <option key={index} value={item.title}>
                       {item.title}
@@ -459,12 +620,13 @@ const BankManagement = ({ authorization, showSidebar }) => {
               {/* Account Number */}
               <div className="flex-1 my-2">
                 <p className="text-[12px] font-[500] pb-1">
-                  Account Number{" "}
-                  <span className="text-[#D50000]">*</span>
+                  Account Number <span className="text-[#D50000]">*</span>
                 </p>
                 <Input
                   value={data?.accountNo}
-                  onChange={(e) => setData((prev) => ({ ...prev, accountNo: e.target.value }))}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, accountNo: e.target.value }))
+                  }
                   className="w-full  text-[12px]"
                   placeholder="Enter Account Number"
                 />
@@ -488,20 +650,27 @@ const BankManagement = ({ authorization, showSidebar }) => {
             </p>
             <Input
               value={data?.iban}
-              onChange={(e) => setData((prev) => ({ ...prev, iban: e.target.value }))}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, iban: e.target.value }))
+              }
               className="w-full text-[12px]"
-              placeholder={`${activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"}`}
+              placeholder={`${activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
+                }`}
             />
           </div>
           {/* account Holder Name */}
           <div className="flex-1 my-2">
             <p className="text-[12px] font-[500] pb-1">
-              Account Holder Name{" "}
-              <span className="text-[#D50000]">*</span>
+              Account Holder Name <span className="text-[#D50000]">*</span>
             </p>
             <Input
               value={data?.accountHolderName}
-              onChange={(e) => setData((prev) => ({ ...prev, accountHolderName: e.target.value }))}
+              onChange={(e) =>
+                setData((prev) => ({
+                  ...prev,
+                  accountHolderName: e.target.value,
+                }))
+              }
               className="w-full text-[12px]"
               placeholder="Account Holder Name"
             />
@@ -515,7 +684,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
             </p>
             <Input
               value={data?.accountLimit}
-              onChange={(e) => setData((prev) => ({ ...prev, accountLimit: e.target.value }))}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, accountLimit: e.target.value }))
+              }
               className="w-full text-[12px]"
               placeholder="Account Limit "
             />
@@ -529,7 +700,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
               <Input
                 type="file"
                 required
-                onChange={(e) => setData((prev) => ({ ...prev, image: e.target.files[0] }))}
+                onChange={(e) =>
+                  setData((prev) => ({ ...prev, image: e.target.files[0] }))
+                }
                 className="w-full text-[12px]"
                 placeholder="Select QR Code"
               />
