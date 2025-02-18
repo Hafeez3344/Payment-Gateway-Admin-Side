@@ -68,7 +68,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
         />
         <Menu
           onClick={() => handleMenuClick("transactions", "/transactions")}
-          label="Transaction History"
+          label="Transactions"
           icon={<PiNotebook className="text-[20px]" />}
           isActive={selectedPage === "transactions"}
         />

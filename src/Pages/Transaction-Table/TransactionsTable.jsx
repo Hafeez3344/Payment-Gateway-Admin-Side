@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space } from "antd";
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
 
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
@@ -30,11 +30,12 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [transactions, setTransactions] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
   const [declineButtonClicked, setDeclinedButtonClicked] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  const fetchTransactions = async (pageNumber) => {
+  const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
-      const result = await fn_getAllTransactionApi(status || null, pageNumber);
+      const result = await fn_getAllTransactionApi(statusFilter, pageNumber);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -55,8 +56,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       navigate("/login");
       return;
     };
-    fetchTransactions(currentPage);
-  }, [currentPage]);
+    fetchTransactions(currentPage, merchant);
+  }, [currentPage, merchant]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction?.createdAt);
@@ -72,7 +73,6 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
 
     return (
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant) &&
       isWithinDateRange
     );
   });
@@ -85,6 +85,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const handleTransactionAction = async (action, transactionId) => {
     const response = await fn_updateTransactionStatusApi(transactionId, {
       status: action,
+      trnStatus: action === "Approved" ? "Points Pending" : "Transaction Decline",
+      transactionReason: selectedOption,
     });
     if (response.status) {
       fetchTransactions(currentPage);
@@ -104,6 +106,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const handleEditTransactionAction = async (status, id, amount, utr) => {
     const response = await fn_updateTransactionStatusApi(id, {
       status: status,
+      trnStatus: status,
       total: parseInt(amount),
       utr: utr,
     });
@@ -122,9 +125,17 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
-  const fn_declineButtonClicked = () => {
-    setDeclinedButtonClicked(!declineButtonClicked);
-  }
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  const options = [
+    "utr mismatch",
+    "slip not visible",
+    "amount mismatch",
+    "Payment not received",
+    "fake slip",
+    "duplicate utr",
+    "others",
+  ];
 
   return (
     <>
@@ -147,6 +158,24 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                {/* DropDown of status */}
+                <div>
+                  <Select
+                    className="w-32"
+                    placeholder="Status"
+                    value={merchant}
+                    onChange={(value) => {
+                      setMerchant(value);
+                      setCurrentPage(1);
+                    }}
+                    options={[
+                      { value: '', label: <span className="text-gray-400">All Status</span> },
+                      { value: 'Approved', label: 'Approved' },
+                      { value: 'Pending', label: 'Pending' },
+                      { value: 'Decline', label: 'Declined' }
+                    ]}
+                  />
+                </div>
                 <Space direction="vertical" size={10}>
                   <RangePicker
                     value={dateRange}
@@ -381,21 +410,21 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                       selectedTransaction?._id
                     )
                   }
-                  disabled={selectedTransaction?.status === "Approved"}
+                  disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
                 >
                   <IoMdCheckmark className="mt-[3px] mr-[6px]" />
                   Approve Transaction
                 </button>
                 <button
                   className={`flex p-2 rounded text-[13px] ${declineButtonClicked ? "bg-[#140e0f33] text-black" : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"}`}
-                  onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
-                  disabled={selectedTransaction?.status === "Approved"}
-                  // onClick={fn_declineButtonClicked}
+                  onClick={() => setDeclinedButtonClicked(!declineButtonClicked)}
+                  disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                // onClick={fn_declineButtonClicked}
                 >
                   <GoCircleSlash className="mt-[3px] mr-[6px]" />
                   Decline TR
                 </button>
-                <button
+                {/*<button
                   className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
                   disabled={selectedTransaction?.status === "Approved"}
                   onClick={() => {
@@ -422,22 +451,66 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                       Update TR
                     </>
                   )}
-                </button>
+                </button>*/}
               </div>
+
+
+
 
               {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
+
+              {selectedTransaction?.transactionReason ?
+                <>
+                  <p className="text-[14px] font-[700]">
+                    Reason for Decline
+                  </p>
+
+                  <p className="text-[14px] font-[400]">
+                    {selectedTransaction?.transactionReason}
+                  </p>
+                </>
+                : null}
+
+
               {declineButtonClicked && (
                 <>
                   <p className="text-[14px] font-[700]">
-                    Enter Reason for Decline
+                    Select Reason for Decline
                   </p>
-                  <textarea
-                    className="w-[91%] border h-[150px] focus:outline-gray-200 rounded-[5px] px-[10px] py-[7px] text-[13px]"
-                    placeholder="Enter Reason for Declined the Transaction"
-                  />
+                  <div className="space-y-2">
+                    {options.map((option) => (
+                      <label
+                        key={option}
+                        className="flex items-center space-x-3 cursor-pointer rounded-lg"
+                      >
+                        <input
+                          type="radio"
+                          name="issue"
+                          value={option}
+                          checked={selectedOption === option}
+                          onChange={() => setSelectedOption(option)}
+                          className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">{option}</span>
+                      </label>
+                    ))}
+                  </div>
                   <div className="flex gap-[10px]">
-                    <button className="bg-[#FF405F33] flex text-[#FF3F5F] py-2 px-[20px] rounded hover:bg-[#FF405F50] text-[13px] w-[max-content]">Submit</button>
+                    <button className="bg-[#FF405F33] flex text-[#FF3F5F] py-2 px-[20px] rounded hover:bg-[#FF405F50] text-[13px] w-[max-content]" onClick={() => {
+                      if (!selectedOption) {
+                        notification.error({
+                          message: "Error",
+                          description: "Please select a reason for decline",
+                          placement: "topRight",
+                        });
+                        return;
+                      }
+                      else {
+                        handleTransactionAction("Decline", selectedTransaction?._id)
+                        setDeclinedButtonClicked(!declineButtonClicked)
+                      }
+                    }}>Submit</button>
                     <button className="bg-gray-200 flex text-black py-2 px-[20px] rounded text-[13px] w-[max-content]" onClick={() => setDeclinedButtonClicked(!declineButtonClicked)}>Cancel</button>
                   </div>
                 </>
@@ -451,7 +524,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 className="max-h-[400px]"
               />
 
-              <div className="flex">
+              {/* <div className="flex">
                 <button
                   className="mt-12 border flex border-black px-1 py-1 rounded"
                   onClick={() => {
@@ -464,11 +537,14 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
                   <p>Replace Payment Proof</p>
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
       </Modal>
+
+
+
     </>
   );
 };

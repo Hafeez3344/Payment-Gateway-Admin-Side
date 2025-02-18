@@ -359,22 +359,24 @@ export const fn_deleteTransactionApi = async (id) => {
 export const fn_getAllTransactionApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}&status=${status || ""}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-        console.log(response);
+        // Modify URL to include status parameter only if it's not empty
+        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}`;
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        console.log("API Response:", response.data);
         return {
             status: true,
-            message: "Merchants show successfully",
+            message: "Transactions fetched successfully",
             data: response.data,
         };
     } catch (error) {
-        console.error(error);
-
+        console.error("API Error:", error);
         if (error?.response) {
             return {
                 status: false,
@@ -431,6 +433,106 @@ export const fn_DeleteBank = async (id) => {
             return { status: false, message: error?.response?.data?.message };
         }
         return { status: false, message: "Network Error" };
+    }
+};
+
+
+//------------------------------------Create Ticket Api-----------------------------------------------
+export const fn_createTicketApi = async (ticketData) => {
+    try {
+        const token = Cookies.get("token");
+        console.log("Creating ticket with data:", ticketData);
+
+        const response = await axios.post(
+            `${BACKEND_URL}/ticket/create`,
+            {
+                ...ticketData,
+                title: ticketData.subject,
+                type: "admin"
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        console.log("Ticket creation response:", response.data);
+        return {
+            status: true,
+            message: "Ticket created successfully",
+            data: response.data
+        };
+    } catch (error) {
+        console.error("Ticket creation API error:", error.response || error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Network Error",
+            error: error?.response?.data || error
+        };
+    }
+};
+
+//------------------------------------Get All Tickets Api-----------------------------------------------
+export const fn_getAllTicketsApi = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(
+            `${BACKEND_URL}/ticket/getAllAdmin`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        console.log("Tickets response:", response.data);
+        return {
+            status: true,
+            data: response.data?.data || []
+        };
+    } catch (error) {
+        console.error("Error fetching tickets:", error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to fetch tickets"
+        };
+    }
+};
+
+export const fn_updateTicketStatusApi = async (ticketId, data) => {
+    try {
+        const token = Cookies.get("token");
+        console.log("Updating ticket:", { ticketId, data });
+
+        const response = await axios.put(
+            `${BACKEND_URL}/ticket/update/${ticketId}`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            }
+        );
+
+        console.log("Update ticket response:", response);
+
+        if (response?.data) {
+            return {
+                status: true,
+                message: "Ticket updated successfully",
+                data: response.data
+            };
+        }
+        throw new Error("Invalid response from server");
+    } catch (error) {
+        console.error("Update ticket error:", error?.response?.data || error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to update ticket"
+        };
     }
 };
 
