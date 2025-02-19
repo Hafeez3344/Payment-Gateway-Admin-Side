@@ -387,6 +387,36 @@ export const fn_getAllTransactionApi = async (status, pageNumber) => {
     }
 };
 
+export const fn_getAdminsTransactionApi = async (status) => {
+    try {
+        const token = Cookies.get("token");
+        const url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}`;
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        console.log("API Response:", response.data);
+        return {
+            status: true,
+            message: "Transactions fetched successfully",
+            data: response.data,
+        };
+    } catch (error) {
+        console.error("API Error:", error);
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export const fn_updateTransactionStatusApi = async (transactionId, data) => {
     try {
         const token = Cookies.get("token");

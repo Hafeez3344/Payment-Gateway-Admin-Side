@@ -1,16 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
-
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
+import { saveAs } from 'file-saver';
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import { FiEye, FiTrash2 } from "react-icons/fi";
 import { RiFindReplaceLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi } from "../../api/api";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import BACKEND_URL, { fn_deleteTransactionApi, fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi } from "../../api/api";
 
 const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -32,6 +33,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [declineButtonClicked, setDeclinedButtonClicked] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [allTrns, setAllTrns] = useState([]);
 
   const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
@@ -50,6 +52,21 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
+  const fetchAllTransactions = async (statusFilter) => {
+    try {
+      const result = await fn_getAdminsTransactionApi(statusFilter);
+      if (result?.status) {
+        if (result?.data?.status === "ok") {
+          setAllTrns(result?.data?.data);
+        } else {
+          setAllTrns([]);
+        }
+      }
+    } catch (error) {
+      setAllTrns([]);
+    }
+  };
+
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
@@ -57,6 +74,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       return;
     };
     fetchTransactions(currentPage, merchant);
+    fetchAllTransactions(merchant);
   }, [currentPage, merchant]);
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -137,6 +155,103 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     "others",
   ];
 
+  const handleDownloadReport = async () => {
+    try {
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10;
+      const rowsPerPage = 20; // Number of transactions per page
+
+      // Calculate total pages
+      const totalPages = Math.ceil(allTrns.length / rowsPerPage);
+
+      // Generate PDF page by page
+      for (let page = 0; page < totalPages; page++) {
+        // Get transactions for current page
+        const pageTransactions = allTrns.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+        // Create table for current page
+        const tempTable = document.createElement('div');
+        tempTable.innerHTML = `
+          <div id="reportTable${page}" style="padding: 20px; width: 100%;">
+            ${page === 0 ? `
+              <h2 style="text-align: center; margin-bottom: 20px;">Transaction Report</h2>
+              <h4 style="text-align: center; margin-bottom: 20px;">Generated on: ${new Date().toLocaleString()}</h4>
+            ` : ''}
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="background-color: #f0f0f0;">
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 12%;">TRN-ID</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">Date</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">User Name</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">Bank Name</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 12%;">Amount</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">UTR#</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; width: 16%;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pageTransactions.map(trn => `
+                  <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.trnNo}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(trn.createdAt).toLocaleString()}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.username || 'GUEST'}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.bankId?.bankName || 'UPI'}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">₹ ${trn.total}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.utr}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.status}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <div style="text-align: right; margin-top: 10px;">
+              Page ${page + 1} of ${totalPages}
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(tempTable);
+
+        // Convert to image
+        const element = document.getElementById(`reportTable${page}`);
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+
+        document.body.removeChild(tempTable);
+
+        // Add new page if not first page
+        if (page > 0) {
+          pdf.addPage();
+        }
+
+        // Add image to PDF
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = pageWidth - (2 * margin);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      }
+
+      pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+      notification.success({
+        message: 'Success',
+        description: 'Report downloaded successfully!',
+        placement: 'topRight',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      notification.error({
+        message: 'Error',
+        description: 'Failed to generate report',
+        placement: 'topRight',
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -158,6 +273,10 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                {/* Download Report Button with blue background */}
+                <Button type="primary" onClick={handleDownloadReport}>
+                  <p className="">Download Report</p>
+                </Button>
                 {/* DropDown of status */}
                 <div>
                   <Select
@@ -198,6 +317,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
             </div>
             <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
             <div className="overflow-x-auto">
+              {/* my page table  */}
               <table className="min-w-full border">
                 <thead>
                   <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
@@ -542,9 +662,6 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
           </div>
         )}
       </Modal>
-
-
-
     </>
   );
 };
