@@ -12,6 +12,9 @@ import { FaIndianRupeeSign } from "react-icons/fa6";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi } from "../../api/api";
+import { io } from "socket.io-client";
+const socket = io(`${BACKEND_URL}/payment`);
+
 
 const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -160,7 +163,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 10;
-      const rowsPerPage = 20; // Number of transactions per page
+      const rowsPerPage = 32; // Number of transactions per page
 
       // Calculate total pages
       const totalPages = Math.ceil(allTrns.length / rowsPerPage);
@@ -252,6 +255,21 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
+  
+  useEffect(() => {
+    // Listen for real-time ledger updates
+    socket.on("getMerchantLedger", (data) => {
+
+      console.log("data ", data);
+      fetchTransactions(currentPage || 1);
+    });
+
+
+    socket.on("error", (error) => {
+        console.error("Socket Error:", error.message);
+    });
+
+}, []);
   return (
     <>
       <div
@@ -458,12 +476,11 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                     selectedTransaction.bankId?.bankName ||
                     "UPI",
                 },
-                // {
-                //   label: "Description:",
-                //   value:
-                //     selectedTransaction.description || "",
-                //   isTextarea: true,
-                // },
+                {
+                  label: "Merchant Name:",
+                  value:
+                    selectedTransaction.merchantId.merchantName || "",
+                },
               ].map((field, index) => (
                 <div
                   className="flex items-center gap-4"
