@@ -38,9 +38,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [allTrns, setAllTrns] = useState([]);
 
-  const fetchTransactions = async (pageNumber, statusFilter) => {
+  const fetchTransactions = async (pageNumber, statusFilter, searchQuery) => {
     try {
-      const result = await fn_getAllTransactionApi(statusFilter, pageNumber);
+      const result = await fn_getAllTransactionApi(statusFilter, pageNumber, searchQuery);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -55,9 +55,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
-  const fetchAllTransactions = async (statusFilter) => {
+  const fetchAllTransactions = async (statusFilter, searchQuery) => {
     try {
-      const result = await fn_getAdminsTransactionApi(statusFilter);
+      const result = await fn_getAdminsTransactionApi(statusFilter, searchQuery);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setAllTrns(result?.data?.data);
@@ -76,9 +76,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       navigate("/login");
       return;
     };
-    fetchTransactions(currentPage, merchant);
-    fetchAllTransactions(merchant);
-  }, [currentPage, merchant]);
+    fetchTransactions(currentPage, merchant, searchQuery);
+    fetchAllTransactions(merchant, searchQuery);
+  }, [currentPage, merchant, searchQuery]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction?.createdAt);
@@ -350,8 +350,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((transaction) => (
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
                         className="text-gray-800 text-sm border-b"

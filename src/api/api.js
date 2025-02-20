@@ -356,11 +356,11 @@ export const fn_deleteTransactionApi = async (id) => {
     }
 };
 
-export const fn_getAllTransactionApi = async (status, pageNumber) => {
+export const fn_getAllTransactionApi = async (status, pageNumber, searchQuery) => {
     try {
         const token = Cookies.get("token");
         // Modify URL to include status parameter only if it's not empty
-        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}`;
+        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}`;
 
         const response = await axios.get(url, {
             headers: {
@@ -387,10 +387,10 @@ export const fn_getAllTransactionApi = async (status, pageNumber) => {
     }
 };
 
-export const fn_getAdminsTransactionApi = async (status) => {
+export const fn_getAdminsTransactionApi = async (status, searchQuery) => {
     try {
         const token = Cookies.get("token");
-        const url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}`;
+        const url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}`;
 
         const response = await axios.get(url, {
             headers: {
