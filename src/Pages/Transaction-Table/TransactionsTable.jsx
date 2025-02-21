@@ -490,12 +490,14 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                           <FaIndianRupeeSign className="mt-[2px]" />
                         ) : null
                       }
+
                       className={`w-[50%] text-[12px] input-placeholder-black ${isEdit &&
                         (field.label === "Amount:" ||
                           field?.label === "UTR#:")
                         ? "bg-white"
                         : "bg-gray-200"
                         }`}
+                      
                       readOnly={
                         isEdit &&
                           (field.label === "Amount:" ||
