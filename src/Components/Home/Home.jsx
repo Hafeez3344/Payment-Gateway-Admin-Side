@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GoDotFill } from "react-icons/go";
 import { FaCircleExclamation } from "react-icons/fa6";
 import { fn_getAdminsTransactionApi, fn_getCardDataByStatus, fn_getAllTransactionApi } from "../../api/api";
@@ -215,7 +215,7 @@ const Home = ({ authorization, showSidebar }) => {
     >
       <div className="p-7">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-5">
           <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
             <button
@@ -252,12 +252,13 @@ const Home = ({ authorization, showSidebar }) => {
         {/* Boxes Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
           <Boxes
-            number={loading ? "..." : verifiedTransactions}
-            amount={loading ? "..." : cardData.approved?.amount}
+            number={verifiedTransactions}
+            amount={cardData.approved?.amount}
             title={"SYSTEM APPROVED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
             }
+            link={"/transactions?status=Approved"}
           />
           {/* <Boxes
             number={loading ? "..." : manualVerifiedTransactions}
@@ -268,20 +269,22 @@ const Home = ({ authorization, showSidebar }) => {
             }
           /> */}
           <Boxes
-            number={loading ? "..." : unverifiedTransactions}
-            amount={loading ? "..." : cardData.pending?.amount}
+            number={unverifiedTransactions}
+            amount={cardData.pending?.amount}
             title={"PENDING TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
             }
+            link={"/transactions?status=Pending"}
           />
           <Boxes
-            number={loading ? "..." : declineTransactions}
-            amount={loading ? "..." : cardData.failed?.amount}
+            number={declineTransactions}
+            amount={cardData.failed?.amount}
             title={"FAILED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
             }
+            link={"/transactions?status=Decline"}
           />
         </div>
 
@@ -368,8 +371,9 @@ const getStatusColor = (status) => {
   }
 };
 
-const Boxes = ({ number, amount, title, bgColor }) => (
-  <div
+const Boxes = ({ number, amount, title, bgColor, link }) => (
+  <Link
+    to={link}
     className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
     style={{ backgroundImage: bgColor }}
   >
@@ -378,7 +382,7 @@ const Boxes = ({ number, amount, title, bgColor }) => (
     <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
       Amount: <span className="font-[700]">₹ {amount}</span>
     </p>
-  </div>
+  </Link>
 );
 
 const Stat = ({ label, value, color }) => (
