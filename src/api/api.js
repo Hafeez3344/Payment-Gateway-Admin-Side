@@ -566,4 +566,28 @@ export const fn_updateTicketStatusApi = async (ticketId, data) => {
     }
 };
 
+export const fn_getCardDataByStatus = async (status, filter) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/ledger/cardAdminData?status=${status}&filter=${filter}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export default BACKEND_URL;

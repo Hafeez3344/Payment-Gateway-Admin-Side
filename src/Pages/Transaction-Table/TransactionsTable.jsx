@@ -12,9 +12,6 @@ import { FaIndianRupeeSign } from "react-icons/fa6";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi } from "../../api/api";
-import { io } from "socket.io-client";
-const socket = io(`${BACKEND_URL}/payment`);
-
 
 const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -38,9 +35,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [allTrns, setAllTrns] = useState([]);
 
-  const fetchTransactions = async (pageNumber, statusFilter, searchQuery) => {
+  const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
-      const result = await fn_getAllTransactionApi(statusFilter, pageNumber, searchQuery);
+      const result = await fn_getAllTransactionApi(statusFilter, pageNumber);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -55,9 +52,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
-  const fetchAllTransactions = async (statusFilter, searchQuery) => {
+  const fetchAllTransactions = async (statusFilter) => {
     try {
-      const result = await fn_getAdminsTransactionApi(statusFilter, searchQuery);
+      const result = await fn_getAdminsTransactionApi(statusFilter);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setAllTrns(result?.data?.data);
@@ -76,9 +73,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       navigate("/login");
       return;
     };
-    fetchTransactions(currentPage, merchant, searchQuery);
-    fetchAllTransactions(merchant, searchQuery);
-  }, [currentPage, merchant, searchQuery]);
+    fetchTransactions(currentPage, merchant);
+    fetchAllTransactions(merchant);
+  }, [currentPage, merchant]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction?.createdAt);
@@ -163,7 +160,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 10;
-      const rowsPerPage = 32; // Number of transactions per page
+      const rowsPerPage = 20; // Number of transactions per page
 
       // Calculate total pages
       const totalPages = Math.ceil(allTrns.length / rowsPerPage);
@@ -255,21 +252,6 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
-  
-  useEffect(() => {
-    // Listen for real-time ledger updates
-    socket.on("getMerchantLedger", (data) => {
-
-      console.log("data ", data);
-      fetchTransactions(currentPage || 1);
-    });
-
-
-    socket.on("error", (error) => {
-        console.error("Socket Error:", error.message);
-    });
-
-}, []);
   return (
     <>
       <div
@@ -350,8 +332,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length > 0 ? (
-                    transactions.map((transaction) => (
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
                         className="text-gray-800 text-sm border-b"
@@ -476,11 +458,12 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                     selectedTransaction.bankId?.bankName ||
                     "UPI",
                 },
-                {
-                  label: "Merchant Name:",
-                  value:
-                    selectedTransaction.merchantId.merchantName || "",
-                },
+                // {
+                //   label: "Description:",
+                //   value:
+                //     selectedTransaction.description || "",
+                //   isTextarea: true,
+                // },
               ].map((field, index) => (
                 <div
                   className="flex items-center gap-4"
