@@ -22,7 +22,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [open, setOpen] = useState(false);
   const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
-  const [merchant, setMerchant] = useState(status ||"");
+  const [merchant, setMerchant] = useState(status || "");
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [showPopup, setShowPopup] = useState(false);
@@ -579,7 +579,16 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
 
               {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
-
+              {selectedTransaction?.trnStatus !== "Transaction Pending" && (
+                <div>
+                  <p className="text-[14px] font-[700]">
+                    Transaction Edit Time:
+                  </p>
+                  <p className="text-[14px] font-[400]">
+                    {new Date(selectedTransaction.updatedAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
               {selectedTransaction?.transactionReason ?
                 <>
                   <p className="text-[14px] font-[700]">
