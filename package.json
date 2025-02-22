@@ -23,9 +23,13 @@
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
+    "react-image-magnifiers": "^1.4.0",
+    "react-image-magnify": "^2.7.4",
     "react-loader-spinner": "^6.1.6",
+    "react-medium-image-zoom": "^5.2.14",
     "react-router-dom": "^6.28.0",
     "react-toastify": "^10.0.6",
+    "react-zoom-pan-pinch": "^3.7.0",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {

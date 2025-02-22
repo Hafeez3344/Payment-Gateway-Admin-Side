@@ -1,15 +1,16 @@
 import Cookies from "js-cookie";
-import React, { useState, useEffect } from "react";
+import { BsBank } from "react-icons/bs";
 import logo from "../../assets/logo.png";
 import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
-import { FaHeadphones } from "react-icons/fa";
-import { useNavigate, useLocation } from "react-router-dom";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineDashboard } from "react-icons/md";
-import { IoSettingsOutline } from "react-icons/io5";
-import { BsBank } from "react-icons/bs";
 import { TbBookUpload } from "react-icons/tb";
+import { FaHeadphones } from "react-icons/fa";
+import { FaRegCircleUser } from "react-icons/fa6";
+import React, { useState, useEffect } from "react";
+import { IoSettingsOutline } from "react-icons/io5";
+import { MdOutlineDashboard } from "react-icons/md";
+import { MdOutlineCurrencyExchange } from "react-icons/md";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const location = useLocation();
@@ -87,6 +88,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           label="Banks Management"
           icon={<BsBank className="text-[20px]" />}
           isActive={selectedPage === "banks-management"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("currency-exchange", "/currency-exchange")
+          }
+          label="Exchange Rate"
+          icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
+          isActive={selectedPage === "currency-exchange"}
         />
         <Menu
           onClick={() =>

@@ -34,6 +34,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [allTrns, setAllTrns] = useState([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
 
   const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
@@ -252,6 +254,13 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     }
   };
 
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.target.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePosition({ x, y });
+  };
+
   return (
     <>
       <div
@@ -415,8 +424,17 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       <Modal
         centered
         footer={null}
-        width={900}
-        style={{ fontFamily: "sans-serif", padding: "20px" }}
+        width={900}  // Made even wider to prevent scrolling
+        style={{
+          fontFamily: "sans-serif",
+          padding: "20px",
+          maxWidth: '95vw',  // Increased from 90vw
+          minHeight: '90vh',  // Increased from 80vh
+        }}
+        bodyStyle={{
+          height: '100%',
+          overflow: 'hidden'  // Changed from 'auto' to 'hidden'
+        }}
         title={
           <p className="text-[20px] font-[700]">
             Transaction Details
@@ -436,7 +454,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
           <div className="flex flex-col md:flex-row">
             {/* Left side input fields */}
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-              <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
+              <p className="font-[500] mt-[-8px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
                 {
                   label: "Amount:",
@@ -497,7 +515,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                         ? "bg-white"
                         : "bg-gray-200"
                         }`}
-                      
+
                       readOnly={
                         isEdit &&
                           (field.label === "Amount:" ||
@@ -648,27 +666,28 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
               )}
             </div>
             {/* Right side with border and image */}
-            <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
-              <img
-                src={`${BACKEND_URL}/${selectedTransaction?.image}`}
-                alt="Payment Proof"
-                className="max-h-[400px]"
-              />
-
-              {/* <div className="flex">
-                <button
-                  className="mt-12 border flex border-black px-1 py-1 rounded"
-                  onClick={() => {
-                    const input =
-                      document.createElement("input");
-                    input.type = "file";
-                    input.click();
+            <div
+              className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full"
+              style={{ aspectRatio: '1' }}
+            >
+              <div
+                className="relative w-full max-w-[400px] overflow-hidden cursor-zoom-in"
+                style={{ aspectRatio: '1' }}
+              >
+                <img
+                  src={`${BACKEND_URL}/${selectedTransaction?.image}`}
+                  alt="Payment Proof"
+                  className="w-full h-full object-contain"
+                  style={{
+                    transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
+                    transform: isHovering ? 'scale(2)' : 'scale(1)',
+                    transition: 'transform 0.1s ease-out',
                   }}
-                >
-                  <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
-                  <p>Replace Payment Proof</p>
-                </button>
-              </div> */}
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
+                  onMouseMove={handleMouseMove}
+                />
+              </div>
             </div>
           </div>
         )}
