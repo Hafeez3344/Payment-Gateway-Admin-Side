@@ -17,6 +17,7 @@ import BankManagement from "./Pages/Banks/Banks";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 import CurrencyExchange from "./Pages/Currency-Exchange/CurrencyExchange";
+import Staff from "./Pages/Staff/Staff";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -145,6 +146,15 @@ function App() {
             path="/currency-exchange"
             element={
               <CurrencyExchange
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/staff"
+            element={
+              <Staff
                 authorization={authorization}
                 showSidebar={showSidebar}
               />

@@ -5,7 +5,7 @@ import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
 import { FaHeadphones } from "react-icons/fa";
-import { FaRegCircleUser } from "react-icons/fa6";
+import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
 import React, { useState, useEffect } from "react";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -89,14 +89,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           icon={<BsBank className="text-[20px]" />}
           isActive={selectedPage === "banks-management"}
         />
-        <Menu
+        {/* <Menu
           onClick={() =>
             handleMenuClick("currency-exchange", "/currency-exchange")
           }
           label="Exchange Rate"
           icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
           isActive={selectedPage === "currency-exchange"}
-        />
+        /> */}
         <Menu
           onClick={() =>
             handleMenuClick("support-help-center", "/support-help-center")
@@ -120,6 +120,15 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           label="Settings"
           icon={<IoSettingsOutline className="text-[20px]" />}
           isActive={selectedPage === "system-configuration"}
+        />
+        <Menu
+          onClick={() =>
+            handleMenuClick("staff", "/staff")
+          }
+          label="Staff"
+          name="staff"
+          icon={<FaPeopleGroup className="text-[20px]" />}
+          isActive={selectedPage === "staff"}
         />
       </div>
       <div

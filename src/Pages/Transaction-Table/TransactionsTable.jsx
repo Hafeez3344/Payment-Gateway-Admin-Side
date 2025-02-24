@@ -1,8 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
-import { saveAs } from 'file-saver';
+import {
+  Pagination,
+  Modal,
+  Input,
+  notification,
+  DatePicker,
+  Space,
+  Select,
+  Button,
+} from "antd";
+import { saveAs } from "file-saver";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
@@ -11,10 +20,20 @@ import { RiFindReplaceLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi } from "../../api/api";
+import BACKEND_URL, {
+  fn_deleteTransactionApi,
+  fn_getAdminsTransactionApi,
+  fn_getAllTransactionApi,
+  fn_updateTransactionStatusApi,
+  fn_getMerchantApi,
+} from "../../api/api";
 
-const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginType }) => {
-
+const TransactionsTable = ({
+  authorization,
+  showSidebar,
+  permissionsData,
+  loginType,
+}) => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
@@ -29,6 +48,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [searchTrnId, setSearchTrnId] = useState("");
   const [dateRange, setDateRange] = useState([null, null]);
   const [declineButtonClicked, setDeclinedButtonClicked] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -37,9 +57,31 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
+  const [selectedFilteredMerchant, setSelectedFilteredMerchant] = useState("");
+  const [allMerchant, setAllMerchant] = useState([]);
+
+  const fetchMerchants = async () => {
+    try {
+      const result = await fn_getMerchantApi();
+      if (result?.status) {
+        setAllMerchant(result?.data?.data?.map((item) => {
+          return { value: item._id, label: item?.merchantName }
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching merchants:", error);
+    }
+  };
+
   const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
-      const result = await fn_getAllTransactionApi(statusFilter, pageNumber);
+      const result = await fn_getAllTransactionApi(
+        statusFilter,
+        pageNumber,
+        searchTrnId,
+        searchQuery,
+        selectedFilteredMerchant
+      );
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -74,10 +116,11 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     if (!authorization) {
       navigate("/login");
       return;
-    };
+    }
+    fetchMerchants();
     fetchTransactions(currentPage, merchant);
-    fetchAllTransactions(merchant);
-  }, [currentPage, merchant]);
+    // fetchAllTransactions(merchant);
+  }, [currentPage, merchant, searchTrnId, searchQuery, selectedFilteredMerchant]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction?.createdAt);
@@ -92,6 +135,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       (!adjustedEndDate || transactionDate <= adjustedEndDate);
 
     return (
+      transaction?.trnNo?.toString().includes(searchTrnId) &&
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       isWithinDateRange
     );
@@ -105,7 +149,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
   const handleTransactionAction = async (action, transactionId) => {
     const response = await fn_updateTransactionStatusApi(transactionId, {
       status: action,
-      trnStatus: action === "Approved" ? "Points Pending" : "Transaction Decline",
+      trnStatus:
+        action === "Approved" ? "Points Pending" : "Transaction Decline",
       transactionReason: selectedOption,
     });
     if (response.status) {
@@ -159,7 +204,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
 
   const handleDownloadReport = async () => {
     try {
-      const pdf = new jsPDF('l', 'mm', 'a4');
+      const pdf = new jsPDF("l", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 10;
       const rowsPerPage = 20; // Number of transactions per page
@@ -170,16 +215,22 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       // Generate PDF page by page
       for (let page = 0; page < totalPages; page++) {
         // Get transactions for current page
-        const pageTransactions = allTrns.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+        const pageTransactions = allTrns.slice(
+          page * rowsPerPage,
+          (page + 1) * rowsPerPage
+        );
 
         // Create table for current page
-        const tempTable = document.createElement('div');
+        const tempTable = document.createElement("div");
         tempTable.innerHTML = `
           <div id="reportTable${page}" style="padding: 20px; width: 100%;">
-            ${page === 0 ? `
+            ${page === 0
+            ? `
               <h2 style="text-align: center; margin-bottom: 20px;">Transaction Report</h2>
               <h4 style="text-align: center; margin-bottom: 20px;">Generated on: ${new Date().toLocaleString()}</h4>
-            ` : ''}
+            `
+            : ""
+          }
             <table style="width: 100%; border-collapse: collapse;">
               <thead>
                 <tr style="background-color: #f0f0f0;">
@@ -193,17 +244,29 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 </tr>
               </thead>
               <tbody>
-                ${pageTransactions.map(trn => `
+                ${pageTransactions
+            .map(
+              (trn) => `
                   <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.trnNo}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(trn.createdAt).toLocaleString()}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.username || 'GUEST'}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.bankId?.bankName || 'UPI'}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">₹ ${trn.total}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.utr}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.status}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.trnNo
+                }</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(
+                  trn.createdAt
+                ).toLocaleString()}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.username || "GUEST"
+                }</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.bankId?.bankName || "UPI"
+                }</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">₹ ${trn.total
+                }</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.utr
+                }</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.status
+                }</td>
                   </tr>
-                `).join('')}
+                `
+            )
+            .join("")}
               </tbody>
             </table>
             <div style="text-align: right; margin-top: 10px;">
@@ -219,7 +282,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
         const canvas = await html2canvas(element, {
           scale: 2,
           useCORS: true,
-          logging: false
+          logging: false,
         });
 
         document.body.removeChild(tempTable);
@@ -230,26 +293,28 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
         }
 
         // Add image to PDF
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = pageWidth - (2 * margin);
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = pageWidth - 2 * margin;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight);
       }
 
-      pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      pdf.save(
+        `transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`
+      );
 
       notification.success({
-        message: 'Success',
-        description: 'Report downloaded successfully!',
-        placement: 'topRight',
+        message: "Success",
+        description: "Report downloaded successfully!",
+        placement: "topRight",
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error("Error generating PDF:", error);
       notification.error({
-        message: 'Error',
-        description: 'Failed to generate report',
-        placement: 'topRight',
+        message: "Error",
+        description: "Failed to generate report",
+        placement: "topRight",
       });
     }
   };
@@ -265,14 +330,20 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
     <>
       <div
         style={{ minHeight: `${containerHeight}px` }}
-        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"}`}
+        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+          }`}
       >
         <div className="p-7">
-          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
             <h1 className="text-[25px] font-[500]">All Transaction</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table
             </p>
+          </div>
+          <div className="flex justify-end mb-2">
+            <Button type="primary" onClick={handleDownloadReport}>
+              <p className="">Download Report</p>
+            </Button>
           </div>
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
@@ -282,10 +353,6 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-                {/* Download Report Button with blue background */}
-                <Button type="primary" onClick={handleDownloadReport}>
-                  <p className="">Download Report</p>
-                </Button>
                 {/* DropDown of status */}
                 <div>
                   <Select
@@ -297,10 +364,15 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                       setCurrentPage(1);
                     }}
                     options={[
-                      { value: '', label: <span className="text-gray-400">All Status</span> },
-                      { value: 'Approved', label: 'Approved' },
-                      { value: 'Pending', label: 'Pending' },
-                      { value: 'Decline', label: 'Declined' }
+                      {
+                        value: "",
+                        label: (
+                          <span className="text-gray-400">All Status</span>
+                        ),
+                      },
+                      { value: "Approved", label: "Approved" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Decline", label: "Declined" },
                     ]}
                   />
                 </div>
@@ -312,7 +384,17 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                     }}
                   />
                 </Space>
-                {/* Search Input */}
+                {/* Search By TRN Is */}
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                {/* Search by UTR*/}
                 <div className="flex flex-col w-full md:w-40">
                   <input
                     type="text"
@@ -320,6 +402,25 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                {/* Add Merchant Filter */}
+                <div>
+                  <Select
+                    className="w-40"
+                    placeholder="Select Merchant"
+                    value={selectedFilteredMerchant.label}
+                    onChange={(e) => {
+                      setSelectedFilteredMerchant(e)
+                    }}
+                    options={[
+                      {
+                        value: "",
+                        label: (
+                          <span className="text-gray-400">All Merchant</span>
+                        ),
+                      },
+                      ...allMerchant]}
                   />
                 </div>
               </div>
@@ -341,18 +442,26 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((transaction) => (
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
                         className="text-gray-800 text-sm border-b"
                       >
-                        <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{transaction?.trnNo}</td>
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
+                          {transaction?.trnNo}
+                        </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
                           {new Date(transaction?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.createdAt).toLocaleTimeString()}
+                          {new Date(
+                            transaction?.createdAt
+                          ).toLocaleTimeString()}
                         </td>
-                        <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}</td>
+                        <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                          {transaction?.username && transaction?.username !== ""
+                            ? transaction?.username
+                            : "GUEST"}
+                        </td>
                         <td className="p-4">
                           {transaction?.bankId?.bankName ? (
                             <div className="">
@@ -372,7 +481,9 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                           <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
                           {transaction?.total}
                         </td>
-                        <td className="p-4 text-[12px] font-[700] text-[#0864E8]">{transaction?.utr}</td>
+                        <td className="p-4 text-[12px] font-[700] text-[#0864E8]">
+                          {transaction?.utr}
+                        </td>
                         <td className="p-4 text-[13px] font-[500]">
                           <span
                             className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
@@ -424,22 +535,18 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
       <Modal
         centered
         footer={null}
-        width={900}  // Made even wider to prevent scrolling
+        width={900} // Made even wider to prevent scrolling
         style={{
           fontFamily: "sans-serif",
           padding: "20px",
-          maxWidth: '95vw',  // Increased from 90vw
-          minHeight: '90vh',  // Increased from 80vh
+          maxWidth: "95vw", // Increased from 90vw
+          minHeight: "90vh", // Increased from 80vh
         }}
         bodyStyle={{
-          height: '100%',
-          overflow: 'hidden'  // Changed from 'auto' to 'hidden'
+          height: "100%",
+          overflow: "hidden", // Changed from 'auto' to 'hidden'
         }}
-        title={
-          <p className="text-[20px] font-[700]">
-            Transaction Details
-          </p>
-        }
+        title={<p className="text-[20px] font-[700]">Transaction Details</p>}
         open={open}
         onCancel={() => {
           setOpen(false);
@@ -454,7 +561,12 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
           <div className="flex flex-col md:flex-row">
             {/* Left side input fields */}
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-              <p className="font-[500] mt-[-8px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
+              <p className="font-[500] mt-[-8px] mb-[15px]">
+                Transaction Id:{" "}
+                <span className="text-gray-500 font-[700]">
+                  {selectedTransaction.trnNo}
+                </span>
+              </p>
               {[
                 {
                   label: "Amount:",
@@ -472,9 +584,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 },
                 {
                   label: "Bank Name:",
-                  value:
-                    selectedTransaction.bankId?.bankName ||
-                    "UPI",
+                  value: selectedTransaction.bankId?.bankName || "UPI",
                 },
                 // {
                 //   label: "Description:",
@@ -483,10 +593,7 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 //   isTextarea: true,
                 // },
               ].map((field, index) => (
-                <div
-                  className="flex items-center gap-4"
-                  key={index}
-                >
+                <div className="flex items-center gap-4" key={index}>
                   <p className="text-[12px] font-[600] w-[150px]">
                     {field.label}
                   </p>
@@ -508,18 +615,14 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                           <FaIndianRupeeSign className="mt-[2px]" />
                         ) : null
                       }
-
                       className={`w-[50%] text-[12px] input-placeholder-black ${isEdit &&
-                        (field.label === "Amount:" ||
-                          field?.label === "UTR#:")
+                        (field.label === "Amount:" || field?.label === "UTR#:")
                         ? "bg-white"
                         : "bg-gray-200"
                         }`}
-
                       readOnly={
                         isEdit &&
-                          (field.label === "Amount:" ||
-                            field?.label === "UTR#:")
+                          (field.label === "Amount:" || field?.label === "UTR#:")
                           ? false
                           : true
                       }
@@ -550,15 +653,26 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                       selectedTransaction?._id
                     )
                   }
-                  disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                  disabled={
+                    selectedTransaction?.status === "Approved" ||
+                    selectedTransaction?.status === "Decline"
+                  }
                 >
                   <IoMdCheckmark className="mt-[3px] mr-[6px]" />
                   Approve Transaction
                 </button>
                 <button
-                  className={`flex p-2 rounded text-[13px] ${declineButtonClicked ? "bg-[#140e0f33] text-black" : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"}`}
-                  onClick={() => setDeclinedButtonClicked(!declineButtonClicked)}
-                  disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                  className={`flex p-2 rounded text-[13px] ${declineButtonClicked
+                    ? "bg-[#140e0f33] text-black"
+                    : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"
+                    }`}
+                  onClick={() =>
+                    setDeclinedButtonClicked(!declineButtonClicked)
+                  }
+                  disabled={
+                    selectedTransaction?.status === "Approved" ||
+                    selectedTransaction?.status === "Decline"
+                  }
                 // onClick={fn_declineButtonClicked}
                 >
                   <GoCircleSlash className="mt-[3px] mr-[6px]" />
@@ -594,9 +708,6 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                 </button>*/}
               </div>
 
-
-
-
               {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
               {selectedTransaction?.trnStatus !== "Transaction Pending" && (
@@ -609,18 +720,15 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   </p>
                 </div>
               )}
-              {selectedTransaction?.transactionReason ?
+              {selectedTransaction?.transactionReason ? (
                 <>
-                  <p className="text-[14px] font-[700]">
-                    Reason for Decline
-                  </p>
+                  <p className="text-[14px] font-[700]">Reason for Decline</p>
 
                   <p className="text-[14px] font-[400]">
                     {selectedTransaction?.transactionReason}
                   </p>
                 </>
-                : null}
-
+              ) : null}
 
               {declineButtonClicked && (
                 <>
@@ -641,26 +749,42 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                           onChange={() => setSelectedOption(option)}
                           className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
                         />
-                        <span className="text-gray-700 dark:text-gray-300">{option}</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {option}
+                        </span>
                       </label>
                     ))}
                   </div>
                   <div className="flex gap-[10px]">
-                    <button className="bg-[#FF405F33] flex text-[#FF3F5F] py-2 px-[20px] rounded hover:bg-[#FF405F50] text-[13px] w-[max-content]" onClick={() => {
-                      if (!selectedOption) {
-                        notification.error({
-                          message: "Error",
-                          description: "Please select a reason for decline",
-                          placement: "topRight",
-                        });
-                        return;
-                      }
-                      else {
-                        handleTransactionAction("Decline", selectedTransaction?._id)
+                    <button
+                      className="bg-[#FF405F33] flex text-[#FF3F5F] py-2 px-[20px] rounded hover:bg-[#FF405F50] text-[13px] w-[max-content]"
+                      onClick={() => {
+                        if (!selectedOption) {
+                          notification.error({
+                            message: "Error",
+                            description: "Please select a reason for decline",
+                            placement: "topRight",
+                          });
+                          return;
+                        } else {
+                          handleTransactionAction(
+                            "Decline",
+                            selectedTransaction?._id
+                          );
+                          setDeclinedButtonClicked(!declineButtonClicked);
+                        }
+                      }}
+                    >
+                      Submit
+                    </button>
+                    <button
+                      className="bg-gray-200 flex text-black py-2 px-[20px] rounded text-[13px] w-[max-content]"
+                      onClick={() =>
                         setDeclinedButtonClicked(!declineButtonClicked)
                       }
-                    }}>Submit</button>
-                    <button className="bg-gray-200 flex text-black py-2 px-[20px] rounded text-[13px] w-[max-content]" onClick={() => setDeclinedButtonClicked(!declineButtonClicked)}>Cancel</button>
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </>
               )}
@@ -668,11 +792,11 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
             {/* Right side with border and image */}
             <div
               className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full"
-              style={{ aspectRatio: '1' }}
+              style={{ aspectRatio: "1" }}
             >
               <div
                 className="relative w-full max-w-[400px] overflow-hidden cursor-zoom-in"
-                style={{ aspectRatio: '1' }}
+                style={{ aspectRatio: "1" }}
               >
                 <img
                   src={`${BACKEND_URL}/${selectedTransaction?.image}`}
@@ -680,8 +804,8 @@ const TransactionsTable = ({ authorization, showSidebar, permissionsData, loginT
                   className="w-full h-full object-contain"
                   style={{
                     transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
-                    transform: isHovering ? 'scale(2)' : 'scale(1)',
-                    transition: 'transform 0.1s ease-out',
+                    transform: isHovering ? "scale(2)" : "scale(1)",
+                    transition: "transform 0.1s ease-out",
                   }}
                   onMouseEnter={() => setIsHovering(true)}
                   onMouseLeave={() => setIsHovering(false)}

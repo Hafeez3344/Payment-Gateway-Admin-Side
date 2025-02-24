@@ -14,6 +14,7 @@ import SBIBank from "../assets/banks/SBI-Bank.png";
 import ucoBank from "../assets/banks/uco-bank.png";
 import unionBank from "../assets/banks/union-bank.png";
 import upiPayment from "../assets/banks/upi-payment.png";
+import punjabSindhBAnk from "../assets/banks/punjabSindhBAnk.png";
 
 export const Banks = [
     { title: "Axis Bank", img: axisBank },
@@ -28,8 +29,11 @@ export const Banks = [
     { title: "Indian Overseas Bank", img: indianOverseasBank },
     { title: "Kotak Mahindra Bank", img: kotakMahindraBank },
     { title: "Punjab National Bank", img: punjabNationalBank },
+    { title: "Punjab & Sindh Bank", img: punjabSindhBAnk },
     { title: "SBI Bank", img: SBIBank },
     { title: "UCO Bank", img: ucoBank },
     { title: "Union Bank", img: unionBank },
     // { title: "UPI Payment", img: upiPayment },
 ]
+
+

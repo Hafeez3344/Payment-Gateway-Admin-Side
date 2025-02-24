@@ -356,12 +356,11 @@ export const fn_deleteTransactionApi = async (id) => {
     }
 };
 
-export const fn_getAllTransactionApi = async (status, pageNumber, searchQuery) => {
+export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, searchQuery, merchantId) => {
     try {
         const token = Cookies.get("token");
-        // Modify URL to include status parameter only if it's not empty
-        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}`;
-
+        // Add merchantId to URL parameters if provided
+        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}`;
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
