@@ -28,12 +28,8 @@ import BACKEND_URL, {
   fn_getMerchantApi,
 } from "../../api/api";
 
-const TransactionsTable = ({
-  authorization,
-  showSidebar,
-  permissionsData,
-  loginType,
-}) => {
+const TransactionsTable = ({ authorization, showSidebar }) => {
+
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
@@ -59,6 +55,8 @@ const TransactionsTable = ({
 
   const [selectedFilteredMerchant, setSelectedFilteredMerchant] = useState("");
   const [allMerchant, setAllMerchant] = useState([]);
+
+  const [selectedOption, setSelectedOption] = useState(null);
 
   const fetchMerchants = async () => {
     try {
@@ -122,25 +120,6 @@ const TransactionsTable = ({
     // fetchAllTransactions(merchant);
   }, [currentPage, merchant, searchTrnId, searchQuery, selectedFilteredMerchant]);
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    const transactionDate = new Date(transaction?.createdAt);
-
-    const adjustedEndDate = dateRange[1] ? new Date(dateRange[1]) : null;
-    if (adjustedEndDate) {
-      adjustedEndDate.setHours(23, 59, 59, 999);
-    }
-
-    const isWithinDateRange =
-      (!dateRange[0] || transactionDate >= dateRange[0]) &&
-      (!adjustedEndDate || transactionDate <= adjustedEndDate);
-
-    return (
-      transaction?.trnNo?.toString().includes(searchTrnId) &&
-      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      isWithinDateRange
-    );
-  });
-
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setOpen(true);
@@ -167,30 +146,6 @@ const TransactionsTable = ({
       console.error(`Failed to ${action} transaction:`, response.message);
     }
   };
-
-  const handleEditTransactionAction = async (status, id, amount, utr) => {
-    const response = await fn_updateTransactionStatusApi(id, {
-      status: status,
-      trnStatus: status,
-      total: parseInt(amount),
-      utr: utr,
-    });
-    if (response.status) {
-      fetchTransactions(currentPage);
-      notification.success({
-        message: "Success",
-        description: "Transaction Updated!",
-        placement: "topRight",
-      });
-      setOpen(false);
-      setIsEdit(false);
-    } else {
-      setIsEdit(false);
-      console.error(`Failed to ${action} transaction:`, response.message);
-    }
-  };
-
-  const [selectedOption, setSelectedOption] = useState(null);
 
   const options = [
     "utr mismatch",
@@ -334,7 +289,7 @@ const TransactionsTable = ({
           }`}
       >
         <div className="p-7">
-        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
             <h1 className="text-[25px] font-[500]">All Transaction</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table

@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { Button, Modal, Input, Select, Switch } from "antd";
+
 import { FiTrash2 } from "react-icons/fi";
 
 const Staff = ({ showSidebar }) => {
+
+    const transactionTypeOptions = [
+        { label: "Manual Transaction", value: "manual" },
+        { label: "Direct Payment", value: "direct" },
+    ];
     const [open, setOpen] = useState(false);
     const containerHeight = window.innerHeight - 120;
     const [staffList, setStaffList] = useState([
@@ -19,6 +25,14 @@ const Staff = ({ showSidebar }) => {
             block: true
         }
     ]);
+
+    const [staffForm, setStaffForm] = useState({
+        username: "", email: "", password: "", ledgerType: [], ledgerBank: [], ledgerMerchant: []
+    });
+
+    const handleChange = (value) => {
+        console.log(`selected ${value}`);
+    };
 
     const handleStatusChange = (staffId, checked) => {
         setStaffList(prev =>
@@ -45,7 +59,7 @@ const Staff = ({ showSidebar }) => {
                     </div>
 
                     <div className="bg-white rounded-lg p-4">
-                        <div className="p-3 flex flex-col md:flex-row items-center justify-between border-b space-y-4 md:space-y-0">
+                        <div className="p-3 pt-0 flex flex-col md:flex-row items-center justify-between border-b space-y-4 md:space-y-0">
                             <h2 className="text-black font-medium text-lg">
                                 Staff Information
                             </h2>
@@ -130,14 +144,14 @@ const Staff = ({ showSidebar }) => {
                             <p className="text-sm font-medium mb-1">
                                 Username <span className="text-red-500">*</span>
                             </p>
-                            <Input placeholder="Enter username" />
+                            <Input value={staffForm.username} onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })} placeholder="Enter username" />
                         </div>
 
                         <div>
                             <p className="text-sm font-medium mb-1">
                                 Email <span className="text-red-500">*</span>
                             </p>
-                            <Input placeholder="Enter email address" />
+                            <Input value={staffForm.email} onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })} placeholder="Enter email address" />
                         </div>
                     </div>
 
@@ -145,10 +159,21 @@ const Staff = ({ showSidebar }) => {
                         <p className="text-sm font-medium mb-1">
                             Password <span className="text-red-500">*</span>
                         </p>
-                        <Input.Password placeholder="Enter password" />
+                        <Input.Password value={staffForm.password} onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })} placeholder="Enter password" />
                     </div>
+
                     <div>
-                        <p>Selected Transaction Type</p>
+                        <p className="text-sm font-medium mb-1">Selected Transaction Type{" "}<span className="text-red-500">*</span></p>
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{
+                                width: '100%',
+                            }}
+                            placeholder="Please select Transaction Type"
+                            onChange={handleChange}
+                            options={transactionTypeOptions}
+                        />
                     </div>
 
                     <div>
