@@ -9,14 +9,15 @@ import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
 import React, { useState, useEffect } from "react";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
-import { MdOutlineCurrencyExchange } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
-  const location = useLocation();
-  const [selectedPage, setSelectedPage] = useState("");
 
+  const location = useLocation();
+  const navigate = useNavigate();
   const loginType = Cookies.get('type');
+  const isMobile = () => window.innerWidth < 1024;
+  const [selectedPage, setSelectedPage] = useState("");
 
   useEffect(() => {
     const path = location.pathname;
@@ -27,9 +28,6 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
-
-  const navigate = useNavigate();
-  const isMobile = () => window.innerWidth < 1024;
 
   const handleMenuClick = (page, path) => {
     setSelectedPage(page);
@@ -124,6 +122,16 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             label="Upload Statement"
             icon={<TbBookUpload className="text-[20px]" />}
             isActive={selectedPage === "upload-statement"}
+          />
+        )}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("reports", "/reports")
+            }
+            label="Reports"
+            icon={<IoSettingsOutline className="text-[20px]" />}
+            isActive={selectedPage === "reports"}
           />
         )}
         {loginType === "admin" && (
