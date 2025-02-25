@@ -3,16 +3,30 @@ import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
+import {
+  Pagination,
+  Modal,
+  Input,
+  notification,
+  DatePicker,
+  Space,
+  Select,
+  Button,
+} from "antd";
 
 import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import BACKEND_URL, { fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi, fn_getMerchantApi } from "../../api/api";
+import BACKEND_URL, {
+  fn_getAdminsTransactionApi,
+  fn_getAllTransactionApi,
+  fn_updateTransactionStatusApi,
+  fn_getMerchantApi,
+  fn_getAllBanksData,
+} from "../../api/api";
 
 const TransactionsTable = ({ authorization, showSidebar }) => {
-
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
@@ -36,22 +50,48 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const [allTrns, setAllTrns] = useState([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-
   const [selectedFilteredMerchant, setSelectedFilteredMerchant] = useState("");
   const [allMerchant, setAllMerchant] = useState([]);
-
   const [selectedOption, setSelectedOption] = useState(null);
+  const [allBanks, setAllBanks] = useState([]);
+  const [selectedFilteredBank, setSelectedFilteredBank] = useState("");
 
   const fetchMerchants = async () => {
     try {
       const result = await fn_getMerchantApi();
       if (result?.status) {
-        setAllMerchant(result?.data?.data?.map((item) => {
-          return { value: item._id, label: item?.merchantName }
-        }));
+        setAllMerchant(
+          result?.data?.data?.map((item) => {
+            return { value: item._id, label: item?.merchantName };
+          })
+        );
       }
     } catch (error) {
       console.error("Error fetching merchants:", error);
+    }
+  };
+
+  const fetchBanks = async () => {
+    try {
+      const result = await fn_getAllBanksData("");
+      if (result?.status) {
+        setAllBanks(
+          result?.data?.data?.map((item) => {
+            return {
+              value: item._id,
+              label: item.bankName === "UPI" ? (
+                <span>
+                  UPI - <span className="font-[400]">{item.iban}</span>
+                </span>
+              ) : (
+                item.bankName
+              ),
+            };
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching banks:", error);
     }
   };
 
@@ -63,7 +103,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
         searchTrnId,
         searchQuery,
         selectedFilteredMerchant,
-        dateRange
+        dateRange,
+        selectedFilteredBank
       );
       if (result?.status) {
         if (result?.data?.status === "ok") {
@@ -86,12 +127,13 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
         searchTrnId,
         searchQuery,
         selectedFilteredMerchant,
-        dateRange
+        dateRange,
+        selectedFilteredBank
       );
       if (result?.status) {
         if (result?.data?.status === "ok") {
           console.log(result);
-          setAllTrns(() => ([...result?.data?.data]));
+          setAllTrns(() => [...result?.data?.data]);
         } else {
           setAllTrns([]);
         }
@@ -108,13 +150,29 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       return;
     }
     fetchMerchants();
+    fetchBanks();
     fetchTransactions(currentPage, merchant);
     fetchAllTransactions(merchant);
-  }, [currentPage, merchant, searchTrnId, searchQuery, selectedFilteredMerchant, dateRange]);
+  }, [
+    currentPage,
+    merchant,
+    searchTrnId,
+    searchQuery,
+    selectedFilteredMerchant,
+    selectedFilteredBank,
+    dateRange,
+  ]);
 
   useEffect(() => {
     fetchAllTransactions(merchant);
-  }, [merchant, searchTrnId, searchQuery, selectedFilteredMerchant, dateRange]);
+  }, [
+    merchant,
+    searchTrnId,
+    searchQuery,
+    selectedFilteredMerchant,
+    selectedFilteredBank,
+    dateRange
+  ]);
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -276,6 +334,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     setMousePosition({ x, y });
   };
 
+  console.log("allTrns ", allTrns)
+
   return (
     <>
       <div
@@ -291,15 +351,24 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
             </p>
           </div>
           <div className="flex justify-end mb-2">
-            <Button type="primary" onClick={async () => {
-              if (!dateRange?.[0]) return notification.error({
-                message: "Error",
-                description: "Select Date Range",
-                placement: "topRight",
-              });
-              handleDownloadReport();
-            }} disabled={loader}>
-              {loader ? <p className="">Downloading Report...</p> : <p className="">Download Report</p>}
+            <Button
+              type="primary"
+              onClick={async () => {
+                if (!dateRange?.[0])
+                  return notification.error({
+                    message: "Error",
+                    description: "Select Date Range",
+                    placement: "topRight",
+                  });
+                handleDownloadReport();
+              }}
+              disabled={loader}
+            >
+              {loader ? (
+                <p className="">Downloading Report...</p>
+              ) : (
+                <p className="">Download Report</p>
+              )}
             </Button>
           </div>
           <div className="bg-white rounded-lg p-4">
@@ -361,14 +430,14 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
-                {/* Add Merchant Filter */}
+                {/* Search by Merchant */}
                 <div>
                   <Select
                     className="w-40"
                     placeholder="Select Merchant"
                     value={selectedFilteredMerchant.label}
                     onChange={(e) => {
-                      setSelectedFilteredMerchant(e)
+                      setSelectedFilteredMerchant(e);
                     }}
                     options={[
                       {
@@ -377,7 +446,28 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           <span className="text-gray-400">All Merchant</span>
                         ),
                       },
-                      ...allMerchant]}
+                      ...allMerchant,
+                    ]}
+                  />
+                </div>
+                {/* Search by Bank */}
+                <div>
+                  <Select
+                    className="w-40"
+                    placeholder="Select Bank"
+                    value={selectedFilteredBank}
+                    onChange={(e) => {
+                      setSelectedFilteredBank(e);
+                    }}
+                    options={[
+                      {
+                        value: "",
+                        label: (
+                          <span className="text-gray-400">All Bank</span>
+                        ),
+                      },
+                      ...allBanks,
+                    ]}
                   />
                 </div>
               </div>
@@ -392,6 +482,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     <th className="p-4">DATE</th>
                     <th className="p-4 text-nowrap">User Name</th>
                     <th className="p-4 text-nowrap">BANK NAME</th>
+                    <th className="p-4 text-nowrap">Merchant NAME</th>
                     <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                     <th className="p-4 ">UTR#</th>
                     <th className="pl-8">Status</th>
@@ -419,8 +510,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                             ? transaction?.username
                             : "GUEST"}
                         </td>
-                        <td className="p-4">
-                          {transaction?.bankId?.bankName ? (
+                        <td className="p-4 text-nowrap">
+                          {transaction?.bankId?.bankName !== "UPI" ? (
                             <div className="">
                               <span className="text-[13px] font-[700] text-black whitespace-nowrap">
                                 {transaction?.bankId?.bankName}
@@ -428,11 +519,14 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                             </div>
                           ) : (
                             <div className="">
-                              <p className="text-[14px] font-[700] text-black ">
-                                UPI
+                              <p className="text-[13px] font-[700] text-black ">
+                                UPI<span className="font-[400]"> - {transaction?.bankId?.iban}</span>
                               </p>
                             </div>
                           )}
+                        </td>
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
+                          {transaction?.merchantId?.merchantName}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                           <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
