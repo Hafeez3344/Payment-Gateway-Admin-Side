@@ -16,6 +16,8 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const location = useLocation();
   const [selectedPage, setSelectedPage] = useState("");
 
+  const loginType = Cookies.get('type');
+
   useEffect(() => {
     const path = location.pathname;
     if (path === "/") setSelectedPage("dashboard");
@@ -38,6 +40,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
   const fn_logout = () => {
     Cookies.remove('adminId');
     Cookies.remove('token');
+    Cookies.remove('type');
     setAuthorization(false);
     navigate("/login");
   }
@@ -61,34 +64,40 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
         </button>
       </div>
       <div className="mt-[10px]">
-        <Menu
-          onClick={() => handleMenuClick("dashboard", "/")}
-          label="Dashboard"
-          icon={<MdOutlineDashboard className="text-[20px]" />}
-          isActive={selectedPage === "dashboard"}
-        />
+        {loginType === "admin" && (
+          <Menu
+            onClick={() => handleMenuClick("dashboard", "/")}
+            label="Dashboard"
+            icon={<MdOutlineDashboard className="text-[20px]" />}
+            isActive={selectedPage === "dashboard"}
+          />
+        )}
         <Menu
           onClick={() => handleMenuClick("transactions", "/transactions")}
           label="Transactions"
           icon={<PiNotebook className="text-[20px]" />}
           isActive={selectedPage === "transactions"}
         />
-        <Menu
-          onClick={() =>
-            handleMenuClick("merchant-management", "/merchant-management")
-          }
-          label="Merchant Management"
-          icon={<FaRegCircleUser className="text-[20px]" />}
-          isActive={selectedPage === "merchant-management"}
-        />
-        <Menu
-          onClick={() =>
-            handleMenuClick("banks-management", "/banks-management")
-          }
-          label="Banks Management"
-          icon={<BsBank className="text-[20px]" />}
-          isActive={selectedPage === "banks-management"}
-        />
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("merchant-management", "/merchant-management")
+            }
+            label="Merchant Management"
+            icon={<FaRegCircleUser className="text-[20px]" />}
+            isActive={selectedPage === "merchant-management"}
+          />
+        )}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("banks-management", "/banks-management")
+            }
+            label="Banks Management"
+            icon={<BsBank className="text-[20px]" />}
+            isActive={selectedPage === "banks-management"}
+          />
+        )}
         {/* <Menu
           onClick={() =>
             handleMenuClick("currency-exchange", "/currency-exchange")
@@ -97,39 +106,47 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
           isActive={selectedPage === "currency-exchange"}
         /> */}
-        <Menu
-          onClick={() =>
-            handleMenuClick("support-help-center", "/support-help-center")
-          }
-          label="Support / Help Center"
-          icon={<FaHeadphones className="text-[20px]" />}
-          isActive={selectedPage === "support-help-center"}
-        />
-        <Menu
-          onClick={() => {
-            handleMenuClick("upload-statement", "/upload-statement")
-          }}
-          label="Upload Statement"
-          icon={<TbBookUpload className="text-[20px]" />}
-          isActive={selectedPage === "upload-statement"}
-        />
-        <Menu
-          onClick={() =>
-            handleMenuClick("system-configuration", "/system-configuration")
-          }
-          label="Settings"
-          icon={<IoSettingsOutline className="text-[20px]" />}
-          isActive={selectedPage === "system-configuration"}
-        />
-        <Menu
-          onClick={() =>
-            handleMenuClick("staff", "/staff")
-          }
-          label="Staff"
-          name="staff"
-          icon={<FaPeopleGroup className="text-[20px]" />}
-          isActive={selectedPage === "staff"}
-        />
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("support-help-center", "/support-help-center")
+            }
+            label="Support / Help Center"
+            icon={<FaHeadphones className="text-[20px]" />}
+            isActive={selectedPage === "support-help-center"}
+          />
+        )}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() => {
+              handleMenuClick("upload-statement", "/upload-statement")
+            }}
+            label="Upload Statement"
+            icon={<TbBookUpload className="text-[20px]" />}
+            isActive={selectedPage === "upload-statement"}
+          />
+        )}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("system-configuration", "/system-configuration")
+            }
+            label="Settings"
+            icon={<IoSettingsOutline className="text-[20px]" />}
+            isActive={selectedPage === "system-configuration"}
+          />
+        )}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("staff", "/staff")
+            }
+            label="Staff"
+            name="staff"
+            icon={<FaPeopleGroup className="text-[20px]" />}
+            isActive={selectedPage === "staff"}
+          />
+        )}
       </div>
       <div
         onClick={fn_logout}

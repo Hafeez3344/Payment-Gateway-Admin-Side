@@ -142,7 +142,7 @@ function App() {
               />
             }
           />
-           <Route
+          <Route
             path="/currency-exchange"
             element={
               <CurrencyExchange

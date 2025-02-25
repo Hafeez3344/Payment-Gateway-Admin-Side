@@ -1,32 +1,15 @@
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  Pagination,
-  Modal,
-  Input,
-  notification,
-  DatePicker,
-  Space,
-  Select,
-  Button,
-} from "antd";
-import { saveAs } from "file-saver";
-import { FaRegEdit } from "react-icons/fa";
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
+
+import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
-import { FiEye, FiTrash2 } from "react-icons/fi";
-import { RiFindReplaceLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import BACKEND_URL, {
-  fn_deleteTransactionApi,
-  fn_getAdminsTransactionApi,
-  fn_getAllTransactionApi,
-  fn_updateTransactionStatusApi,
-  fn_getMerchantApi,
-} from "../../api/api";
+import BACKEND_URL, { fn_getAdminsTransactionApi, fn_getAllTransactionApi, fn_updateTransactionStatusApi, fn_getMerchantApi } from "../../api/api";
 
 const TransactionsTable = ({ authorization, showSidebar }) => {
 
@@ -37,14 +20,15 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const [open, setOpen] = useState(false);
   const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
-  const [merchant, setMerchant] = useState(status || "");
   const [totalPages, setTotalPages] = useState(1);
+  const [loader, setLoader] = useState(false);
+
   const containerHeight = window.innerHeight - 120;
-  const [showPopup, setShowPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [searchTrnId, setSearchTrnId] = useState("");
+  const [merchant, setMerchant] = useState(status || "");
   const [dateRange, setDateRange] = useState([null, null]);
   const [declineButtonClicked, setDeclinedButtonClicked] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -78,7 +62,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
         pageNumber,
         searchTrnId,
         searchQuery,
-        selectedFilteredMerchant
+        selectedFilteredMerchant,
+        dateRange
       );
       if (result?.status) {
         if (result?.data?.status === "ok") {
@@ -96,10 +81,17 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
   const fetchAllTransactions = async (statusFilter) => {
     try {
-      const result = await fn_getAdminsTransactionApi(statusFilter);
+      const result = await fn_getAdminsTransactionApi(
+        statusFilter,
+        searchTrnId,
+        searchQuery,
+        selectedFilteredMerchant,
+        dateRange
+      );
       if (result?.status) {
         if (result?.data?.status === "ok") {
-          setAllTrns(result?.data?.data);
+          console.log(result);
+          setAllTrns(() => ([...result?.data?.data]));
         } else {
           setAllTrns([]);
         }
@@ -117,8 +109,12 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     }
     fetchMerchants();
     fetchTransactions(currentPage, merchant);
-    // fetchAllTransactions(merchant);
-  }, [currentPage, merchant, searchTrnId, searchQuery, selectedFilteredMerchant]);
+    fetchAllTransactions(merchant);
+  }, [currentPage, merchant, searchTrnId, searchQuery, selectedFilteredMerchant, dateRange]);
+
+  useEffect(() => {
+    fetchAllTransactions(merchant);
+  }, [merchant, searchTrnId, searchQuery, selectedFilteredMerchant, dateRange]);
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -159,17 +155,15 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
   const handleDownloadReport = async () => {
     try {
+      setLoader(true);
       const pdf = new jsPDF("l", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 10;
-      const rowsPerPage = 20; // Number of transactions per page
+      const rowsPerPage = 20;
 
-      // Calculate total pages
       const totalPages = Math.ceil(allTrns.length / rowsPerPage);
 
-      // Generate PDF page by page
       for (let page = 0; page < totalPages; page++) {
-        // Get transactions for current page
         const pageTransactions = allTrns.slice(
           page * rowsPerPage,
           (page + 1) * rowsPerPage
@@ -258,13 +252,14 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       pdf.save(
         `transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`
       );
-
+      setLoader(false);
       notification.success({
         message: "Success",
         description: "Report downloaded successfully!",
         placement: "topRight",
       });
     } catch (error) {
+      setLoader(false);
       console.error("Error generating PDF:", error);
       notification.error({
         message: "Error",
@@ -296,8 +291,15 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
             </p>
           </div>
           <div className="flex justify-end mb-2">
-            <Button type="primary" onClick={handleDownloadReport}>
-              <p className="">Download Report</p>
+            <Button type="primary" onClick={async () => {
+              if (!dateRange?.[0]) return notification.error({
+                message: "Error",
+                description: "Select Date Range",
+                placement: "topRight",
+              });
+              handleDownloadReport();
+            }} disabled={loader}>
+              {loader ? <p className="">Downloading Report...</p> : <p className="">Download Report</p>}
             </Button>
           </div>
           <div className="bg-white rounded-lg p-4">
@@ -540,6 +542,10 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 {
                   label: "Bank Name:",
                   value: selectedTransaction.bankId?.bankName || "UPI",
+                },
+                {
+                  label: "Merchant Name:",
+                  value: selectedTransaction.merchantId?.merchantName || "",
                 },
                 // {
                 //   label: "Description:",

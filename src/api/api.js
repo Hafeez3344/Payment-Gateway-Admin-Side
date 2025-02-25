@@ -12,12 +12,14 @@ export const fn_loginAdminApi = async (data) => {
         const response = await axios.post(`${BACKEND_URL}/admin/login`, data);
         const token = response?.data?.token;
         const id = response?.data?.data?._id;
+        const type = response?.data?.type;
 
         return {
             status: true,
             message: "Admin Logged in successfully",
             token: token,
             id: id,
+            type
         };
     } catch (error) {
         if (error?.response?.status === 400) {
@@ -356,11 +358,17 @@ export const fn_deleteTransactionApi = async (id) => {
     }
 };
 
-export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, searchQuery, merchantId) => {
+export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, searchQuery, merchantId, dateRange) => {
     try {
         const token = Cookies.get("token");
-        // Add merchantId to URL parameters if provided
-        const url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}`;
+        const type = Cookies.get("type");
+        const adminId = Cookies.get("adminId");
+        let url = "";
+        if (type === "staff") {
+            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        } else {
+            url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        }
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -386,11 +394,16 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
     }
 };
 
-export const fn_getAdminsTransactionApi = async (status, searchQuery) => {
+export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuery, merchantId, dateRange) => {
     try {
         const token = Cookies.get("token");
-        const url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}`;
-
+        const type = Cookies.get("type");
+        let url = "";
+        if (type === "staff") {
+            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?adminStaffId=${adminId}&${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        } else {
+            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        }
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,

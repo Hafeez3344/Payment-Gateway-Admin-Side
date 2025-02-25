@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import {Button,Checkbox,Form,Grid,Input,Typography,notification,} from "antd";
+import { Button, Form, Grid, Input, Typography, notification, } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
 import { fn_loginAdminApi } from "../../api/api";
@@ -7,14 +7,14 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;
-const { Text, Title, Link } = Typography;
+const { Text, Title } = Typography;
 
-const Login = ({authorization, setAuthorization}) => {
+const Login = ({ authorization, setAuthorization }) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
   useEffect(() => {
-    if(authorization){
+    if (authorization) {
       navigate("/");
     }
   }, []);
@@ -30,8 +30,12 @@ const Login = ({authorization, setAuthorization}) => {
         });
         Cookies.set("token", response?.token);
         Cookies.set("adminId", response?.id);
-        
-        navigate("/");
+        Cookies.set("type", response?.type);
+        if (response?.type === "admin") {
+          navigate("/");
+        } else {
+          navigate("/transactions");
+        }
         setAuthorization(true);
       } else {
         notification.error({
@@ -141,22 +145,10 @@ const Login = ({authorization, setAuthorization}) => {
               placeholder="Password"
             />
           </Form.Item>
-          <Form.Item>
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-            <a style={styles.forgotPassword} href="#">
-              Forgot password?
-            </a>
-          </Form.Item>
           <Form.Item style={{ marginBottom: "0px" }}>
             <Button block type="primary" htmlType="submit">
               Log in
             </Button>
-            <div style={styles.footer}>
-              <Text style={styles.text}>Don't have an account?</Text>
-              <Link href="#">Sign up now</Link>
-            </div>
           </Form.Item>
         </Form>
       </div>

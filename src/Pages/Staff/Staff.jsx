@@ -1,47 +1,170 @@
-import React, { useState } from "react";
-import { Button, Modal, Input, Select, Switch } from "antd";
+import axios from "axios";
+import Cookies from "js-cookie";
+import React, { useEffect, useState } from "react";
+import { Button, Modal, Input, Select, Switch, notification } from "antd";
 
 import { FiTrash2 } from "react-icons/fi";
+import { FaExclamationCircle } from "react-icons/fa";
+
+import BACKEND_URL, { fn_getAllBanksData, fn_getMerchantApi } from "../../api/api";
 
 const Staff = ({ showSidebar }) => {
 
-    const transactionTypeOptions = [
-        { label: "Manual Transaction", value: "manual" },
-        { label: "Direct Payment", value: "direct" },
-    ];
+    const token = Cookies.get("token");
     const [open, setOpen] = useState(false);
+    const [allStaffs, setAllStaffs] = useState([]);
     const containerHeight = window.innerHeight - 120;
-    const [staffList, setStaffList] = useState([
-        {
-            id: 1,
-            userName: 'John Doe',
-            email: 'john@example.com',
-            block: false
-        },
-        {
-            id: 2,
-            userName: 'Jane Smith',
-            email: 'jane@example.com',
-            block: true
-        }
-    ]);
+    const [banksOption, setBanksOption] = useState([]);
+    const [merchantOptions, setMerchantOption] = useState([]);
+    const transactionTypeOptions = [{ label: "Manual Transaction", value: "manual" }, { label: "Direct Payment", value: "direct" }];
 
     const [staffForm, setStaffForm] = useState({
-        username: "", email: "", password: "", ledgerType: [], ledgerBank: [], ledgerMerchant: []
+        userName: "", email: "", password: "", ledgerType: [], ledgerBank: [], ledgerMerchant: []
     });
 
-    const handleChange = (value) => {
-        console.log(`selected ${value}`);
+    useEffect(() => {
+        fn_getAllBanks();
+        fn_getAllStaffs();
+        fn_getAllMerchants();
+    }, []);
+
+    const fn_getAllMerchants = async () => {
+        const response = await fn_getMerchantApi();
+        if (response?.status) {
+            setMerchantOption(response?.data?.data?.map((item) => {
+                return { value: item?._id, label: item?.merchantName }
+            }));
+        }
     };
 
-    const handleStatusChange = (staffId, checked) => {
-        setStaffList(prev =>
-            prev.map(staff =>
-                staff.id === staffId
-                    ? { ...staff, block: !checked }
-                    : staff
-            )
-        );
+    const fn_getAllBanks = async () => {
+        const response = await fn_getAllBanksData("");
+        if (response?.status) {
+            setBanksOption(response?.data?.data?.map((item) => {
+                return { value: item?._id, label: `${item?.bankName} - ${item?.bankName === "UPI" ? item?.iban : item?.accountHolderName}${item?.bankName !== "UPI" && ` - ${item?.iban}`}` }
+            }));
+        }
+    };
+
+    const fn_changeLedgerType = (value) => {
+        const selectedValues = Array.isArray(value) ? value : [value];
+        setStaffForm(() => ({ ...staffForm, ledgerType: selectedValues }));
+    };
+
+    const fn_getAllStaffs = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/adminStaff/getAll`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setAllStaffs(response?.data?.data);
+            }
+        } catch (error) {
+            console.log("error while fetching staff ", error);
+        }
+    }
+
+    const fn_changeMerchant = (value) => {
+        const selectedValues = Array.isArray(value) ? value : [value];
+        setStaffForm(() => ({ ...staffForm, ledgerMerchant: selectedValues }));
+    };
+
+    const fn_changeBank = (value) => {
+        const selectedValues = Array.isArray(value) ? value : [value];
+        setStaffForm(() => ({ ...staffForm, ledgerBank: selectedValues }));
+    };
+
+    const handleStatusChange = async (staffId, checked) => {
+        try {
+            const response = await axios.put(`${BACKEND_URL}/adminstaff/update/${staffId}`, { block: !checked }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status) {
+                if (response?.data?.status === "ok") {
+                    fn_getAllStaffs();
+                    notification.success({
+                        message: "Staff Updated",
+                        description: "Staff Updated Successfully",
+                        placement: "topRight",
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("error in updating staff ", error);
+            notification.error({
+                message: "Error",
+                description: error?.response?.data?.message || "Network Error",
+                placement: "topRight",
+            });
+        }
+    };
+
+    const fn_deleteStaff = async (id) => {
+        try {
+            const response = await axios.delete(`${BACKEND_URL}/adminstaff/delete/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status) {
+                if (response?.data?.status === "ok") {
+                    fn_getAllStaffs();
+                    notification.success({
+                        message: "Staff Deleted",
+                        description: "Staff Deleted Successfully",
+                        placement: "topRight",
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("error in updating staff ", error);
+            notification.error({
+                message: "Error",
+                description: error?.response?.data?.message || "Network Error",
+                placement: "topRight",
+            });
+        }
+    }
+
+    const fn_submit = async () => {
+        if (staffForm?.userName === "" || staffForm?.email === "" || staffForm?.password === "" || staffForm?.ledgerType?.length === 0 || staffForm?.ledgerMerchant?.length === 0 || staffForm?.ledgerBank?.length === 0) {
+            return notification.error({
+                message: "Error",
+                description: "Fill Complete Form",
+                placement: "topRight",
+            });
+        }
+        try {
+            const response = await axios.post(`${BACKEND_URL}/adminStaff/create`, staffForm, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setOpen(false);
+                fn_getAllStaffs();
+                notification.success({
+                    message: "Staff Created",
+                    description: "Staff Created Successfully",
+                    placement: "topRight",
+                });
+            }
+        } catch (error) {
+            console.log("staff creation error ", error);
+            return notification.error({
+                message: "Staff Creation Error",
+                description: error?.response?.data?.message || "Network",
+                placement: "topRight",
+            })
+        }
     };
 
     return (
@@ -84,18 +207,13 @@ const Staff = ({ showSidebar }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {staffList.map((staff, index) => (
+                                    {allStaffs?.length > 0 ? allStaffs.map((staff, index) => (
                                         <tr key={staff.id} className="border">
                                             <td className="p-3 text-[13px]">{index + 1}</td>
                                             <td className="p-3 text-[13px]">{staff.userName}</td>
                                             <td className="p-3 text-[13px]">{staff.email}</td>
                                             <td className="p-3">
-                                                <button
-                                                    className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${!staff.block
-                                                        ? "bg-[#10CB0026] text-[#0DA000]"
-                                                        : "bg-[#FF173D33] text-[#D50000]"
-                                                        }`}
-                                                >
+                                                <button className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${!staff.block ? "bg-[#10CB0026] text-[#0DA000]" : "bg-[#FF173D33] text-[#D50000]"}`}>
                                                     {!staff.block ? "Active" : "Inactive"}
                                                 </button>
                                             </td>
@@ -105,18 +223,29 @@ const Staff = ({ showSidebar }) => {
                                                         size="small"
                                                         className="min-w-[28px]"
                                                         checked={!staff.block}
-                                                        onChange={(checked) => handleStatusChange(staff.id, checked)}
+                                                        onChange={(checked) => handleStatusChange(staff._id, checked)}
                                                     />
                                                     <Button
                                                         className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                                                         title="Delete"
+                                                        onClick={() => fn_deleteStaff(staff?._id)}
                                                     >
                                                         <FiTrash2 size={16} />
                                                     </Button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                    )) : (
+                                        <tr className="h-[50px]">
+                                            <td
+                                                colSpan="5"
+                                                className="text-center text-[13px] font-[500] italic text-gray-600"
+                                            >
+                                                <FaExclamationCircle className="inline-block text-[18px] mt-[-2px] me-[10px]" />
+                                                No Data Found
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -132,7 +261,7 @@ const Staff = ({ showSidebar }) => {
                     <Button key="cancel" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>,
-                    <Button key="submit" type="primary">
+                    <Button key="submit" type="primary" onClick={fn_submit}>
                         Save
                     </Button>,
                 ]}
@@ -144,7 +273,7 @@ const Staff = ({ showSidebar }) => {
                             <p className="text-sm font-medium mb-1">
                                 Username <span className="text-red-500">*</span>
                             </p>
-                            <Input value={staffForm.username} onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })} placeholder="Enter username" />
+                            <Input value={staffForm.userName} onChange={(e) => setStaffForm({ ...staffForm, userName: e.target.value })} placeholder="Enter username" />
                         </div>
 
                         <div>
@@ -163,7 +292,7 @@ const Staff = ({ showSidebar }) => {
                     </div>
 
                     <div>
-                        <p className="text-sm font-medium mb-1">Selected Transaction Type{" "}<span className="text-red-500">*</span></p>
+                        <p className="text-sm font-medium mb-1">Select Transaction Type{" "}<span className="text-red-500">*</span></p>
                         <Select
                             mode="multiple"
                             allowClear
@@ -171,23 +300,33 @@ const Staff = ({ showSidebar }) => {
                                 width: '100%',
                             }}
                             placeholder="Please select Transaction Type"
-                            onChange={handleChange}
+                            onChange={fn_changeLedgerType}
                             options={transactionTypeOptions}
                         />
                     </div>
 
                     <div>
-                        <p className="text-sm font-medium mb-1">
-                            Staff Type <span className="text-red-500">*</span>
-                        </p>
+                        <p className="text-sm font-medium mb-1">Select Merchant{" "}<span className="text-red-500">*</span></p>
                         <Select
-                            className="w-full"
-                            placeholder="Select Staff Type"
-                        >
-                            <Select.Option value="major">Major Staff</Select.Option>
-                            <Select.Option value="minor">Minor Staff</Select.Option>
-                            <Select.Option value="staff">Merchant</Select.Option>
-                        </Select>
+                            mode="multiple"
+                            allowClear
+                            style={{ width: '100%' }}
+                            placeholder="Please select Merchant"
+                            onChange={fn_changeMerchant}
+                            options={merchantOptions}
+                        />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-1">Select Banks{" "}<span className="text-red-500">*</span></p>
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{ width: '100%' }}
+                            placeholder="Please Select Banks"
+                            onChange={fn_changeBank}
+                            options={banksOption}
+                        />
                     </div>
                 </div>
             </Modal>
