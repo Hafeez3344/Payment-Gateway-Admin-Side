@@ -365,9 +365,9 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         const adminId = Cookies.get("adminId");
         let url = "";
         if (type === "staff") {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${bankId !== "" ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         } else {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${bankId !== "" ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         }
         const response = await axios.get(url, {
             headers: {
@@ -400,9 +400,9 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         const type = Cookies.get("type");
         let url = "";
         if (type === "staff") {
-            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?adminStaffId=${adminId}&${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${bankId !== "" ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?adminStaffId=${adminId}&${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         } else {
-            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId !== "" ? `&merchantId=${merchantId}` : ''}${bankId !== "" ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         }
         const response = await axios.get(url, {
             headers: {

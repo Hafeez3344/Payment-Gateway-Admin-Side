@@ -104,7 +104,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
           isActive={selectedPage === "currency-exchange"}
         /> */}
-        {loginType === "admin" && (
+        {/* {loginType === "admin" && (
           <Menu
             onClick={() =>
               handleMenuClick("support-help-center", "/support-help-center")
@@ -113,7 +113,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             icon={<FaHeadphones className="text-[20px]" />}
             isActive={selectedPage === "support-help-center"}
           />
-        )}
+        )} */}
         {loginType === "admin" && (
           <Menu
             onClick={() => {
@@ -124,7 +124,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "upload-statement"}
           />
         )}
-        {loginType === "admin" && (
+        {/* {loginType === "admin" && (
           <Menu
             onClick={() =>
               handleMenuClick("reports", "/reports")
@@ -133,7 +133,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             icon={<TbReportSearch className="text-[20px]" />}
             isActive={selectedPage === "reports"}
           />
-        )}
+        )} */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
