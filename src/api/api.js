@@ -365,9 +365,9 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         const adminId = Cookies.get("adminId");
         let url = "";
         if (type === "staff") {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&limit=100&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         } else {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+            url = `${BACKEND_URL}/ledger/getAllAdmin?limit=100&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
         }
         const response = await axios.get(url, {
             headers: {
@@ -597,6 +597,31 @@ export const fn_getCardDataByStatus = async (status, filter) => {
                 status: false,
                 message: error?.response?.data?.message || "An error occurred",
             };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_updateMerchantCommissionApi = async (merchantId, commission) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(
+            `${BACKEND_URL}/merchant/update/${merchantId}`,
+            { commision: commission },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
         }
         return { status: false, message: "Network Error" };
     }

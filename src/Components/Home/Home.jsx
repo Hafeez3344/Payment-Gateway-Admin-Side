@@ -251,7 +251,7 @@ const Home = ({ authorization, showSidebar }) => {
         </div>
 
         {/* Boxes Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
           <Boxes
             number={verifiedTransactions}
             amount={cardData.approved?.amount}
@@ -261,14 +261,6 @@ const Home = ({ authorization, showSidebar }) => {
             }
             link={"/transactions?status=Approved"}
           />
-          {/* <Boxes
-            number={manualVerifiedTransactions}
-            amount={cardData.manualVerified?.amount}
-            title={"MANUAL VERIFIED TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
-            }
-          /> */}
           <Boxes
             number={unverifiedTransactions}
             amount={cardData.pending?.amount}
@@ -286,6 +278,14 @@ const Home = ({ authorization, showSidebar }) => {
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
             }
             link={"/transactions?status=Decline"}
+          />
+            <Boxes
+            // number={manualVerifiedTransactions}
+            amount={cardData.manualVerified?.amount}
+            title={"MANUAL VERIFIED TRANSACTIONS"}
+            bgColor={
+              "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))"
+            }                        
           />
         </div>
 
@@ -308,7 +308,7 @@ const Home = ({ authorization, showSidebar }) => {
                   />
                   <Stat label="Pending" value={unverifiedTransactions} color="#F67A03" />
                   <Stat label="Decline" value={declineTransactions} color="#FF3E5E" />
-                  {/* <Stat label="Manual Verified"value={manualVerified} color="#0C67E9" /> */}
+                  {/* <Stat label="Manual Verified"value="" color="#0C67E9" /> */}
                 </div>
               </div>
               <div className="w-full h-[300px]">

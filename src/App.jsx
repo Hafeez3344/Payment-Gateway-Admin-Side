@@ -19,6 +19,7 @@ import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 import CurrencyExchange from "./Pages/Currency-Exchange/CurrencyExchange";
 import Staff from "./Pages/Staff/Staff";
 import Reports from "./Pages/Reports/Reports";
+import Commission from "./Pages/Commission/Commission";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -156,6 +157,15 @@ function App() {
             path="/reports"
             element={
               <Reports
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/commission"
+            element={
+              <Commission
                 authorization={authorization}
                 showSidebar={showSidebar}
               />
