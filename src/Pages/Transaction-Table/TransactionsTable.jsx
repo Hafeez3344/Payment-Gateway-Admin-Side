@@ -374,8 +374,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>
-                <p className="text-black font-medium text-lg">
-                  List of all Transactions
+                <p className="text-black font-[500] text-[24px] mr-2">
+                  Filters
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">

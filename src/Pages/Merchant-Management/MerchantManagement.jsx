@@ -157,7 +157,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
         </div>
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 ">
           {/* Left side card */}
-          <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
+          {/* <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
             <div className="flex flex-col z-[-1] items-center">
               <img
                 src={Rectangle}
@@ -220,9 +220,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* Right side Card */}
-          <div className="w-full md:w-3/4 lg:min-h-[550px] bg-white rounded-lg shadow-md border">
+          <div className="w-full lg:min-h-[550px] bg-white rounded-lg shadow-md border">
             <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b space-y-4 md:space-y-0">
               <div className="w-full md:w-auto">
                 <button

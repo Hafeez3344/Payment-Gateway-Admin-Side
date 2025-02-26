@@ -11,6 +11,8 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TbReportSearch } from "react-icons/tb";
+import { FaHandHoldingUsd } from "react-icons/fa";
+
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
 
@@ -87,6 +89,16 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           />
         )}
         {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("commission", "/commission")
+            }
+            label="Commission"
+            icon={<FaHandHoldingUsd className="text-[20px]" />}
+            isActive={selectedPage === "commission"}
+          />
+        )}
+         {loginType === "admin" && (
           <Menu
             onClick={() =>
               handleMenuClick("banks-management", "/banks-management")
