@@ -1,15 +1,68 @@
-import { Select } from "antd";
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Button, DatePicker, Select, Space, Table } from "antd";
 
-import { fn_getAllBanksData, fn_getMerchantApi } from "../../api/api";
+import { FaDownload } from "react-icons/fa6";
+
+import BACKEND_URL, { fn_getAllBanksData, fn_getMerchantApi } from "../../api/api";
+
+const columns = [
+    {
+        title: 'Sr No',
+        dataIndex: 'reportId',
+        key: 'reportId',
+    },
+    {
+        title: 'Creation Date',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+    },
+    {
+        title: 'Merchant',
+        dataIndex: 'merchant',
+        key: 'merchant',
+    },
+    {
+        title: 'Bank',
+        dataIndex: 'bank',
+        key: 'bank',
+    },
+    {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+    },
+    {
+        title: 'Date Range',
+        dataIndex: 'dateRange',
+        key: 'dateRange',
+    }
+];
 
 const Reports = ({ authorization, showSidebar }) => {
 
     const navigate = useNavigate();
+    const { RangePicker } = DatePicker;
+
     const containerHeight = window.innerHeight - 120;
     const [banksOption, setBanksOption] = useState([]);
     const [merchantOptions, setMerchantOption] = useState([]);
+    const statusOptions = [
+        { label: "All", value: "" },
+        { label: "Approved", value: "Approved" },
+        { label: "Pending", value: "Pending" },
+        { label: "Decline", value: "Decline" },
+    ];
+
+    const [toDate, setToDate] = useState("");
+    const [fromDate, setFromDate] = useState("");
+    const [tableData, setTableData] = useState([]);
+    const [selectedBank, setSelectedBank] = useState("");
+    const [responseData, setResponseData] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [dateRange, setDateRange] = useState([null, null]);
     const [selectedMerchant, setSelectedMerchant] = useState("");
 
     useEffect(() => {
@@ -21,8 +74,16 @@ const Reports = ({ authorization, showSidebar }) => {
 
     useEffect(() => {
         fn_getAllBanks();
+        fn_getReportsLog();
         fn_getAllMerchants();
     }, []);
+
+    useEffect(() => {
+        if (dateRange[0] && dateRange[1]) {
+            setFromDate(new Date(dateRange[0]?.$d));
+            setToDate(new Date(dateRange[1]?.$d));
+        }
+    }, [dateRange]);
 
     const fn_getAllMerchants = async () => {
         const response = await fn_getMerchantApi();
@@ -46,6 +107,66 @@ const Reports = ({ authorization, showSidebar }) => {
         setSelectedMerchant(value);
     };
 
+    const fn_changeBank = (value) => {
+        setSelectedBank(value);
+    };
+
+    const fn_changeStatus = (value) => {
+        setSelectedStatus(value);
+    };
+
+    const fn_submit = async () => {
+        try {
+            const token = Cookies.get("token");
+            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${selectedMerchant}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status) {
+                if (response?.data?.status === "ok") {
+                    fn_getReportsLog();
+                    setResponseData(response?.data);
+                }
+            }
+        } catch (error) {
+            console.log("error while download report ", error);
+        }
+    };
+
+    const fn_getReportsLog = async () => {
+        try {
+            const token = Cookies.get("token");
+            const response = await axios.get(`${BACKEND_URL}/ledgerLog/getAll`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status) {
+                if (response?.data?.status === "ok") {
+                    setTableData(response?.data?.data?.map((item, index) => {
+                        return {
+                            key: `${index + 1}`,
+                            reportId: `${index + 1}`,
+                            createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
+                            merchant: item?.merchantId?.merchantName || "All",
+                            bank: `${item?.bankId?.bankName === "UPI" ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}` : item?.bankId?.bankName}` || "All",
+                            status: item?.status && item?.status !== "" ? item?.status : "All",
+                            dateRange: "All"
+                        }
+                    }))
+                }
+            }
+        } catch (error) {
+            console.log("error in fetching reports log ", error);
+        }
+    };
+
+    console.log("responseData ", responseData);
+    console.log("tableData ", tableData);
+
     return (
         <div
             style={{ minHeight: `${containerHeight}px` }}
@@ -63,45 +184,54 @@ const Reports = ({ authorization, showSidebar }) => {
                         Dashboard - Reports
                     </p>
                 </div>
-                <div className="flex flex-col gap-[5px]">
-                    <p className="text-[15px] font-[500]">Select Merchant to View Reports</p>
-                    <Select
-                        style={{ width: '100%', height: "38px" }}
-                        placeholder="Please Select Merchant"
-                        onChange={fn_changeMerchant}
-                        options={merchantOptions}
-                    />
-                </div>
-                {selectedMerchant && selectedMerchant !== "" && (
-                    <div className="mt-[20px] flex flex-col gap-[15px]">
-                        {banksOption?.map((bank) => (
-                            <div className="flex flex-col gap-[4px]">
-                                <p className="font-[500] text-[15px]">{bank?.label}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <Boxes number={1000} amount={2000} title={"SYSTEM APPROVED TRANSACTIONS"} bgColor={"linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"} />
-                                    <Boxes number={1000} amount={2000} title={"PENDING TRANSACTIONS"} bgColor={"linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"} />
-                                    <Boxes number={1000} amount={2000} title={"FAILED TRANSACTIONS"} bgColor={"linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"} />
-                                </div>
-                            </div>
-                        ))}
+                <div className="grid grid-cols-4 gap-[20px]">
+                    <div className="flex flex-col gap-[2px]">
+                        <p className="text-[13px] font-[500]">Select Merchant</p>
+                        <Select
+                            style={{ width: '100%', height: "38px" }}
+                            placeholder="Please Select Merchant"
+                            onChange={fn_changeMerchant}
+                            options={[{ value: "", label: "All" }, ...merchantOptions]}
+                        />
                     </div>
-                )}
+                    <div className="flex flex-col gap-[2px]">
+                        <p className="text-[13px] font-[500]">Select Bank</p>
+                        <Select
+                            style={{ width: '100%', height: "38px" }}
+                            placeholder="Please Select Bank"
+                            onChange={fn_changeBank}
+                            options={[{ value: "", label: "All" }, ...banksOption]}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                        <p className="text-[13px] font-[500]">Select Status</p>
+                        <Select
+                            style={{ width: '100%', height: "38px" }}
+                            placeholder="Please Select Status"
+                            onChange={fn_changeStatus}
+                            options={statusOptions}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                        <p className="text-[13px] font-[500]">Select Date Range</p>
+                        <Space direction="vertical" size={10}>
+                            <RangePicker
+                                value={dateRange}
+                                onChange={(dates) => setDateRange(dates)}
+                                style={{ width: "100%", height: "38px" }}
+                            />
+                        </Space>
+                    </div>
+                </div>
+                <div className="flex justify-end mt-[20px]">
+                    <Button type="primary" className="h-[38px] w-[200px]" onClick={fn_submit}><FaDownload /> Download Report</Button>
+                </div>
+                <div className="w-full bg-[white] mt-[30px]">
+                    <Table dataSource={tableData} columns={columns} />
+                </div>
             </div>
         </div>
     );
 };
 
 export default Reports;
-
-const Boxes = ({ number, amount, title, bgColor }) => (
-    <div
-        className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
-        style={{ backgroundImage: bgColor }}
-    >
-        <h2 className="text-[13px] uppercase font-[500]">{title}</h2>
-        <p className="mt-[13px] text-[20px] font-[700]">₹ {number}</p>
-        <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-            Amount: <span className="font-[700]">₹ {amount}</span>
-        </p>
-    </div>
-);
