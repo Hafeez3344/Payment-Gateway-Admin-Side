@@ -379,29 +379,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-                {/* DropDown of status */}
-                <div>
-                  <Select
-                    className="w-32"
-                    placeholder="Status"
-                    value={merchant}
-                    onChange={(value) => {
-                      setMerchant(value);
-                      setCurrentPage(1);
-                    }}
-                    options={[
-                      {
-                        value: "",
-                        label: (
-                          <span className="text-gray-400">All Status</span>
-                        ),
-                      },
-                      { value: "Approved", label: "Approved" },
-                      { value: "Pending", label: "Pending" },
-                      { value: "Decline", label: "Declined" },
-                    ]}
-                  />
-                </div>
+
                 <Space direction="vertical" size={10}>
                   <RangePicker
                     value={dateRange}
@@ -428,6 +406,29 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                {/* DropDown of status */}
+                <div>
+                  <Select
+                    className="w-32"
+                    placeholder="Status"
+                    value={merchant}
+                    onChange={(value) => {
+                      setMerchant(value);
+                      setCurrentPage(1);
+                    }}
+                    options={[
+                      {
+                        value: "",
+                        label: (
+                          <span className="text-gray-400">All Status</span>
+                        ),
+                      },
+                      { value: "Approved", label: "Approved" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Decline", label: "Declined" },
+                    ]}
                   />
                 </div>
                 {/* Search by Merchant */}

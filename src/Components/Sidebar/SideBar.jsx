@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 import { BsBank } from "react-icons/bs";
-import logo from "../../assets/logo.png";
+import Royal247Logo from "../../assets/Royal247Logo.png"
 import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
@@ -10,6 +10,7 @@ import React, { useState, useEffect } from "react";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
+import { TbReportSearch } from "react-icons/tb";
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
 
@@ -49,11 +50,10 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
         }`}
       style={{ zIndex: 999 }}
     >
-      <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
+     <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
-          <img className="w-8 h-8" src={logo} alt="" />
+          <img className="w-[160px]" src={Royal247Logo} alt="" />
         </div>
-        <div className="font-roboto text-[20px] font-[600]">BetPay</div>
         <button
           className="bg-gray-200 h-[25px] w-[25px] rounded-sm flex md:hidden justify-center ml-20 items-center"
           onClick={fn_controlSidebar}
@@ -130,7 +130,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
               handleMenuClick("reports", "/reports")
             }
             label="Reports"
-            icon={<IoSettingsOutline className="text-[20px]" />}
+            icon={<TbReportSearch className="text-[20px]" />}
             isActive={selectedPage === "reports"}
           />
         )}

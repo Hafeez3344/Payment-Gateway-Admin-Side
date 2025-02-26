@@ -33,6 +33,7 @@ const Home = ({ authorization, showSidebar }) => {
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
+  // const [manualVerified, setManualVerified] = useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -261,8 +262,8 @@ const Home = ({ authorization, showSidebar }) => {
             link={"/transactions?status=Approved"}
           />
           {/* <Boxes
-            number={loading ? "..." : manualVerifiedTransactions}
-            amount={loading ? "..." : cardData.manualVerified?.amount}
+            number={manualVerifiedTransactions}
+            amount={cardData.manualVerified?.amount}
             title={"MANUAL VERIFIED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
@@ -307,11 +308,7 @@ const Home = ({ authorization, showSidebar }) => {
                   />
                   <Stat label="Pending" value={unverifiedTransactions} color="#F67A03" />
                   <Stat label="Decline" value={declineTransactions} color="#FF3E5E" />
-                  {/* <Stat
-                    label="Manual Verified"
-                    value="51,235"
-                    color="#0C67E9"
-                  /> */}
+                  {/* <Stat label="Manual Verified"value={manualVerified} color="#0C67E9" /> */}
                 </div>
               </div>
               <div className="w-full h-[300px]">
