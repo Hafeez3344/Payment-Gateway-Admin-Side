@@ -33,6 +33,8 @@ const Home = ({ authorization, showSidebar }) => {
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
+  const [adminCharges, setAdminCharges] = useState("")
+  const [totalTrns, setTotalTrns] = useState(0);
   // const [manualVerified, setManualVerified] = useState(0);
 
   useEffect(() => {
@@ -66,6 +68,8 @@ const Home = ({ authorization, showSidebar }) => {
       console.log("totalData ", totalData);
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
+      setAdminCharges(approvedData?.data?.adminTotalSum || 0);
+      setTotalTrns(approvedData?.data?.totalTransaction);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
@@ -108,6 +112,8 @@ const Home = ({ authorization, showSidebar }) => {
 
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
+      setAdminCharges(approvedData?.data?.adminTotalSum || 0);
+      setTotalTrns(approvedData?.data?.totalTransaction);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
@@ -144,38 +150,17 @@ const Home = ({ authorization, showSidebar }) => {
     datasets: [
       {
         label: "Approved",
-        data: [
-          10300, 15200, 19300, 14500, 5300, 10200, 12200, 7100, 16300, 13500,
-          5300, 7400,
-        ],
         backgroundColor: "#009666",
-        // borderRadius: {
-        //   topLeft: 10,
-        //   topRight: 10,
-        // },
-      },
-      {
-        label: "Manual Varified",
-        data: [
-          15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
-          5300, 7400,
-        ],
-        backgroundColor: "#0C67E9",
+        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
       },
       {
         label: "Pending",
-        data: [
-          16300, 15200, 15300, 13500, 15300, 14200, 10200, 10200, 7100, 13500,
-          5900, 3300,
-        ],
+        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
         backgroundColor: "#F67A03",
       },
       {
         label: "Faild",
-        data: [
-          4500, 4000, 9300, 15000, 4000, 11000, 2000, 8000, 10200, 17400, 15300,
-          18800,
-        ],
+        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
         backgroundColor: "#FF3E5E",
       },
     ],
@@ -254,7 +239,7 @@ const Home = ({ authorization, showSidebar }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
           <Boxes
             number={verifiedTransactions}
-            amount={cardData.approved?.amount}
+            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
             title={"SYSTEM APPROVED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
@@ -263,7 +248,7 @@ const Home = ({ authorization, showSidebar }) => {
           />
           <Boxes
             number={unverifiedTransactions}
-            amount={cardData.pending?.amount}
+            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
             title={"PENDING TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
@@ -272,21 +257,24 @@ const Home = ({ authorization, showSidebar }) => {
           />
           <Boxes
             number={declineTransactions}
-            amount={cardData.failed?.amount}
+            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
             title={"FAILED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
             }
             link={"/transactions?status=Decline"}
           />
-            <Boxes
-            // number={manualVerifiedTransactions}
-            amount={cardData.manualVerified?.amount}
-            title={"MANUAL VERIFIED TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))"
-            }                        
-          />
+          <div
+            className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
+            style={{ backgroundImage: "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))" }}
+          >
+            <h2 className="text-[13px] uppercase font-[500]">ADMIN COMMISSION</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(adminCharges).toFixed(2)}</p>
+            <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
+              No. of Transactions: <span className="font-[700]">{totalTrns}</span>
+            </p>
+          </div>
+
         </div>
 
         {/* Graph and Recent Transactions */}
@@ -301,14 +289,9 @@ const Home = ({ authorization, showSidebar }) => {
                   arrival.To begin, enter your order number.
                 </p>
                 <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
-                  <Stat
-                    label="System Approved"
-                    value={verifiedTransactions}
-                    color="#029868"
-                  />
+                  <Stat label="System Approved" value={verifiedTransactions} color="#029868" />
                   <Stat label="Pending" value={unverifiedTransactions} color="#F67A03" />
                   <Stat label="Decline" value={declineTransactions} color="#FF3E5E" />
-                  {/* <Stat label="Manual Verified"value="" color="#0C67E9" /> */}
                 </div>
               </div>
               <div className="w-full h-[300px]">

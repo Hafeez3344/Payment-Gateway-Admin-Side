@@ -136,7 +136,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "upload-statement"}
           />
         )}
-        {loginType === "admin" && (
+        {/* {loginType === "admin" && (
           <Menu
             onClick={() =>
               handleMenuClick("reports", "/reports")
@@ -145,7 +145,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             icon={<TbReportSearch className="text-[20px]" />}
             isActive={selectedPage === "reports"}
           />
-        )}
+        )} */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>

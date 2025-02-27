@@ -133,7 +133,7 @@ const Commission = ({ showSidebar }) => {
                       <tr key={merchant.value} className="border-t hover:bg-gray-50">
                         <td className="p-3 text-[13px]">{index + 1}</td>
                         <td className="p-3 text-[13px]">{merchant.label}</td>
-                        <td className="p-3 text-[13px]">{merchant.commision ? `${merchant.commision}%` : ""}</td>
+                        <td className="p-3 text-[13px]">{merchant.commision ? `${merchant.commision}%` : "0%"}</td>
                       </tr>
                     ))}
                     {allMerchants.length === 0 && (
