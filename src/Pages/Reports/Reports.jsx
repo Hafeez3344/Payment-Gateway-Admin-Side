@@ -1,8 +1,10 @@
 import axios from "axios";
+import "jspdf-autotable";
+import jsPDF from "jspdf";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Select, Space, Table } from "antd";
+import { Button, DatePicker, notification, Select, Space, Table } from "antd";
 
 import { FaDownload } from "react-icons/fa6";
 
@@ -60,10 +62,12 @@ const Reports = ({ authorization, showSidebar }) => {
     const [fromDate, setFromDate] = useState("");
     const [tableData, setTableData] = useState([]);
     const [selectedBank, setSelectedBank] = useState("");
-    const [responseData, setResponseData] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState("");
     const [dateRange, setDateRange] = useState([null, null]);
+    const [disableButton, setDisableButton] = useState(false);
     const [selectedMerchant, setSelectedMerchant] = useState("");
+    const [selectedMerchantName, setSelectedMerchantName] = useState("All");
+    const [selectedBankName, setSelectedBankName] = useState("All");
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -105,10 +109,14 @@ const Reports = ({ authorization, showSidebar }) => {
 
     const fn_changeMerchant = (value) => {
         setSelectedMerchant(value);
+        const merchant = merchantOptions?.find((m) => m?.value === value);
+        setSelectedMerchantName(merchant?.label);
     };
 
     const fn_changeBank = (value) => {
         setSelectedBank(value);
+        const bank = banksOption?.find((m) => m?.value === value);
+        setSelectedBankName(bank?.label);
     };
 
     const fn_changeStatus = (value) => {
@@ -117,7 +125,15 @@ const Reports = ({ authorization, showSidebar }) => {
 
     const fn_submit = async () => {
         try {
+            if (fromDate === "" || toDate === "") {
+                return notification.error({
+                    message: "Error",
+                    description: "Please Select Date",
+                    placement: "topRight",
+                });
+            }
             const token = Cookies.get("token");
+            setDisableButton(true);
             const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${selectedMerchant}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -127,12 +143,48 @@ const Reports = ({ authorization, showSidebar }) => {
             if (response?.status) {
                 if (response?.data?.status === "ok") {
                     fn_getReportsLog();
-                    setResponseData(response?.data);
+                    downloadPDF(response?.data);
                 }
             }
         } catch (error) {
             console.log("error while download report ", error);
         }
+    };
+
+    const downloadPDF = (data) => {
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
+
+        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+
+        const tableRows = data?.data?.map((item) => {
+            return [
+                item.Date || "All",
+                selectedMerchantName === "" ? "All" : selectedMerchantName,
+                selectedBankName === "" ? "All" : selectedBankName,
+                (!item.Status || item.Status === "") ? "All" : item.Status,
+                item.NoOfTransaction || "0",
+                item.PayIn || "0",
+                item.Charges || "0",
+                item.Amount || "0"
+            ];
+        }) || [];
+
+        tableRows.push(["Total", "", "", "", "", data.totalPayIn.toFixed(2), data.totalCharges.toFixed(2), data.totalAmount.toFixed(2)]);
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            styles: { fontSize: 10 },
+            theme: "",
+            margin: { top: 30 }
+        });
+
+        doc.save("report.pdf");
+        setDisableButton(false);
     };
 
     const fn_getReportsLog = async () => {
@@ -154,7 +206,7 @@ const Reports = ({ authorization, showSidebar }) => {
                             merchant: item?.merchantId?.merchantName || "All",
                             bank: `${item?.bankId?.bankName === "UPI" ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}` : item?.bankId?.bankName}` || "All",
                             status: item?.status && item?.status !== "" ? item?.status : "All",
-                            dateRange: "All"
+                            dateRange: item?.startDate && item?.endDate ? `${new Date(item?.startDate).toDateString()} - ${new Date(item?.endDate).toDateString()}` : "All"
                         }
                     }))
                 }
@@ -163,9 +215,6 @@ const Reports = ({ authorization, showSidebar }) => {
             console.log("error in fetching reports log ", error);
         }
     };
-
-    console.log("responseData ", responseData);
-    console.log("tableData ", tableData);
 
     return (
         <div
@@ -224,7 +273,7 @@ const Reports = ({ authorization, showSidebar }) => {
                     </div>
                 </div>
                 <div className="flex justify-end mt-[20px]">
-                    <Button type="primary" className="h-[38px] w-[200px]" onClick={fn_submit}><FaDownload /> Download Report</Button>
+                    <Button type="primary" className="h-[38px] w-[200px]" onClick={fn_submit} disabled={disableButton}><FaDownload /> Download Report</Button>
                 </div>
                 <div className="w-full bg-[white] mt-[30px]">
                     <Table dataSource={tableData} columns={columns} />
