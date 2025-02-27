@@ -7,6 +7,8 @@ import { FiTrash2 } from "react-icons/fi";
 import { FaExclamationCircle } from "react-icons/fa";
 
 import BACKEND_URL, { fn_getAllBanksData, fn_getMerchantApi } from "../../api/api";
+import { CiEdit } from "react-icons/ci";
+import { RiEditLine } from "react-icons/ri";
 
 const Staff = ({ showSidebar }) => {
 
@@ -16,10 +18,15 @@ const Staff = ({ showSidebar }) => {
     const containerHeight = window.innerHeight - 120;
     const [banksOption, setBanksOption] = useState([]);
     const [merchantOptions, setMerchantOption] = useState([]);
+    const [editModal, setEditModal] = useState(false);
     const transactionTypeOptions = [{ label: "Manual Transaction", value: "manual" }, { label: "Direct Payment", value: "direct" }];
 
     const [staffForm, setStaffForm] = useState({
         userName: "", email: "", password: "", ledgerType: [], ledgerBank: [], ledgerMerchant: []
+    });
+
+    const [editForm, setEditForm] = useState({
+        userName: "", email: "", password: "", ledgerType: [], ledgerBank: [], ledgerMerchant: [], id: ""
     });
 
     useEffect(() => {
@@ -48,7 +55,11 @@ const Staff = ({ showSidebar }) => {
 
     const fn_changeLedgerType = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        setStaffForm(() => ({ ...staffForm, ledgerType: selectedValues }));
+        if (!editForm) {
+            setStaffForm(() => ({ ...staffForm, ledgerType: selectedValues }));
+        } else {
+            setEditForm(() => ({ ...editForm, ledgerType: selectedValues }));
+        }
     };
 
     const fn_getAllStaffs = async () => {
@@ -69,12 +80,20 @@ const Staff = ({ showSidebar }) => {
 
     const fn_changeMerchant = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        setStaffForm(() => ({ ...staffForm, ledgerMerchant: selectedValues }));
+        if (!editForm) {
+            setStaffForm(() => ({ ...staffForm, ledgerMerchant: selectedValues }));
+        } else {
+            setEditForm(() => ({ ...editForm, ledgerMerchant: selectedValues }));
+        }
     };
 
     const fn_changeBank = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        setStaffForm(() => ({ ...staffForm, ledgerBank: selectedValues }));
+        if (!editForm) {
+            setStaffForm(() => ({ ...staffForm, ledgerBank: selectedValues }));
+        } else {
+            setEditForm(() => ({ ...editForm, ledgerBank: selectedValues }));
+        }
     };
 
     const handleStatusChange = async (staffId, checked) => {
@@ -167,6 +186,59 @@ const Staff = ({ showSidebar }) => {
         }
     };
 
+    const fn_editStaff = async (staff) => {
+        console.log(staff);
+        setEditModal(true);
+        setEditForm((prev) => ({
+            ...prev,
+            userName: staff?.userName,
+            email: staff?.email,
+            password: staff?.password,
+            ledgerType: staff?.ledgerType,
+            ledgerBank: staff?.ledgerBank,
+            ledgerMerchant: staff?.ledgerMerchant,
+            id: staff?._id
+        }))
+    };
+
+    console.log("editForm ", editForm);
+
+    const fn_update = async () => {
+        if (editForm?.userName === "" || editForm?.email === "" || editForm?.password === "" || editForm?.ledgerType?.length === 0 || editForm?.ledgerMerchant?.length === 0 || editForm?.ledgerBank?.length === 0) {
+            return notification.error({
+                message: "Error",
+                description: "Fill Complete Form",
+                placement: "topRight",
+            });
+        }
+        try {
+            const response = await axios.put(`${BACKEND_URL}/adminStaff/update/${editForm?.id}`, editForm, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setOpen(false);
+                setEditModal(false);
+                fn_getAllStaffs();
+                notification.success({
+                    message: "Staff Updated",
+                    description: "Staff Updated Successfully",
+                    placement: "topRight",
+                });
+            }
+        } catch (error) {
+            console.log("staff creation error ", error);
+            setEditModal(false);
+            return notification.error({
+                message: "Staff Creation Error",
+                description: error?.response?.data?.message || "Network",
+                placement: "topRight",
+            })
+        }
+    }
+
     return (
         <>
             <div
@@ -225,6 +297,13 @@ const Staff = ({ showSidebar }) => {
                                                         checked={!staff.block}
                                                         onChange={(checked) => handleStatusChange(staff._id, checked)}
                                                     />
+                                                    <Button
+                                                        className="bg-blue-100 hover:bg-red-200 text-blue-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
+                                                        title="Edit"
+                                                        onClick={() => fn_editStaff(staff)}
+                                                    >
+                                                        <RiEditLine size={16} />
+                                                    </Button>
                                                     <Button
                                                         className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                                                         title="Delete"
@@ -325,6 +404,88 @@ const Staff = ({ showSidebar }) => {
                             style={{ width: '100%' }}
                             placeholder="Please Select Banks"
                             onChange={fn_changeBank}
+                            options={banksOption}
+                        />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* edit form */}
+            <Modal
+                title={<p className="text-[20px] font-[600]">Edit Staff</p>}
+                open={editModal}
+                onCancel={() => setEditModal(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setEditModal(false)}>
+                        Cancel
+                    </Button>,
+                    <Button key="submit" type="primary" onClick={fn_update}>
+                        Update
+                    </Button>,
+                ]}
+                width={600}
+            >
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-sm font-medium mb-1">
+                                Username <span className="text-red-500">*</span>
+                            </p>
+                            <Input value={editForm.userName} onChange={(e) => setEditForm({ ...editForm, userName: e.target.value })} placeholder="Enter username" />
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium mb-1">
+                                Email <span className="text-red-500">*</span>
+                            </p>
+                            <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} placeholder="Enter email address" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-1">
+                            Password <span className="text-red-500">*</span>
+                        </p>
+                        <Input.Password value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} placeholder="Enter password" />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-1">Select Transaction Type{" "}<span className="text-red-500">*</span></p>
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{
+                                width: '100%',
+                            }}
+                            placeholder="Please select Transaction Type"
+                            onChange={fn_changeLedgerType}
+                            value={editForm.ledgerType}
+                            options={transactionTypeOptions}
+                        />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-1">Select Merchant{" "}<span className="text-red-500">*</span></p>
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{ width: '100%' }}
+                            placeholder="Please select Merchant"
+                            onChange={fn_changeMerchant}
+                            value={editForm.ledgerMerchant}
+                            options={merchantOptions}
+                        />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-1">Select Banks{" "}<span className="text-red-500">*</span></p>
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{ width: '100%' }}
+                            placeholder="Please Select Banks"
+                            onChange={fn_changeBank}
+                            value={editForm.ledgerBank}
                             options={banksOption}
                         />
                     </div>

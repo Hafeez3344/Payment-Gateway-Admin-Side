@@ -134,8 +134,9 @@ const Reports = ({ authorization, showSidebar }) => {
                 });
             }
             const token = Cookies.get("token");
+            const adminId = Cookies.get("adminId");
             setDisableButton(true);
-            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${selectedMerchant}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}`, {
+            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${selectedMerchant}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}$filterByAdminId=${adminId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
@@ -226,7 +227,8 @@ const Reports = ({ authorization, showSidebar }) => {
     const fn_getReportsLog = async () => {
         try {
             const token = Cookies.get("token");
-            const response = await axios.get(`${BACKEND_URL}/ledgerLog/getAll`, {
+            const adminId = Cookies.get("adminId");
+            const response = await axios.get(`${BACKEND_URL}/ledgerLog/getAll?filterByAdminId=${adminId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
