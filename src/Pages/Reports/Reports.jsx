@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Button, DatePicker, notification, Select, Space, Table } from "antd";
+import * as XLSX from "xlsx";
 
 import { FaDownload } from "react-icons/fa6";
 
@@ -144,6 +145,7 @@ const Reports = ({ authorization, showSidebar }) => {
                 if (response?.data?.status === "ok") {
                     fn_getReportsLog();
                     downloadPDF(response?.data);
+                    downloadExcel(response?.data);
                 }
             }
         } catch (error) {
@@ -184,6 +186,40 @@ const Reports = ({ authorization, showSidebar }) => {
         });
 
         doc.save("report.pdf");
+        setDisableButton(false);
+    };
+
+    const downloadExcel = (data) => {
+        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableRows = data?.data?.map((item) => {
+            return {
+                Date: item.Date || "All",
+                Merchant: selectedMerchantName === "" ? "All" : selectedMerchantName,
+                Bank: selectedBankName === "" ? "All" : selectedBankName,
+                Status: (!item.Status || item.Status === "") ? "All" : item.Status,
+                "No. of Transactions": item.NoOfTransaction || "0",
+                "Pay In (INR)": item.PayIn || "0",
+                "Charges (INR)": item.Charges || "0",
+                "Amount (INR)": item.Amount || "0"
+            };
+        }) || [];
+
+        tableRows.push({
+            Date: "Total",
+            Merchant: "",
+            Bank: "",
+            Status: "",
+            "No. of Transactions": "",
+            "Pay In (INR)": data.totalPayIn.toFixed(2),
+            "Charges (INR)": data.totalCharges.toFixed(2),
+            "Amount (INR)": data.totalAmount.toFixed(2)
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(tableRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+        XLSX.writeFile(workbook, "report.xlsx");
         setDisableButton(false);
     };
 
