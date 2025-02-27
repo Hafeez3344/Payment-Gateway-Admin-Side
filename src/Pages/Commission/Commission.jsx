@@ -114,7 +114,7 @@ const Commission = ({ showSidebar }) => {
               <div className="p-3 flex justify-between border-b text-[20px] font-[500]">
                 <p>Merchant Commission Table</p>
                 <div><Button type="primary" onClick={handleAddAccount}>
-                  Add Merchant Commission
+                  Update Merchant Commission
                 </Button></div>
               </div>
 
@@ -155,7 +155,7 @@ const Commission = ({ showSidebar }) => {
         centered
         width={450}
         open={open}
-        title={<p className="text-[16px] font-[700]">Add Merchant Commission</p>}
+        title={<p className="text-[16px] font-[700]">Update Merchant Commission</p>}
         footer={
           <div className="flex gap-4 mt-6">
             <Button
