@@ -1,49 +1,40 @@
-import React, { useState } from "react";
-import { Button, Modal, Input, Form, notification, Select } from "antd";
-import { FaExclamationCircle } from "react-icons/fa";
-
-const staticCurrencies = [
-    {
-        name: 'USD (US Dollar)',
-        rate: '82.50',
-        exchange: '82.00'
-    },
-    {
-        name: 'EUR (Euro)',
-        rate: '89.75',
-        exchange: '89.25'
-    },
-    {
-        name: 'GBP (British Pound)',
-        rate: '104.30',
-        exchange: '103.80'
-    },
-    {
-        name: 'AUD (Australian Dollar)',
-        rate: '54.25',
-        exchange: '53.75'
-    },
-    {
-        name: 'CAD (Canadian Dollar)',
-        rate: '61.40',
-        exchange: '60.90'
-    }
-];
-
-const currencyOptions = [
-    { value: 'USD (US Dollar)', label: 'USD (US Dollar)' },
-    { value: 'EUR (Euro)', label: 'EUR (Euro)' },
-    { value: 'GBP (British Pound)', label: 'GBP (British Pound)' },
-    { value: 'JPY (Japanese Yen)', label: 'JPY (Japanese Yen)' },
-    { value: 'AUD (Australian Dollar)', label: 'AUD (Australian Dollar)' },
-
-];
+import React, { useState, useEffect } from "react";
+import { Button, Modal, Input, Form, notification, Popconfirm } from "antd";
+import { FaExclamationCircle, FaTrash } from "react-icons/fa";
+import { fn_createCurrencyExchange, fn_getAllCurrencyExchange, fn_deleteCurrencyExchange } from "../../api/api";
+import Cookies from "js-cookie";
 
 const CurrencyExchange = ({ authorization, showSidebar }) => {
     const containerHeight = window.innerHeight - 120;
-    const [currencies, setCurrencies] = useState(staticCurrencies);
+    const [currencies, setCurrencies] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+
+    const fetchCurrencies = async () => {
+        setLoading(true);
+        try {
+            const response = await fn_getAllCurrencyExchange();
+            if (response.status) {
+                setCurrencies(response.data);
+            } else {
+                notification.error({
+                    message: 'Error',
+                    description: response.message || 'Failed to fetch currencies',
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: 'Error',
+                description: 'Failed to fetch currencies',
+            });
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchCurrencies();
+    }, []);
 
     const handleAddCurrency = () => {
         setIsModalOpen(true);
@@ -54,21 +45,59 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
         form.resetFields();
     };
 
-    const handleModalOk = () => {
-        form.validateFields().then((values) => {
-            const newCurrency = {
-                name: values.currency,
-                rate: values.rate,
-                exchange: values.exchange
-            };
-            setCurrencies([...currencies, newCurrency]);
-            notification.success({
-                message: 'Success',
-                description: 'Currency added successfully',
+    const handleModalOk = async () => {
+        try {
+            const values = await form.validateFields();
+            const response = await fn_createCurrencyExchange({
+                currency: values.currency,
+                currencyRate: values.currencyRate,
+                charges: values.charges,
+                adminId: Cookies.get("adminId")
             });
-            setIsModalOpen(false);
-            form.resetFields();
-        });
+
+            if (response.status) {
+                fetchCurrencies(); 
+                notification.success({
+                    message: 'Success',
+                    description: response.message || 'Currency added successfully',
+                });
+                setIsModalOpen(false);
+                form.resetFields();
+            } else {
+                notification.error({
+                    message: 'Error',
+                    description: response.message || 'Failed to add currency',
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: 'Error',
+                description: 'Please fill all required fields',
+            });
+        }
+    };
+
+    const handleDelete = async (currencyId) => {
+        try {
+            const response = await fn_deleteCurrencyExchange(currencyId);
+            if (response.status) {
+                notification.success({
+                    message: 'Success',
+                    description: response.message
+                });
+                fetchCurrencies(); // Refresh the list after deletion
+            } else {
+                notification.error({
+                    message: 'Error',
+                    description: response.message
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: 'Error',
+                description: 'Failed to delete currency'
+            });
+        }
     };
 
     return (
@@ -102,27 +131,44 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                                     <thead className="bg-[#ECF0FA]">
                                         <tr>
                                             <th className="p-4 text-[13px] font-[600]">Currency</th>
-                                            <th className="p-4 text-[13px] font-[600]">Currency Rate (INR)</th>
-                                            <th className="p-4 text-[13px] font-[600]">Exchange (INR)</th>
+                                            <th className="p-4 text-[13px] font-[600]">Currency Rate</th>
+                                            <th className="p-4 text-[13px] font-[600]">Charges (INR)</th>
+                                            <th className="p-4 text-[13px] font-[600]">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {currencies?.length > 0 ? (
                                             currencies.map((currency, index) => (
                                                 <tr
-                                                    key={index}
+                                                    key={currency._id}
                                                     className={`border-t ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                                                 >
-                                                    <td className="p-4 text-[13px]">{currency.name}</td>
-                                                    <td className="p-4 text-[13px]">{currency.rate}</td>
-                                                    <td className="p-4 text-[13px]">{currency.exchange}</td>
+                                                    <td className="p-4 text-[13px]">{currency?.currency}</td>
+                                                    <td className="p-4 text-[13px]">1 INR = {currency?.currencyRate}{" "}{currency?.currency}</td>
+                                                    <td className="p-4 text-[13px]">{currency?.charges}</td>
+                                                    <td className="p-4 text-[13px]">
+                                                        <Popconfirm
+                                                            title="Delete Currency"
+                                                            description="Are you sure you want to delete this currency?"
+                                                            onConfirm={() => handleDelete(currency._id)}
+                                                            okText="Yes"
+                                                            cancelText="No"
+                                                        >
+                                                            <Button 
+                                                                type="primary" 
+                                                                danger 
+                                                                icon={<FaTrash />}
+                                                                size="small"
+                                                            />
+                                                        </Popconfirm>
+                                                    </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="3" className="text-center py-4 text-gray-500">
+                                                <td colSpan="4" className="text-center py-4 text-gray-500">
                                                     <FaExclamationCircle className="inline-block mr-2" />
-                                                    No currencies found
+                                                    {loading ? 'Loading currencies...' : 'No currencies found'}
                                                 </td>
                                             </tr>
                                         )}
@@ -150,33 +196,25 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                     <Form.Item
                         label="Currency"
                         name="currency"
-                        rules={[{ required: true, message: 'Please select a currency' }]}
+                        rules={[{ required: true, message: 'Please enter currency' }]}
                     >
-                        <Select
-                            showSearch
-                            placeholder="Select a currency"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                            }
-                            options={currencyOptions}
-                        />
+                        <Input placeholder="Enter currency" />
                     </Form.Item>
 
                     <Form.Item
-                        label="Currency Rate (INR)"
-                        name="rate"
+                        label="Currency Rate (1 INR = ?)"
+                        name="currencyRate"
                         rules={[{ required: true, message: 'Please enter currency rate' }]}
                     >
                         <Input placeholder="Enter currency rate" />
                     </Form.Item>
 
                     <Form.Item
-                        label="Exchange (INR)"
-                        name="exchange"
-                        rules={[{ required: true, message: 'Please enter exchange rate' }]}
+                        label="Charges (INR)"
+                        name="charges"
+                        rules={[{ required: true, message: 'Please enter charges' }]}
                     >
-                        <Input placeholder="Enter exchange rate" />
+                        <Input placeholder="Enter charges" />
                     </Form.Item>
                 </Form>
             </Modal>

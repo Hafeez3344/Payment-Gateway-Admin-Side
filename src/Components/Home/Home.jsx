@@ -35,7 +35,6 @@ const Home = ({ authorization, showSidebar }) => {
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [adminCharges, setAdminCharges] = useState("")
   const [totalTrns, setTotalTrns] = useState(0);
-  // const [manualVerified, setManualVerified] = useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -151,16 +150,16 @@ const Home = ({ authorization, showSidebar }) => {
       {
         label: "Approved",
         backgroundColor: "#009666",
-        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
       {
         label: "Pending",
-        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         backgroundColor: "#F67A03",
       },
       {
         label: "Faild",
-        data: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         backgroundColor: "#FF3E5E",
       },
     ],
@@ -205,10 +204,7 @@ const Home = ({ authorization, showSidebar }) => {
           <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
             <button
-              onClick={() => handleFilterClick('all')}
-              className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} 
-                border w-[70px] sm:w-[70px] p-1 rounded`}
-            >
+              onClick={() => handleFilterClick('all')} className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
               ALL
             </button>
             <button

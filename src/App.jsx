@@ -20,6 +20,7 @@ import CurrencyExchange from "./Pages/Currency-Exchange/CurrencyExchange";
 import Staff from "./Pages/Staff/Staff";
 import Reports from "./Pages/Reports/Reports";
 import Commission from "./Pages/Commission/Commission";
+import Withdraw from "./Pages/Withdraw-Page/Withdraw";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -175,6 +176,15 @@ function App() {
             path="/staff"
             element={
               <Staff
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+           <Route
+            path="/withdraw"
+            element={
+              <Withdraw
                 authorization={authorization}
                 showSidebar={showSidebar}
               />

@@ -627,4 +627,105 @@ export const fn_updateMerchantCommissionApi = async (merchantId, commission) => 
     }
 };
 
+export const fn_createCurrencyExchange = async (data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.post(
+            `${BACKEND_URL}/exchange/create`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: response.data.status === "ok",
+            message: response.data.message,
+            data: response.data.data
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_deleteCurrencyExchange = async (currencyId) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.delete(
+            `${BACKEND_URL}/exchange/delete/${currencyId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: response.data.status === "ok",
+            message: response.data.message || "Currency deleted successfully"
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to delete currency"
+        };
+    }
+};
+
+export const fn_getAllCurrencyExchange = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/exchange/getAll`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        return {
+            status: true,
+            data: response.data?.data ?? [], 
+        };
+    } catch (error) {
+        console.error("Error fetching currencies:", error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "An error occurred",
+            data: [],
+        };
+    }
+};
+
+export const fn_getAllWithdrawTransactions = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=admin`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: { data: response.data?.data || [] }
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export default BACKEND_URL;

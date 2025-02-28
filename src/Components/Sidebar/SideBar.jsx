@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import { BsBank } from "react-icons/bs";
 import Royal247Logo from "../../assets/Royal247Logo.png"
 import { LuLogOut } from "react-icons/lu";
-import { PiNotebook } from "react-icons/pi";
+import { PiHandWithdraw, PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
 import { FaHeadphones } from "react-icons/fa";
 import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
@@ -12,6 +12,7 @@ import { MdOutlineDashboard } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TbReportSearch } from "react-icons/tb";
 import { FaHandHoldingUsd } from "react-icons/fa";
+import { MdOutlineCurrencyExchange } from "react-icons/md";
 
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
@@ -63,7 +64,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           X
         </button>
       </div>
-      <div className="mt-[10px]">
+      <div className="mt-[10px] mb-[50px] overflow-auto" style={{ height: "calc(100vh - 115px)" }}>
         {loginType === "admin" && (
           <Menu
             onClick={() => handleMenuClick("dashboard", "/")}
@@ -107,15 +108,24 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             icon={<BsBank className="text-[20px]" />}
             isActive={selectedPage === "banks-management"}
           />
+          
         )}
-        {/* <Menu
+        <Menu
           onClick={() =>
             handleMenuClick("currency-exchange", "/currency-exchange")
           }
           label="Exchange Rate"
           icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
           isActive={selectedPage === "currency-exchange"}
-        /> */}
+        />
+         <Menu
+          onClick={() =>
+            handleMenuClick("withdraw", "/withdraw")
+          }
+          label="Withdraw Requests"
+          icon={<PiHandWithdraw className="text-[20px]" />}
+          isActive={selectedPage === "withdraw"}
+        />
         {/* {loginType === "admin" && (
           <Menu
             onClick={() =>
@@ -170,7 +180,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
       </div>
       <div
         onClick={fn_logout}
-        className="flex border-t gap-[15px] items-center py-[14px] px-[20px] cursor-pointer absolute bottom-0 w-full"
+        className="flex border-t gap-[15px] items-center py-[14px] px-[20px] cursor-pointer absolute bottom-0 w-full bg-white"
       >
         <div className="text-[rgba(105,155,247,1)]">
           <LuLogOut className="text-[20px] rotate-180" />
