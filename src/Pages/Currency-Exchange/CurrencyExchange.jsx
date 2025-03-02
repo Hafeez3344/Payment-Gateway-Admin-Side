@@ -1,15 +1,28 @@
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Input, Form, notification, Popconfirm } from "antd";
+
+import { FiEdit } from "react-icons/fi";
 import { FaExclamationCircle, FaTrash } from "react-icons/fa";
-import { fn_createCurrencyExchange, fn_getAllCurrencyExchange, fn_deleteCurrencyExchange } from "../../api/api";
-import Cookies from "js-cookie";
+import { fn_createCurrencyExchange, fn_getAllCurrencyExchange, fn_deleteCurrencyExchange, fn_editCurrencyExchange } from "../../api/api";
 
 const CurrencyExchange = ({ authorization, showSidebar }) => {
-    const containerHeight = window.innerHeight - 120;
-    const [currencies, setCurrencies] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const [currencies, setCurrencies] = useState([]);
+    const containerHeight = window.innerHeight - 120;
+    const [editModal, setIsEditModal] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCurrency, setSelectedCurrency] = useState(null);
+
+    useEffect(() => {
+        window.scroll(0, 0);
+        if (!authorization) {
+            navigate("/login");
+        }
+        fetchCurrencies();
+    }, []);
 
     const fetchCurrencies = async () => {
         setLoading(true);
@@ -32,16 +45,13 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
         setLoading(false);
     };
 
-    useEffect(() => {
-        fetchCurrencies();
-    }, []);
-
     const handleAddCurrency = () => {
         setIsModalOpen(true);
     };
 
     const handleModalCancel = () => {
         setIsModalOpen(false);
+        setIsEditModal(false);
         form.resetFields();
     };
 
@@ -56,7 +66,7 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
             });
 
             if (response.status) {
-                fetchCurrencies(); 
+                fetchCurrencies();
                 notification.success({
                     message: 'Success',
                     description: response.message || 'Currency added successfully',
@@ -96,6 +106,47 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
             notification.error({
                 message: 'Error',
                 description: 'Failed to delete currency'
+            });
+        }
+    };
+
+    const fn_editCall = async (item) => {
+        setIsEditModal(true);
+        setSelectedCurrency(item);
+        form.setFieldValue('currency', item?.currency);
+        form.setFieldValue('currencyRate', item?.currencyRate);
+        form.setFieldValue('charges', item?.charges);
+    };
+
+    const handleModalEdit = async () => {
+        try {
+            const values = await form.validateFields();
+            const response = await fn_editCurrencyExchange(selectedCurrency?._id, {
+                currency: values.currency,
+                currencyRate: values.currencyRate,
+                charges: values.charges,
+                adminId: Cookies.get("adminId")
+            });
+
+            if (response.status) {
+                fetchCurrencies();
+                notification.success({
+                    message: 'Success',
+                    description: response.message || 'Currency Updated successfully',
+                });
+                setIsModalOpen(false);
+                setIsEditModal(false);
+                form.resetFields();
+            } else {
+                notification.error({
+                    message: 'Error',
+                    description: response.message || 'Failed to update currency',
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: 'Error',
+                description: 'Please fill all required fields',
             });
         }
     };
@@ -146,7 +197,7 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                                                     <td className="p-4 text-[13px]">{currency?.currency}</td>
                                                     <td className="p-4 text-[13px]">1 INR = {currency?.currencyRate}{" "}{currency?.currency}</td>
                                                     <td className="p-4 text-[13px]">{currency?.charges}</td>
-                                                    <td className="p-4 text-[13px]">
+                                                    <td className="p-4 text-[13px] flex items-center gap-[10px]">
                                                         <Popconfirm
                                                             title="Delete Currency"
                                                             description="Are you sure you want to delete this currency?"
@@ -154,13 +205,14 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                                                             okText="Yes"
                                                             cancelText="No"
                                                         >
-                                                            <Button 
-                                                                type="primary" 
-                                                                danger 
+                                                            <Button
+                                                                type="primary"
+                                                                danger
                                                                 icon={<FaTrash />}
                                                                 size="small"
                                                             />
                                                         </Popconfirm>
+                                                        <FiEdit className="text-[24px] bg-green-300 p-[5px] rounded-[3px] text-green-800 cursor-pointer" onClick={() => fn_editCall(currency)} />
                                                     </td>
                                                 </tr>
                                             ))
@@ -180,12 +232,53 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                 </div>
             </div>
 
+            {/* create modal */}
             <Modal
                 title="Add New Currency"
                 open={isModalOpen}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 okText="Add Currency"
+                cancelText="Cancel"
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    className="mt-4"
+                >
+                    <Form.Item
+                        label="Currency"
+                        name="currency"
+                        rules={[{ required: true, message: 'Please enter currency' }]}
+                    >
+                        <Input placeholder="Enter currency" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Currency Rate (1 INR = ?)"
+                        name="currencyRate"
+                        rules={[{ required: true, message: 'Please enter currency rate' }]}
+                    >
+                        <Input placeholder="Enter currency rate" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Charges (INR)"
+                        name="charges"
+                        rules={[{ required: true, message: 'Please enter charges' }]}
+                    >
+                        <Input placeholder="Enter charges" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* edit modal */}
+            <Modal
+                title="Edit Currency"
+                open={editModal}
+                onOk={handleModalEdit}
+                onCancel={handleModalCancel}
+                okText="Edit Currency"
                 cancelText="Cancel"
             >
                 <Form

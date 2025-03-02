@@ -1,22 +1,25 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaIndianRupeeSign } from "react-icons/fa6";
-import { Pagination, Modal, Input, Select, Button, notification } from "antd";
-import BACKEND_URL, { fn_getAllWithdrawTransactions } from "../../api/api";
+import { Pagination, Modal, Input, notification } from "antd";
+
+import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
+import BACKEND_URL, { fn_getAllWithdrawTransactions } from "../../api/api";
 
 const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
+
     const navigate = useNavigate();
+    const [utr, setUtr] = useState("");
     const [open, setOpen] = useState(false);
-    const containerHeight = window.innerHeight - 120;
-    const [selectedTransaction, setSelectedTransaction] = useState(null);
-    const [transactions, setTransactions] = useState([]);
+    const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(true);
+    const containerHeight = window.innerHeight - 120;
+    const [transactions, setTransactions] = useState([]);
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -24,7 +27,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             navigate("/login");
             return;
         }
-        // setSelectedPage("withdraw");
         fetchTransactions();
     }, [authorization, navigate, setSelectedPage]);
 
@@ -57,11 +59,19 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
     const handleTransactionAction = async (action, id) => {
         try {
+            if (action == "Approved" && utr === "" && selectedTransaction?.withdrawBankId) return notification.error({
+                message: "Error",
+                description: "Enter UTR",
+                placement: "topRight"
+            })
             const token = Cookies.get("token");
-            const response = await axios.put(`${BACKEND_URL}/withdraw/update/${id}`, { status: action }, {
+            const formData = new FormData();
+            formData.append("status", action);
+            formData.append("utr", utr);
+            if (image) formData.append("image", image);
+            const response = await axios.put(`${BACKEND_URL}/withdraw/update/${id}`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
                 },
             });
             if (response.status === 200) {
@@ -76,7 +86,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         } catch (error) {
             console.log('Error in handleTransactionAction:', error);
         }
-    }
+    };
 
     return (
         <>
@@ -110,7 +120,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <th className="p-4 text-nowrap">S_No</th>
                                             <th className="p-4">DATE</th>
                                             <th className="p-4 text-nowrap">MERCHANT NAME</th>
-                                            {/* <th className="p-4 text-nowrap">BANK NAME</th> */}
                                             <th className="p-4 text-nowrap">EXCHANGE</th>
                                             <th className="p-4 text-nowrap">AMOUNT</th>
                                             <th className="pl-8">Status</th>
@@ -128,9 +137,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.merchantId?.merchantName || 'N/A'}
                                                 </td>
-                                                {/* <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
-                                                    {transaction?.withdrawBankId?.bankName}
-                                                </td> */}
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.exchangeId?.currency || 'N/A'}
                                                 </td>
@@ -138,7 +144,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                     {transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}
                                                 </td>
                                                 <td className="p-4 text-[13px] font-[500]">
-                                                    <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center${transaction.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
+                                                    <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${transaction.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
                                                         transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" :
                                                             "bg-[#10CB0026] text-[#0DA000]"}`}>
                                                         {transaction?.status}
@@ -230,18 +236,19 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             value={selectedTransaction?.withdrawBankId?.bankName || 'N/A'}
                                         />
                                     </div>
+                                    {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">Account Title:</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.accountHolderName || 'N/A'}
+                                            />
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center gap-4">
-                                        <p className="text-[12px] font-[600] w-[200px]">Account Title:</p>
-                                        <Input
-                                            className="text-[12px] bg-gray-200"
-                                            readOnly
-                                            value={selectedTransaction?.withdrawBankId?.accountHolderName || 'N/A'}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center gap-4">
-                                        <p className="text-[12px] font-[600] w-[200px]">IFSC Code:</p>
+                                        <p className="text-[12px] font-[600] w-[200px]">{selectedTransaction?.withdrawBankId?.bankName !== "UPI" ? "IFSC Code:" : "UPI ID:"}</p>
                                         <Input
                                             className="text-[12px] bg-gray-200"
                                             readOnly
@@ -249,14 +256,16 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                         />
                                     </div>
 
-                                    <div className="flex items-center gap-4">
-                                        <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
-                                        <Input
-                                            className="text-[12px] bg-gray-200"
-                                            readOnly
-                                            value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
-                                        />
-                                    </div>
+                                    {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
+                                            />
+                                        </div>
+                                    )}
                                 </>
                             )}
 
@@ -273,24 +282,40 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex gap-4 mt-4">
-                                <button
-                                    className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
-                                    onClick={() => handleTransactionAction("Approved", selectedTransaction?._id)}
-                                    disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
-                                >
-                                    <IoMdCheckmark className="mt-[3px] mr-[6px]" />
-                                    Approve Withdrawal
-                                </button>
-                                <button
-                                    className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
-                                    onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
-                                    disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
-                                >
-                                    <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                                    Decline Withdrawal
-                                </button>
-                            </div>
+                            {selectedTransaction?.status === "Pending" && selectedTransaction?.withdrawBankId && (
+                                <>
+                                    <div className="border-t mt-2 mb-1"></div>
+                                    <div className="flex items-center">
+                                        <p className="w-[150px] text-gray-600 text-[12px] font-[600]">Upload Proof:</p>
+                                        <input type="file" onChange={(e) => setImage(e.target.files?.[0])} />
+                                    </div>
+                                    <div className="flex items-center">
+                                        <p className="min-w-[150px] text-gray-600 text-[12px] font-[600]">Enter UTR<span className="text-red-500">{" "}*</span>:</p>
+                                        <Input className="text-[12px]" value={utr} onChange={(e) => setUtr(e.target.value)} />
+                                    </div>
+
+                                </>
+                            )}
+                            {selectedTransaction?.status === "Pending" && (
+                                <div className="flex gap-4 mt-2">
+                                    <button
+                                        className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
+                                        onClick={() => handleTransactionAction("Approved", selectedTransaction?._id)}
+                                        disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                                    >
+                                        <IoMdCheckmark className="mt-[3px] mr-[6px]" />
+                                        Approve Withdrawal
+                                    </button>
+                                    <button
+                                        className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
+                                        onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
+                                        disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                                    >
+                                        <GoCircleSlash className="mt-[3px] mr-[6px]" />
+                                        Decline Withdrawal
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

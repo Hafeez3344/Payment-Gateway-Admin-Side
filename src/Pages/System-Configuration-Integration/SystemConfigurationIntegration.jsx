@@ -9,6 +9,7 @@ import {
 } from "../../api/api";
 
 const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
+
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [loginData, setLoginData] = useState([]);
@@ -57,9 +58,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -112,11 +112,10 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
                 </button>
                 {statusMessage && (
                   <p
-                    className={`mt-2 ml-2 text-[14px] ${
-                      statusMessage.includes("Admin Verified Successfully")
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
+                    className={`mt-2 ml-2 text-[14px] ${statusMessage.includes("Admin Verified Successfully")
+                      ? "text-green-500"
+                      : "text-red-500"
+                      }`}
                   >
                     {statusMessage}
                   </p>

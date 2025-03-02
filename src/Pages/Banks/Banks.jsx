@@ -467,6 +467,28 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                     >
                                       <MdDoNotDisturb size={18} />
                                     </Button>
+                                    <Button
+                                      className="bg-red-100 text-red-600 rounded-full px-2 py-2 text-[11px] ms-[5px]"
+                                      title="Reset Limit"
+                                      onClick={async () => {
+                                        const response = await fn_BankUpdate(
+                                          account?._id,
+                                          {
+                                            remainingLimit: account?.accountLimit, // When checked is true, block should be false
+                                          }
+                                        );
+                                        if (response?.status) {
+                                          fetchAllBanksData(activeTab);
+                                          notification.success({
+                                            message: "Bank Updated",
+                                            description: "Bank Limit Released",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      Reset Limit
+                                    </Button>
                                   </>
                                 ) : (
                                   <>

@@ -498,8 +498,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         <td className="text-center">
                           <button
                             className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${!merchant.block
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
                               }`}
                           >
                             {!merchant.block ? "Active" : "Inactive"}

@@ -656,6 +656,35 @@ export const fn_createCurrencyExchange = async (data) => {
     }
 };
 
+export const fn_editCurrencyExchange = async (id, data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(
+            `${BACKEND_URL}/exchange/update/${id}`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: response.data.status === "ok",
+            message: response.data.message,
+            data: response.data.data
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export const fn_deleteCurrencyExchange = async (currencyId) => {
     try {
         const token = Cookies.get("token");
@@ -692,7 +721,7 @@ export const fn_getAllCurrencyExchange = async () => {
 
         return {
             status: true,
-            data: response.data?.data ?? [], 
+            data: response.data?.data ?? [],
         };
     } catch (error) {
         console.error("Error fetching currencies:", error);
