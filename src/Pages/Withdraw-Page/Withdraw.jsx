@@ -263,9 +263,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                 </p>
                             </div>
                             {/* Add back the withdraw button */}
-                            <Button type="primary" onClick={handleWithdrawRequest}>
+                            {/* <Button type="primary" onClick={handleWithdrawRequest}>
                                 Create Withdraw
-                            </Button>
+                            </Button> */}
                         </div>
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
                         <div className="overflow-x-auto">
