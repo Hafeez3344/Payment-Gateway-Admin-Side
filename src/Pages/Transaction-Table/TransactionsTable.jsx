@@ -642,12 +642,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   label: "Merchant Name:",
                   value: selectedTransaction.merchantId?.merchantName || "",
                 },
-                // {
-                //   label: "Description:",
-                //   value:
-                //     selectedTransaction.description || "",
-                //   isTextarea: true,
-                // },
               ].map((field, index) => (
                 <div className="flex items-center gap-4" key={index}>
                   <p className="text-[12px] font-[600] w-[150px]">
@@ -700,69 +694,42 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   )}
                 </div>
               ))}
-              <div className="flex gap-2 mt-4">
-                <button
-                  className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
-                  onClick={() =>
-                    handleTransactionAction(
-                      "Approved",
-                      selectedTransaction?._id
-                    )
-                  }
-                  disabled={
-                    selectedTransaction?.status === "Approved" ||
-                    selectedTransaction?.status === "Decline"
-                  }
-                >
-                  <IoMdCheckmark className="mt-[3px] mr-[6px]" />
-                  Approve Transaction
-                </button>
-                <button
-                  className={`flex p-2 rounded text-[13px] ${declineButtonClicked
-                    ? "bg-[#140e0f33] text-black"
-                    : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"
-                    }`}
-                  onClick={() =>
-                    setDeclinedButtonClicked(!declineButtonClicked)
-                  }
-                  disabled={
-                    selectedTransaction?.status === "Approved" ||
-                    selectedTransaction?.status === "Decline"
-                  }
-                // onClick={fn_declineButtonClicked}
-                >
-                  <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                  Decline TR
-                </button>
-                {/*<button
-                  className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                  disabled={selectedTransaction?.status === "Approved"}
-                  onClick={() => {
-                    if (!isEdit) {
-                      setIsEdit(true);
-                    } else {
-                      handleEditTransactionAction(
-                        "Manual Verified",
-                        selectedTransaction._id,
-                        selectedTransaction?.total,
-                        selectedTransaction?.utr
-                      );
+              {selectedTransaction?.status === "Pending" && (
+                <div className="flex gap-2 mt-4">
+                  <button
+                    className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
+                    onClick={() =>
+                      handleTransactionAction(
+                        "Approved",
+                        selectedTransaction?._id
+                      )
                     }
-                  }}
-                >
-                  {!isEdit ? (
-                    <>
-                      <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                      Edit TR
-                    </>
-                  ) : (
-                    <>
-                      <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                      Update TR
-                    </>
-                  )}
-                </button>*/}
-              </div>
+                    disabled={
+                      selectedTransaction?.status === "Approved" ||
+                      selectedTransaction?.status === "Decline"
+                    }
+                  >
+                    <IoMdCheckmark className="mt-[3px] mr-[6px]" />
+                    Approve Transaction
+                  </button>
+                  <button
+                    className={`flex p-2 rounded text-[13px] ${declineButtonClicked
+                      ? "bg-[#140e0f33] text-black"
+                      : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"
+                      }`}
+                    onClick={() =>
+                      setDeclinedButtonClicked(!declineButtonClicked)
+                    }
+                    disabled={
+                      selectedTransaction?.status === "Approved" ||
+                      selectedTransaction?.status === "Decline"
+                    }
+                  >
+                    <GoCircleSlash className="mt-[3px] mr-[6px]" />
+                    Decline TR
+                  </button>
+                </div>
+              )}
 
               {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
@@ -770,9 +737,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 <div>
                   <div className="flex items-center mt-4">
                     <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
-                    <p className="text-[14px] font-[400]">
-                      {new Date(selectedTransaction.updatedAt).toLocaleString()}
-                    </p>
                   </div>
                   <div className="flex items-center mt-4">
                     <span
@@ -787,6 +751,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     >
                       {selectedTransaction?.status}
                     </span>
+                    <p className="text-[14px] font-[400] ml-6">
+                      {new Date(selectedTransaction.updatedAt).toLocaleString()}
+                    </p>
                   </div>
                 </div>
               )}
