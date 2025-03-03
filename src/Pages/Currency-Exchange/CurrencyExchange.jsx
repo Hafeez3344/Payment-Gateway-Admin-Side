@@ -183,7 +183,7 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                                         <tr>
                                             <th className="p-4 text-[13px] font-[600]">Currency</th>
                                             <th className="p-4 text-[13px] font-[600]">Currency Rate</th>
-                                            <th className="p-4 text-[13px] font-[600]">Charges (INR)</th>
+                                            <th className="p-4 text-[13px] font-[600]">Commission (%)</th>
                                             <th className="p-4 text-[13px] font-[600]">Actions</th>
                                         </tr>
                                     </thead>
@@ -195,8 +195,8 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                                                     className={`border-t ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                                                 >
                                                     <td className="p-4 text-[13px]">{currency?.currency}</td>
-                                                    <td className="p-4 text-[13px]">1 INR = {currency?.currencyRate}{" "}{currency?.currency}</td>
-                                                    <td className="p-4 text-[13px]">{currency?.charges}</td>
+                                                    <td className="p-4 text-[13px]">1 {currency?.currency} = {currency?.currencyRate} INR</td>
+                                                    <td className="p-4 text-[13px]">{currency?.charges}%</td>
                                                     <td className="p-4 text-[13px] flex items-center gap-[10px]">
                                                         <Popconfirm
                                                             title="Delete Currency"
@@ -255,19 +255,19 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Currency Rate (1 INR = ?)"
+                        label={`Currency Rate`}
                         name="currencyRate"
                         rules={[{ required: true, message: 'Please enter currency rate' }]}
                     >
-                        <Input placeholder="Enter currency rate" />
+                        <Input placeholder="Equal to How much INRs ?" />
                     </Form.Item>
 
                     <Form.Item
-                        label="Charges (INR)"
+                        label="Commission (%)"
                         name="charges"
-                        rules={[{ required: true, message: 'Please enter charges' }]}
+                        rules={[{ required: true, message: 'Please enter commission' }]}
                     >
-                        <Input placeholder="Enter charges" />
+                        <Input placeholder="Enter Commission in Percentage" />
                     </Form.Item>
                 </Form>
             </Modal>
@@ -295,19 +295,19 @@ const CurrencyExchange = ({ authorization, showSidebar }) => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Currency Rate (1 INR = ?)"
+                        label="Currency Rate"
                         name="currencyRate"
                         rules={[{ required: true, message: 'Please enter currency rate' }]}
                     >
-                        <Input placeholder="Enter currency rate" />
+                        <Input placeholder="Equal to How much INRs ?" />
                     </Form.Item>
 
                     <Form.Item
-                        label="Charges (INR)"
+                        label="Commission (%)"
                         name="charges"
-                        rules={[{ required: true, message: 'Please enter charges' }]}
+                        rules={[{ required: true, message: 'Please enter commission' }]}
                     >
-                        <Input placeholder="Enter charges" />
+                        <Input placeholder="Enter Commission in Percentage" />
                     </Form.Item>
                 </Form>
             </Modal>

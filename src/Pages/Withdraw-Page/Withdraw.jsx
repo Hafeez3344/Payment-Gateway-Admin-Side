@@ -3,12 +3,14 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification } from "antd";
+import { Pagination, Modal, Input, notification, Select, Button } from "antd";
+import TextArea from "antd/es/input/TextArea";
+import { FaIndianRupeeSign } from "react-icons/fa6";
 
 import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
-import BACKEND_URL, { fn_getAllWithdrawTransactions } from "../../api/api";
+import BACKEND_URL, { fn_getAllWithdrawTransactions, fn_getMerchantApi, fn_getBankByAccountTypeApi } from "../../api/api";
 
 const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
@@ -21,6 +23,17 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
 
+    const [note, setNote] = useState("");
+    const [exchange, setExchange] = useState(null);
+    const [exchanges, setExchanges] = useState([]);
+    const [exchangeData, setExchangeData] = useState({});
+    const [selectedBank, setSelectedBank] = useState(null);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+    const [merchants, setMerchants] = useState([]);
+    const [selectedMerchant, setSelectedMerchant] = useState(null);
+    const [banks, setBanks] = useState([]);
+
     useEffect(() => {
         window.scroll(0, 0);
         if (!authorization) {
@@ -28,7 +41,12 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             return;
         }
         fetchTransactions();
-    }, [authorization, navigate, setSelectedPage]);
+        fn_getExchanges();
+        fetchMerchants();
+        if (selectedMerchant) {
+            fn_getMerchantBanks();
+        }
+    }, [authorization, navigate, setSelectedPage, selectedMerchant]);
 
     const fetchTransactions = async () => {
         try {
@@ -44,6 +62,135 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         } catch (error) {
             console.error("Error fetching transactions:", error);
             setLoading(false);
+        }
+    };
+
+    const fn_getExchanges = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/exchange/get`)
+            if (response?.status === 200) {
+                setExchanges(response?.data?.data?.map((item) => ({  // Changed from setChanges to setExchanges
+                    value: item?._id,
+                    label: item?.currency,
+                    rate: item?.currencyRate,
+                    charges: item?.charges
+                })));
+            }
+        } catch (error) {
+            console.log("error while fetching exchange ", error);
+        }
+    };
+
+    useEffect(() => {
+        if (exchange) {
+            const selectedExchange = exchanges.find(e => e.value === exchange);
+            setExchangeData(selectedExchange || {});
+        }
+    }, [exchange, exchanges]);
+
+    const fetchMerchants = async () => {
+        try {
+            const response = await fn_getMerchantApi();
+            if (response.status) {
+                const merchantOptions = response.data?.data?.map(merchant => ({
+                    value: merchant._id,
+                    label: merchant.merchantName
+                }));
+                setMerchants(merchantOptions);
+            }
+        } catch (error) {
+            console.error("Error fetching merchants:", error);
+        }
+    };
+
+    const fn_getMerchantBanks = async () => {
+        const response = await fn_getBankByAccountTypeApi("");
+        if (response?.status) {
+            setBanks(response?.data?.data?.map((item) => {
+                return { 
+                    value: item?._id, 
+                    label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}` 
+                }
+            }));
+        }
+    };
+
+    const handleWithdrawRequest = () => {
+        setWithdrawModalOpen(true);
+    };
+
+    // Add reset form function
+    const resetForm = () => {
+        setNote("");
+        setExchange(null);
+        setExchangeData({});
+        setSelectedBank(null);
+        setWithdrawAmount('');
+        setSelectedMerchant(null);
+    };
+
+    const handleWithdrawSubmit = async () => {
+        if (!selectedMerchant) {
+            return notification.error({
+                message: "Error",
+                description: "Please select a merchant",
+                placement: "topRight",
+            });
+        }
+
+        if (!withdrawAmount || !exchange) {
+            return notification.error({
+                message: "Error",
+                description: "Please fill all required fields",
+                placement: "topRight",
+            });
+        }
+
+        const calculatedAmount = withdrawAmount && exchangeData?.rate && exchangeData?.charges
+            ? ((parseFloat(withdrawAmount) - parseFloat(exchangeData.charges)) * parseFloat(exchangeData.rate)).toFixed(2)
+            : null;
+
+        if (!calculatedAmount || isNaN(calculatedAmount)) {
+            return notification.error({
+                message: "Error",
+                description: "Invalid amount calculation",
+                placement: "topRight",
+            });
+        }
+
+        const data = {
+            merchantId: selectedMerchant,
+            amount: calculatedAmount,
+            withdrawBankId: exchange === "67c1e65de5d59894e5a19435" ? selectedBank : null,
+            note: note,
+            exchangeId: exchange,
+            amountINR: withdrawAmount
+        };
+
+        try {
+            const token = Cookies.get("token"); 
+            const response = await axios.post(`${BACKEND_URL}/withdraw/create`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+            });
+            if (response?.status === 200) {
+                fetchTransactions();
+                setWithdrawModalOpen(false);
+                resetForm(); // Reset form after successful submission
+                notification.success({
+                    message: "Success",
+                    description: "Withdraw Request Created!",
+                    placement: "topRight",
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: "Error",
+                description: error?.response?.data?.message || "Network Error",
+                placement: "topRight",
+            });
         }
     };
 
@@ -88,6 +235,13 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         }
     };
 
+    const handleExchangeChange = (value) => {
+        setExchange(value);
+        if (value === "67c1e65de5d59894e5a19435") {
+            fn_getMerchantBanks();
+        }
+    };
+
     return (
         <>
             <div
@@ -108,6 +262,10 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                     List of withdraw Transaction
                                 </p>
                             </div>
+                            {/* Add back the withdraw button */}
+                            <Button type="primary" onClick={handleWithdrawRequest}>
+                                Create Withdraw
+                            </Button>
                         </div>
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
                         <div className="overflow-x-auto">
@@ -321,6 +479,109 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 )}
             </Modal>
 
+            <Modal
+                title="Withdraw Request"
+                open={withdrawModalOpen}
+                onOk={handleWithdrawSubmit}
+                onCancel={() => {
+                    setWithdrawModalOpen(false);
+                    resetForm(); 
+                }}
+                okText="Submit"
+                cancelText="Cancel"
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Select Merchant
+                        </label>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select Merchant"
+                            value={selectedMerchant}
+                            onChange={(value) => setSelectedMerchant(value)}
+                            options={merchants}
+                            showSearch
+                            filterOption={(input, option) =>
+                                option?.label.toLowerCase().includes(input.toLowerCase())
+                            }
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Amount
+                        </label>
+                        <Input
+                            prefix={<FaIndianRupeeSign />}
+                            type="number"
+                            placeholder="Enter amount"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Exchange
+                        </label>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select Exchange"
+                            value={exchange}
+                            onChange={handleExchangeChange}
+                            options={exchanges}
+                        />
+                    </div>
+
+                    {exchange && (
+                        <div>
+                            <p className="text-[12px] font-[500] flex items-center">
+                                <span className="text-gray-400 w-[150px] block">Exchange Rate:</span>
+                                {" "}1 INR = {exchangeData?.rate} {exchangeData?.label}
+                            </p>
+                            <p className="text-[12px] font-[500] flex items-center">
+                                <span className="text-gray-400 w-[150px] block">Exchange Charges:</span>
+                                {" "}{exchangeData?.charges} INR
+                            </p>
+                            <p className="text-[13px] font-[500] flex items-center text-green-500">
+                                <span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>
+                                {" "}{withdrawAmount ? 
+                                    ((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2)
+                                    : "0.00"} {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
+                            </p>
+                        </div>
+                    )}
+
+                    {exchange === "67c1e65de5d59894e5a19435" && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Select Bank
+                            </label>
+                            <Select
+                                style={{ width: '100%' }}
+                                placeholder="Select Your Bank"
+                                onChange={(value) => setSelectedBank(value)}
+                                value={selectedBank}
+                                options={banks}
+                                loading={!banks.length}
+                            />
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Note
+                        </label>
+                        <TextArea
+                            placeholder="Write anything about Transaction"
+                            autoSize={{ minRows: 4, maxRows: 8 }}
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 };

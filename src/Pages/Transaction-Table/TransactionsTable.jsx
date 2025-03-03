@@ -768,22 +768,36 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
               <div className="border-b w-[370px] mt-4"></div>
               {selectedTransaction?.trnStatus !== "Transaction Pending" && (
                 <div>
-                  <p className="text-[14px] font-[700]">
-                    Transaction Edit Time:
-                  </p>
-                  <p className="text-[14px] font-[400]">
-                    {new Date(selectedTransaction.updatedAt).toLocaleString()}
-                  </p>
+                  <div className="flex items-center mt-4">
+                    <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
+                    <p className="text-[14px] font-[400]">
+                      {new Date(selectedTransaction.updatedAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center mt-4">
+                    <span
+                      className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
+                        ? "text-[#0DA000]"
+                        : selectedTransaction?.status === "Pending"
+                          ? "text-[#FFB800]"
+                          : selectedTransaction?.status === "Manual Verified"
+                            ? "text-[#0864E8]"
+                            : "text-[#FF002A]"
+                        }`}
+                    >
+                      {selectedTransaction?.status}
+                    </span>
+                  </div>
                 </div>
               )}
-              {selectedTransaction?.transactionReason ? (
-                <>
-                  <p className="text-[14px] font-[700]">Reason for Decline</p>
 
-                  <p className="text-[14px] font-[400]">
+              {selectedTransaction?.transactionReason ? (
+                <div className="flex items-center mt-2">
+                  <p className="text-[14px] font-[700] mr-2">Reason for Decline:</p>
+                  <p className="text-[14px] font-[400] capitalize">
                     {selectedTransaction?.transactionReason}
                   </p>
-                </>
+                </div>
               ) : null}
 
               {declineButtonClicked && (

@@ -60,6 +60,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       )
     );
   };
+
   const handleSave = async () => {
     const newErrors = {};
 
@@ -74,7 +75,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       newErrors.websiteUseForPayment = "Website Use for Payment is required.";
     if (!String(merchantWebsite).trim())
       newErrors.merchantWebsite = "Merchant Website is required.";
-    if (!image) newErrors.image = "Image is required.";
     if (!String(tax).trim()) newErrors.tax = "Tax is required.";
 
     if (Object.keys(newErrors).length > 0) {
@@ -92,7 +92,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     formData.append("website", websiteUseForPayment);
     formData.append("accountLimit", accountLimit);
     formData.append("merchantWebsite", merchantWebsite);
-    formData.append("tax", parseFloat(tax));
+    formData.append("commision", parseFloat(tax));
 
     try {
       let response;
@@ -421,13 +421,14 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
                   <div className="my-2">
                     <p>
-                      Tax (%) <span className="text-[#D50000]">*</span>
+                      Admin Commission (%) <span className="text-[#D50000]">*</span>
                     </p>
                     <Input
                       type="number"
                       suffix={"%"}
                       step={0.01}
                       min={0}
+                      value={tax}
                       onChange={(e) => setTax(e.target.value)}
                     />
                     {errors?.tax && (
@@ -445,9 +446,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     <th className="p-3 text-[13px] font-[600] text-nowrap">
                       Merchant Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600] text-nowrap">
+                    {/* <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Bank Accounts
-                    </th>
+                    </th> */}
                     <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Merchant Website
                     </th>
@@ -455,7 +456,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       Website For Payment
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
-                    <th className="p-5 text-[13px] font-[600]">Tax</th>
+                    <th className="p-5 text-[13px] font-[600]">Admin Commission</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600]">Action</th>
                   </tr>
@@ -475,9 +476,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                             </span>
                           </div>
                         </td>
-                        <td className="p-3 text-[13px] pl-8">
+                        {/* <td className="p-3 text-[13px] pl-8">
                           {merchant.accounts}
-                        </td>
+                        </td> */}
                         <td className="p-3 text-[13px]">
                           <a
                             href={`https://${merchant.merchantWebsite}`}
@@ -493,7 +494,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                           ₹ {merchant.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          {merchant.tax}%
+                          {merchant.commision}%
                         </td>
                         <td className="text-center">
                           <button
@@ -537,7 +538,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                                 setAccountLimit(merchant.accountLimit);
                                 setWebsiteUseForPayment(merchant.website);
                                 setMerchantWebsite(merchant.merchantWebsite);
-                                setTax(merchant.tax);
+                                setTax(merchant.commision);
                                 setOpen(true);
                               }}
                             >

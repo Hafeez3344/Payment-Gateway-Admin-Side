@@ -117,7 +117,12 @@ const Reports = ({ authorization, showSidebar }) => {
     const fn_changeBank = (value) => {
         setSelectedBank(value);
         const bank = banksOption?.find((m) => m?.value === value);
-        setSelectedBankName(bank?.label);
+        if (bank) {
+            const bankLabel = bank.label;
+            setSelectedBankName(bankLabel); // This will already include the UPI ID from the options
+        } else {
+            setSelectedBankName("All");
+        }
     };
 
     const fn_changeStatus = (value) => {
@@ -136,12 +141,23 @@ const Reports = ({ authorization, showSidebar }) => {
             const token = Cookies.get("token");
             const adminId = Cookies.get("adminId");
             setDisableButton(true);
-            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${selectedMerchant}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}$filterByAdminId=${adminId}`, {
+
+            const queryParams = new URLSearchParams();
+            queryParams.append('startDate', fromDate);
+            queryParams.append('endDate', toDate);
+            queryParams.append('filterByAdminId', adminId);
+            
+            if (selectedMerchant) queryParams.append('merchantId', selectedMerchant);
+            if (selectedStatus) queryParams.append('status', selectedStatus);
+            if (selectedBank) queryParams.append('bankId', selectedBank);
+
+            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?${queryParams.toString()}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
+
             if (response?.status) {
                 if (response?.data?.status === "ok") {
                     fn_getReportsLog();
@@ -151,6 +167,12 @@ const Reports = ({ authorization, showSidebar }) => {
             }
         } catch (error) {
             console.log("error while download report ", error);
+            notification.error({
+                message: "Error",
+                description: "Failed to generate report",
+                placement: "topRight",
+            });
+            setDisableButton(false);
         }
     };
 
@@ -161,13 +183,15 @@ const Reports = ({ authorization, showSidebar }) => {
             format: "a4"
         });
 
-        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Received (INR)", "Charges (INR)", "Net Amount (INR)"];
+
+        const totalTransactions = data?.data?.reduce((acc, item) => acc + (parseInt(item.NoOfTransaction) || 0), 0);
 
         const tableRows = data?.data?.map((item) => {
             return [
                 item.Date || "All",
-                selectedMerchantName === "" ? "All" : selectedMerchantName,
-                selectedBankName === "" ? "All" : selectedBankName,
+                selectedMerchant ? selectedMerchantName : "All",
+                selectedBank ? selectedBankName : "All", 
                 (!item.Status || item.Status === "") ? "All" : item.Status,
                 item.NoOfTransaction || "0",
                 item.PayIn || "0",
@@ -176,14 +200,28 @@ const Reports = ({ authorization, showSidebar }) => {
             ];
         }) || [];
 
-        tableRows.push(["Total", "", "", "", "", data.totalPayIn.toFixed(2), data.totalCharges.toFixed(2), data.totalAmount.toFixed(2)]);
+        tableRows.push([
+            { content: "Total", styles: { fontStyle: 'bold' } },
+            { content: "", styles: { fontStyle: 'bold' } },
+            { content: "", styles: { fontStyle: 'bold' } },
+            { content: "", styles: { fontStyle: 'bold' } },
+            { content: totalTransactions.toString(), styles: { fontStyle: 'bold' } },
+            { content: data.totalPayIn.toFixed(2), styles: { fontStyle: 'bold' } },
+            { content: data.totalCharges.toFixed(2), styles: { fontStyle: 'bold' } },
+            { content: data.totalAmount.toFixed(2), styles: { fontStyle: 'bold' } }
+        ]);
 
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
             styles: { fontSize: 10 },
             theme: "",
-            margin: { top: 30 }
+            margin: { top: 30 },
+            willDrawCell: function(data) {
+                if (data.row.index === tableRows.length - 1) {
+                    data.cell.styles.fillColor = [200, 220, 255];
+                }
+            }
         });
 
         doc.save("report.pdf");
@@ -191,17 +229,20 @@ const Reports = ({ authorization, showSidebar }) => {
     };
 
     const downloadExcel = (data) => {
-        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Received In (INR)", "Charges (INR)", "Net Amount (INR)"];
+        
+        const totalTransactions = data?.data?.reduce((acc, item) => acc + (parseInt(item.NoOfTransaction) || 0), 0);
+
         const tableRows = data?.data?.map((item) => {
             return {
                 Date: item.Date || "All",
-                Merchant: selectedMerchantName === "" ? "All" : selectedMerchantName,
-                Bank: selectedBankName === "" ? "All" : selectedBankName,
+                Merchant: selectedMerchant ? selectedMerchantName : "All",
+                Bank: selectedBank ? selectedBankName : "All", 
                 Status: (!item.Status || item.Status === "") ? "All" : item.Status,
                 "No. of Transactions": item.NoOfTransaction || "0",
-                "Pay In (INR)": item.PayIn || "0",
+                "Received In (INR)": item.PayIn || "0",
                 "Charges (INR)": item.Charges || "0",
-                "Amount (INR)": item.Amount || "0"
+                "Net Amount (INR)": item.Amount || "0"
             };
         }) || [];
 
@@ -210,13 +251,26 @@ const Reports = ({ authorization, showSidebar }) => {
             Merchant: "",
             Bank: "",
             Status: "",
-            "No. of Transactions": "",
-            "Pay In (INR)": data.totalPayIn.toFixed(2),
+            "No. of Transactions": totalTransactions,
+            "Received In (INR)": data.totalPayIn.toFixed(2),
             "Charges (INR)": data.totalCharges.toFixed(2),
-            "Amount (INR)": data.totalAmount.toFixed(2)
+            "Net Amount (INR)": data.totalAmount.toFixed(2)
         });
 
         const worksheet = XLSX.utils.json_to_sheet(tableRows);
+
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
+        const totalRowIndex = range.e.r;
+        
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: totalRowIndex, c: col });
+            if (!worksheet[cellRef]) worksheet[cellRef] = {};
+            worksheet[cellRef].s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: "C8E0FF" } } 
+            };
+        }
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
 
@@ -237,12 +291,18 @@ const Reports = ({ authorization, showSidebar }) => {
             if (response?.status) {
                 if (response?.data?.status === "ok") {
                     setTableData(response?.data?.data?.map((item, index) => {
+                        const bankName = item?.bankId?.bankName 
+                            ? (item?.bankId?.bankName === "UPI" 
+                                ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}` 
+                                : item?.bankId?.bankName)
+                            : "All";
+
                         return {
                             key: `${index + 1}`,
                             reportId: `${index + 1}`,
                             createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
                             merchant: item?.merchantId?.merchantName || "All",
-                            bank: `${item?.bankId?.bankName === "UPI" ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}` : item?.bankId?.bankName}` || "All",
+                            bank: bankName,
                             status: item?.status && item?.status !== "" ? item?.status : "All",
                             dateRange: item?.startDate && item?.endDate ? `${new Date(item?.startDate).toDateString()} - ${new Date(item?.endDate).toDateString()}` : "All"
                         }
