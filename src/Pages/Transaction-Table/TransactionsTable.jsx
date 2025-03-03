@@ -26,8 +26,12 @@ import BACKEND_URL, {
   fn_getAllBanksData,
 } from "../../api/api";
 
+import { io } from "socket.io-client";
+
+
 const TransactionsTable = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
+  const socket = io(`${BACKEND_URL}/payment`); 
   const searchParams = new URLSearchParams(location.search);
 
   const { RangePicker } = DatePicker;
@@ -70,6 +74,21 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       console.error("Error fetching merchants:", error);
     }
   };
+
+  useEffect(() => {
+    // Listen for real-time ledger updates
+    socket.on("getMerchantLedger", (data) => {
+
+      console.log("data ", data);
+      fetchTransactions(currentPage || 1, merchant);
+    });
+
+
+    // socket.on("error", (error) => {
+    //     console.error("Socket Error:", error.message);
+    // });
+
+}, []);
 
   const fetchBanks = async () => {
     try {
