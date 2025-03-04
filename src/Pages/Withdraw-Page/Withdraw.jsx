@@ -40,6 +40,8 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [selectedMerchant, setSelectedMerchant] = useState(null);
     const [banks, setBanks] = useState([]);
     const [imagePreview, setImagePreview] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+     const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -53,15 +55,16 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         if (selectedMerchant) {
             fn_getMerchantBanks();
         }
-    }, [authorization, navigate, setSelectedPage, selectedMerchant]);
+    }, [authorization, navigate, setSelectedPage, selectedMerchant, currentPage]);
 
     const fetchTransactions = async () => {
         try {
-            const response = await fn_getAllWithdrawTransactions();
+            const response = await fn_getAllWithdrawTransactions(currentPage);
             if (response.status) {
                 console.log('Withdraw transactions:', response.data?.data);
                 setTransactions(response.data?.data || []);
                 console.log('Transaction structure:', JSON.stringify(response.data?.data[0], null, 2));
+                setTotalPages(response?.data?.totalPage);
             } else {
                 console.error(response.message);
             }
@@ -371,8 +374,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
                             <Pagination
                                 className="self-center md:self-auto"
+                                onChange={(e) => setCurrentPage(e)}
                                 defaultCurrent={1}
-                                total={transactions?.length}
+                                total={totalPages * 10}
                             />
                         </div>
                     </div>

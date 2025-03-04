@@ -760,10 +760,10 @@ export const fn_getAllCurrencyExchange = async () => {
     }
 };
 
-export const fn_getAllWithdrawTransactions = async () => {
+export const fn_getAllWithdrawTransactions = async (pageNumber) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=admin`, {
+        const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=admin&page=${pageNumber}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -771,7 +771,7 @@ export const fn_getAllWithdrawTransactions = async () => {
         });
         return {
             status: true,
-            data: { data: response.data?.data || [] }
+            data: { data: response.data?.data || [], totalPage: response.data?.totalPages || 0 }
         };
     } catch (error) {
         if (error?.response) {
