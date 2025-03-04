@@ -120,14 +120,14 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "currency-exchange"}
           />
         )}
-        {/* <Menu
+        <Menu
           onClick={() =>
             handleMenuClick("withdraw", "/withdraw")
           }
           label="Withdraw Requests"
           icon={<PiHandWithdraw className="text-[20px]" />}
           isActive={selectedPage === "withdraw"}
-        /> */}
+        />
         {/* {loginType === "admin" && (
           <Menu
             onClick={() =>

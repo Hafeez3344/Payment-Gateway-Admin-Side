@@ -12,6 +12,12 @@ import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import BACKEND_URL, { fn_getAllWithdrawTransactions, fn_getMerchantApi, fn_getBankByAccountTypeApi } from "../../api/api";
 
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    const cleanPath = imagePath.replace('uploads/', '');
+    return `${BACKEND_URL}/uploads/${cleanPath}`;
+};
+
 const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
     const navigate = useNavigate();
@@ -33,6 +39,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [merchants, setMerchants] = useState([]);
     const [selectedMerchant, setSelectedMerchant] = useState(null);
     const [banks, setBanks] = useState([]);
+    const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -195,22 +202,38 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     };
 
     const handleViewTransaction = (transaction) => {
+        // Reset UTR, image and preview when opening new transaction
+        setUtr("");
+        setImage(null);
+        // setImagePreview(null);
+        
         setSelectedTransaction(transaction);
         setOpen(true);
     };
 
     const handleModalClose = () => {
+        // Also reset when closing modal
+        setUtr("");
+        setImage(null);
+        setImagePreview(null);
         setOpen(false);
-        setSelectedTransaction(null);
+        // setSelectedTransaction(null);
     };
 
     const handleTransactionAction = async (action, id) => {
         try {
-            if (action == "Approved" && utr === "" && selectedTransaction?.withdrawBankId) return notification.error({
-                message: "Error",
-                description: "Enter UTR",
-                placement: "topRight"
-            })
+            const isBankOrUPI = selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435";
+            if (action === "Approved" && 
+                selectedTransaction?.withdrawBankId && 
+                isBankOrUPI && 
+                utr === "") {
+                return notification.error({
+                    message: "Error",
+                    description: "Enter UTR",
+                    placement: "topRight"
+                });
+            }
+
             const token = Cookies.get("token");
             const formData = new FormData();
             formData.append("status", action);
@@ -241,6 +264,24 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             fn_getMerchantBanks();
         }
     };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImage(file);
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
 
     return (
         <>
@@ -343,141 +384,234 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 open={open}
                 onOk={handleModalClose}
                 onCancel={handleModalClose}
-                width={500}
+                width={selectedTransaction?.status === "Pending" || 
+                       selectedTransaction?.status === "Decline" || 
+                       (selectedTransaction?.status === "Approved" && !selectedTransaction?.utr) ? 600 : 900}
                 style={{
                     fontFamily: "sans-serif"
                 }}
                 footer={null}
             >
                 {selectedTransaction && (
-                    <div className="flex flex-col md:flex-row">
-                        <div className="flex flex-col gap-2 mt-3 w-full">
-                            <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{new Date(selectedTransaction?.createdAt).toDateString()}, {new Date(selectedTransaction?.createdAt).toLocaleTimeString()}</span></p>
-                            {/* Merchant Name */}
-                            <div className="flex items-center gap-4 mt-[10px]">
-                                <p className="text-[12px] font-[600] w-[200px]">Merchant Name:</p>
-                                <Input
-                                    className="text-[12px] bg-gray-200"
-                                    readOnly
-                                    value={selectedTransaction?.merchantId?.merchantName || 'N/A'}
-                                />
-                            </div>
-
-                            {/* Exchange */}
-                            <div className="flex items-center gap-4">
-                                <p className="text-[12px] font-[600] w-[200px]">Exchange:</p>
-                                <Input
-                                    className="text-[12px] bg-gray-200"
-                                    readOnly
-                                    value={selectedTransaction?.exchangeId?.currency || 'N/A'}
-                                />
-                            </div>
-
-                            {/* Withdrawal Amount */}
-                            <div className="flex items-center gap-4">
-                                <p className="text-[12px] font-[600] w-[200px]">Withdrawal Amount:</p>
-                                <Input
-                                    className="text-[12px] bg-gray-200"
-                                    readOnly
-                                    value={`${selectedTransaction?.amount} ${selectedTransaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : selectedTransaction?.exchangeId?.currency}`}
-                                />
-                            </div>
-
-                            {/* Bank Details Section */}
-                            {selectedTransaction?.withdrawBankId && (
-                                <>
-                                    <div className="border-t mt-2 mb-1"></div>
-                                    <p className="font-[600] text-[14px] mb-2">Bank Details</p>
-
-                                    <div className="flex items-center gap-4">
-                                        <p className="text-[12px] font-[600] w-[200px]">Bank Name:</p>
-                                        <Input
-                                            className="text-[12px] bg-gray-200"
-                                            readOnly
-                                            value={selectedTransaction?.withdrawBankId?.bankName || 'N/A'}
-                                        />
-                                    </div>
-                                    {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
-                                        <div className="flex items-center gap-4">
-                                            <p className="text-[12px] font-[600] w-[200px]">Account Title:</p>
-                                            <Input
-                                                className="text-[12px] bg-gray-200"
-                                                readOnly
-                                                value={selectedTransaction?.withdrawBankId?.accountHolderName || 'N/A'}
-                                            />
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-4">
-                                        <p className="text-[12px] font-[600] w-[200px]">{selectedTransaction?.withdrawBankId?.bankName !== "UPI" ? "IFSC Code:" : "UPI ID:"}</p>
-                                        <Input
-                                            className="text-[12px] bg-gray-200"
-                                            readOnly
-                                            value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
-                                        />
-                                    </div>
-
-                                    {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
-                                        <div className="flex items-center gap-4">
-                                            <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
-                                            <Input
-                                                className="text-[12px] bg-gray-200"
-                                                readOnly
-                                                value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
-                                            />
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Note Section */}
-                            <div className="border-t mt-2 mb-1"></div>
-                            <div className="flex flex-col gap-2">
-                                <p className="text-[12px] font-[600]">Note From Merchant:</p>
-                                <textarea
-                                    className="w-full p-2 text-[12px] border rounded resize-none outline-none"
-                                    rows={3}
-                                    readOnly
-                                    value={selectedTransaction?.note || 'N/A'} F
-                                />
-                            </div>
-
-                            {/* Action Buttons */}
-                            {selectedTransaction?.status === "Pending" && selectedTransaction?.withdrawBankId && (
-                                <>
-                                    <div className="border-t mt-2 mb-1"></div>
-                                    <div className="flex items-center">
-                                        <p className="w-[150px] text-gray-600 text-[12px] font-[600]">Upload Proof:</p>
-                                        <input type="file" onChange={(e) => setImage(e.target.files?.[0])} />
-                                    </div>
-                                    <div className="flex items-center">
-                                        <p className="min-w-[150px] text-gray-600 text-[12px] font-[600]">Enter UTR<span className="text-red-500">{" "}*</span>:</p>
-                                        <Input className="text-[12px]" value={utr} onChange={(e) => setUtr(e.target.value)} />
-                                    </div>
-
-                                </>
-                            )}
-                            {selectedTransaction?.status === "Pending" && (
-                                <div className="flex gap-4 mt-2">
-                                    <button
-                                        className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
-                                        onClick={() => handleTransactionAction("Approved", selectedTransaction?._id)}
-                                        disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
-                                    >
-                                        <IoMdCheckmark className="mt-[3px] mr-[6px]" />
-                                        Approve Withdrawal
-                                    </button>
-                                    <button
-                                        className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
-                                        onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
-                                        disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
-                                    >
-                                        <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                                        Decline Withdrawal
-                                    </button>
+                    <div className="flex justify-between gap-4">
+                        {/* Left Column - Existing Details */}
+                        <div className={`${(selectedTransaction.status === "Pending" || 
+                            (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) ? "w-full" : "w-[450px]"}`}>
+                            <div className="flex flex-col gap-2 mt-3">
+                                <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{new Date(selectedTransaction?.createdAt).toDateString()}, {new Date(selectedTransaction?.createdAt).toLocaleTimeString()}</span></p>
+                                {/* Merchant Name */}
+                                <div className="flex items-center gap-4 mt-[10px]">
+                                    <p className="text-[12px] font-[600] w-[200px]">Merchant Name:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={selectedTransaction?.merchantId?.merchantName || 'N/A'}
+                                    />
                                 </div>
-                            )}
+
+                                {/* Exchange */}
+                                <div className="flex items-center gap-4">
+                                    <p className="text-[12px] font-[600] w-[200px]">Exchange:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={selectedTransaction?.exchangeId?.currency || 'N/A'}
+                                    />
+                                </div>
+
+                                {/* Withdrawal Amount */}
+                                <div className="flex items-center gap-4">
+                                    <p className="text-[12px] font-[600] w-[200px]">Withdrawal Amount:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={`${selectedTransaction?.amount} ${selectedTransaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : selectedTransaction?.exchangeId?.currency}`}
+                                    />
+                                </div>
+
+                                {/* Bank Details Section */}
+                                {selectedTransaction?.withdrawBankId && (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        <p className="font-[600] text-[14px] mb-2">Bank Details</p>
+
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">Bank Name:</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.bankName || 'N/A'}
+                                            />
+                                        </div>
+                                        {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-[12px] font-[600] w-[200px]">Account Title:</p>
+                                                <Input
+                                                    className="text-[12px] bg-gray-200"
+                                                    readOnly
+                                                    value={selectedTransaction?.withdrawBankId?.accountHolderName || 'N/A'}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">{selectedTransaction?.withdrawBankId?.bankName !== "UPI" ? "IFSC Code:" : "UPI ID:"}</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
+                                            />
+                                        </div>
+
+                                        {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
+                                                <Input
+                                                    className="text-[12px] bg-gray-200"
+                                                    readOnly
+                                                    value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Note Section */}
+                                <div className="border-t mt-2 mb-1"></div>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-[12px] font-[600]">Note From Merchant:</p>
+                                    <textarea
+                                        className="w-full p-2 text-[12px] border rounded resize-none outline-none"
+                                        rows={3}
+                                        readOnly
+                                        value={selectedTransaction?.note || 'N/A'} F
+                                    />
+                                </div>
+
+                                {/* Action Buttons */}
+                                {selectedTransaction?.status === "Pending" && selectedTransaction?.withdrawBankId && (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        
+                                        {/* Show UTR only if not By Cash */}
+                                        {selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" && (
+                                            <div className="flex items-center mb-3">
+                                                <p className="min-w-[150px] text-gray-600 text-[12px] font-[600]">
+                                                    Enter UTR<span className="text-red-500">{" "}*</span>:
+                                                </p>
+                                                <Input 
+                                                    className="text-[12px]" 
+                                                    value={utr} 
+                                                    onChange={(e) => setUtr(e.target.value)} 
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col gap-2">
+                                            <p className="text-gray-600 text-[12px] font-[600]">Upload Proof:</p>
+                                            <input 
+                                                type="file" 
+                                                onChange={handleImageChange}
+                                                accept="image/*"
+                                                className="mb-2"
+                                            />
+                                            {imagePreview && (
+                                                <div className="mt-2">
+                                                    <p className="text-gray-600 text-[12px] font-[600] mb-1">Preview:</p>
+                                                    <img
+                                                        src={imagePreview}
+                                                        alt="Upload Preview"
+                                                        className="max-w-[300px] h-auto rounded-lg border"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                                {selectedTransaction?.status === "Pending" && (
+                                    <div className="flex gap-4 mt-2">
+                                        <button
+                                            className="flex-1 bg-[#03996933] flex items-center justify-center text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
+                                            onClick={() => handleTransactionAction("Approved", selectedTransaction?._id)}
+                                            disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                                        >
+                                            <IoMdCheckmark className="mt-[3px] mr-[6px]" />
+                                            Approve Withdrawal
+                                        </button>
+                                        <button
+                                            className="w-24 bg-[#FF405F33] flex items-center justify-center text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
+                                            onClick={() => handleTransactionAction("Decline", selectedTransaction?._id)}
+                                            disabled={selectedTransaction?.status === "Approved" || selectedTransaction?.status === "Decline"}
+                                        >
+                                            <GoCircleSlash className="mt-[3px] mr-[6px]" />
+                                            Decline
+                                        </button>
+                                    </div>
+                                )}
+                                {/* Show status at bottom if approved without UTR or declined */}
+                                {(selectedTransaction.status === "Decline" || 
+                                  (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) && (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        <div>
+                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] ${
+                                                selectedTransaction.status === "Decline" ? 
+                                                "bg-[#FF7A8F33] text-[#FF002A]" : 
+                                                "bg-[#10CB0026] text-[#0DA000]"
+                                            }`}>
+                                                {selectedTransaction.status}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
+
+                        {/* Right Column - Only show for Approved with UTR */}
+                        {selectedTransaction.status !== "Pending" && 
+                         selectedTransaction.status !== "Decline" && 
+                         selectedTransaction.utr && (
+                            <div className="w-[350px] border-l pl-4">
+                                <div className="flex flex-col gap-4">
+                                    {/* Current Status */}
+                                    <div>
+                                        <div className="px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#10CB0026] text-[#0DA000]">
+                                            {selectedTransaction.status}
+                                        </div>
+                                    </div>
+
+                                    {/* UTR Details */}
+                                    <div>
+                                        <p className="text-[14px] font-[600] mb-2">UTR Number</p>
+                                        <Input
+                                            className="text-[12px] bg-gray-100"
+                                            readOnly
+                                            value={selectedTransaction.utr}
+                                        />
+                                    </div>
+
+                                    {/* Proof Image */}
+                                    {selectedTransaction.image && (
+                                        <div>
+                                            <p className="text-[14px] font-[600] mb-2">Payment Proof</p>
+                                            <div className="max-h-[400px] overflow-auto">
+                                                <img
+                                                    src={getImageUrl(selectedTransaction.image)}
+                                                    alt="Payment Proof"
+                                                    className="w-full object-contain cursor-pointer"
+                                                    style={{ maxHeight: '400px' }}
+                                                    onClick={() => window.open(getImageUrl(selectedTransaction.image), '_blank')}
+                                                    onError={(e) => {
+                                                        console.error('Image load error:', e);
+                                                        e.target.src = 'fallback-image-url';
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </Modal>
