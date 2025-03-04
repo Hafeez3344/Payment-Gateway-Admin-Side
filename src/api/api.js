@@ -478,6 +478,33 @@ export const fn_DeleteBank = async (id) => {
     }
 };
 
+export const fn_BankActivateApi = async (id, accountType) => {
+    try {
+        const token = Cookies.get("token");
+        const type = accountType === "upi" ? "upi" : "bank";
+        
+        const response = await axios.post(  // Changed from put to post
+            `${BACKEND_URL}/bank/active?id=${id}&accountType=${type}`,
+            {},  // Empty body
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            message: response.data?.message || `${type.toUpperCase()} status updated successfully`,
+            data: response.data
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
 
 //------------------------------------Create Ticket Api-----------------------------------------------
 export const fn_createTicketApi = async (ticketData) => {
@@ -754,6 +781,29 @@ export const fn_getAllWithdrawTransactions = async () => {
             };
         }
         return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllBankLogs = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/banklog/getAll`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data?.data || []
+        };
+    } catch (error) {
+        console.error("Error fetching bank logs:", error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to fetch bank logs",
+            data: []
+        };
     }
 };
 

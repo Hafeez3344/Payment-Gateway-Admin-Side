@@ -53,7 +53,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
         }`}
       style={{ zIndex: 999 }}
     >
-     <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
+      <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
           <img className="w-[160px]" src={Royal247Logo} alt="" />
         </div>
@@ -99,7 +99,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "commission"}
           />
         )}
-         {loginType === "admin" && (
+        {loginType === "admin" && (
           <Menu
             onClick={() =>
               handleMenuClick("banks-management", "/banks-management")
@@ -108,24 +108,26 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             icon={<BsBank className="text-[20px]" />}
             isActive={selectedPage === "banks-management"}
           />
-          
+
         )}
-        <Menu
-          onClick={() =>
-            handleMenuClick("currency-exchange", "/currency-exchange")
-          }
-          label="Exchange Rate"
-          icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
-          isActive={selectedPage === "currency-exchange"}
-        />
-         <Menu
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("currency-exchange", "/currency-exchange")
+            }
+            label="Exchange Rate"
+            icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
+            isActive={selectedPage === "currency-exchange"}
+          />
+        )}
+        {/* <Menu
           onClick={() =>
             handleMenuClick("withdraw", "/withdraw")
           }
           label="Withdraw Requests"
           icon={<PiHandWithdraw className="text-[20px]" />}
           isActive={selectedPage === "withdraw"}
-        />
+        /> */}
         {/* {loginType === "admin" && (
           <Menu
             onClick={() =>

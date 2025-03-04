@@ -107,9 +107,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         const response = await fn_getBankByAccountTypeApi("");
         if (response?.status) {
             setBanks(response?.data?.data?.map((item) => {
-                return { 
-                    value: item?._id, 
-                    label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}` 
+                return {
+                    value: item?._id,
+                    label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}`
                 }
             }));
         }
@@ -168,7 +168,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         };
 
         try {
-            const token = Cookies.get("token"); 
+            const token = Cookies.get("token");
             const response = await axios.post(`${BACKEND_URL}/withdraw/create`, data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -270,7 +270,10 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
                         <div className="overflow-x-auto">
                             {loading ? (
-                                <p>Loading...</p>
+                                <tr>
+                                    <td colSpan="9" className="text-center p-4">Loading...</td>
+                                </tr>
+
                             ) : (
                                 <table className="min-w-full border">
                                     <thead>
@@ -485,7 +488,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 onOk={handleWithdrawSubmit}
                 onCancel={() => {
                     setWithdrawModalOpen(false);
-                    resetForm(); 
+                    resetForm();
                 }}
                 okText="Submit"
                 cancelText="Cancel"
@@ -520,7 +523,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             onChange={(e) => setWithdrawAmount(e.target.value)}
                         />
                     </div>
-                    
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Exchange
@@ -546,7 +549,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             </p>
                             <p className="text-[13px] font-[500] flex items-center text-green-500">
                                 <span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>
-                                {" "}{withdrawAmount ? 
+                                {" "}{withdrawAmount ?
                                     ((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2)
                                     : "0.00"} {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
                             </p>

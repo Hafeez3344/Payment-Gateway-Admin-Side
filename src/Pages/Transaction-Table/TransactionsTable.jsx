@@ -40,6 +40,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [loader, setLoader] = useState(false);
+  const [loading, setLoading] = useState(true);  
 
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,6 +116,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
   const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
+      setLoading(true); 
       const result = await fn_getAllTransactionApi(
         statusFilter,
         pageNumber,
@@ -135,6 +137,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     } catch (error) {
       console.error("Error fetching data:", error);
       setTransactions([]);
+    } finally {
+      setLoading(false);  
     }
   };
 
@@ -509,7 +513,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length > 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan="9" className="text-center p-4">Loading...</td>
+                    </tr>
+                  ) : transactions.length > 0 ? (
                     transactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
@@ -582,7 +590,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8" className="p-4 text-center text-gray-500">
+                      <td colSpan="9" className="p-4 text-center text-gray-500">
                         No Transactions found.
                       </td>
                     </tr>
@@ -605,16 +613,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       <Modal
         centered
         footer={null}
-        width={900} // Made even wider to prevent scrolling
+        width={900} 
         style={{
           fontFamily: "sans-serif",
           padding: "20px",
-          maxWidth: "95vw", // Increased from 90vw
-          minHeight: "90vh", // Increased from 80vh
+          maxWidth: "95vw", 
+          minHeight: "90vh", 
         }}
         bodyStyle={{
           height: "100%",
-          overflow: "hidden", // Changed from 'auto' to 'hidden'
+          overflow: "hidden", 
         }}
         title={<p className="text-[20px] font-[700]">Transaction Details</p>}
         open={open}
