@@ -167,13 +167,14 @@ export const fn_getMerchantData = async () => {
     }
 };
 
-export const fn_getAllBanksData = async (accountType) => {
+export const fn_getAllBanksData = async (accountType, page = 1) => {
     try {
         const token = Cookies.get("token");
-        const url = `${BACKEND_URL}/bank/getAll?${accountType === "disabledBanks"
-            ? "disable=true"
-            : `accountType=${accountType}&disable=false`
-            }`;
+        const url = `${BACKEND_URL}/bank/getAll?${
+            accountType === "disabledBanks"
+                ? "disable=true"
+                : `accountType=${accountType}&disable=false`
+        }&page=${page}`;
 
         const response = await axios.get(url, {
             headers: {
@@ -803,6 +804,56 @@ export const fn_getAllBankLogs = async () => {
             status: false,
             message: error?.response?.data?.message || "Failed to fetch bank logs",
             data: []
+        };
+    }
+};
+
+export const fn_createBankName = async (bankName) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.post(
+            `${BACKEND_URL}/bankNames/create`,
+            { bankName },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            message: "Bank added successfully",
+            data: response.data
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllBankNames = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(
+            `${BACKEND_URL}/bankNames/getAll`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data?.data || []
+        };
+    } catch (error) {
+        return { 
+            status: false, 
+            message: error?.response?.data?.message || "Failed to fetch bank names" 
         };
     }
 };

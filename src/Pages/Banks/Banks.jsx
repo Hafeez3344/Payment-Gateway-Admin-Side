@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Switch, Button, Modal, Input, notification } from "antd";
+import { Switch, Button, Modal, Input, notification, Pagination } from "antd";
 
 import { FiEdit } from "react-icons/fi";
 import { FaExclamationCircle } from "react-icons/fa";
@@ -13,7 +13,16 @@ import { MdOutlineCheckCircle } from "react-icons/md";
 import upilogo2 from "../../assets/upilogo2.svg";
 
 import { Banks } from "../../json-data/banks";
-import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData, fn_DeleteBank, fn_BankActivateApi, fn_getAllBankLogs } from "../../api/api";
+import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData, fn_DeleteBank, fn_BankActivateApi, fn_getAllBankLogs, fn_createBankName, fn_getAllBankNames } from "../../api/api";
+
+// Add this helper function at the top of your component
+const capitalizeWords = (str) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 const BankManagement = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -32,10 +41,20 @@ const BankManagement = ({ authorization, showSidebar }) => {
     accountType: "",
     iban: "",
     accountLimit: "",
+    noOfTrans: "",
     accountHolderName: "",
   });
   const [bankLogs, setBankLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+
+  const [addBankModalOpen, setAddBankModalOpen] = useState(false);
+  const [newBankName, setNewBankName] = useState('');
+  const [banksList, setBanksList] = useState(Banks);
+
+  // Add these new state variables
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const fetchAllBanksData = async (tab) => {
     if (tab === "banklogs") {
@@ -51,9 +70,18 @@ const BankManagement = ({ authorization, showSidebar }) => {
         setLoadingLogs(false);
       }
     } else {
-      const result = await fn_getAllBanksData(tab);
-      if (result.status) {
-        setBanksData(result.data?.data);
+      setLoading(true);
+      try {
+        const result = await fn_getAllBanksData(tab);
+        if (result.status) {
+          setBanksData(result.data?.data);
+          setTotalPages(result.data?.totalPages || 1);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setBanksData([]);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -74,6 +102,33 @@ const BankManagement = ({ authorization, showSidebar }) => {
     fetchAllBanksData(activeTab);
   }, [activeTab]);
 
+  // Add useEffect for page changes
+  useEffect(() => {
+    fetchAllBanksData(activeTab);
+  }, [currentPage, activeTab]);
+
+  // Add function to fetch bank names
+  const fetchBankNames = async () => {
+    try {
+      const response = await fn_getAllBankNames();
+      if (response.status) {
+        // Combine static Banks with dynamic bank names from API
+        const dynamicBanks = response.data.map(bank => ({
+          title: bank.bankName,
+          img: "/default-bank-image.png"
+        }));
+        setBanksList([...dynamicBanks]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch bank names:", error);
+    }
+  };
+
+  // Add useEffect to fetch bank names on component mount
+  useEffect(() => {
+    fetchBankNames();
+  }, []);
+
   const handleAddAccount = () => {
     setData({
       image: null,
@@ -82,6 +137,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
       accountType: "",
       iban: "",
       accountLimit: "",
+      noOfTrans: "",
       accountHolderName: "",
     });
     setIsEditMode(false);
@@ -91,6 +147,10 @@ const BankManagement = ({ authorization, showSidebar }) => {
 
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
+    if (value === "add_new") {
+      setAddBankModalOpen(true);
+      return;
+    }
     setState((prev) => {
       const updateState = { ...prev, [name]: value };
       if (name === "bank") {
@@ -110,6 +170,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
       accountNo: account.accountNo,
       iban: account.iban,
       accountLimit: account.accountLimit,
+      noOfTrans: account.noOfTrans,
       accountHolderName: account.accountHolderName,
     });
     setEditAccountId(account._id);
@@ -165,6 +226,14 @@ const BankManagement = ({ authorization, showSidebar }) => {
         });
         return;
       }
+      if (data?.noOfTrans === "") {
+        notification.error({
+          message: "Error",
+          description: "Enter No of Transactions",
+          placement: "topRight",
+        });
+        return;
+      }
       if (data?.accountHolderName === "") {
         notification.error({
           message: "Error",
@@ -183,6 +252,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
         formData.append("accountLimit", data?.accountLimit);
+        formData.append("noOfTrans", data?.noOfTrans);
         formData.append("accountHolderName", data?.accountHolderName);
         formData.append("block", true);
       } else {
@@ -191,6 +261,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
         formData.append("accountLimit", data?.accountLimit);
+        formData.append("noOfTrans", data?.noOfTrans);
         formData.append("accountHolderName", data?.accountHolderName);
         formData.append("block", true);
       }
@@ -228,6 +299,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
           accountNo: "",
           iban: "",
           accountLimit: "",
+          noOfTrans: "",
           accountHolderName: "",
         });
         setIsEditMode(false);
@@ -239,6 +311,52 @@ const BankManagement = ({ authorization, showSidebar }) => {
       notification.error({
         message: "Error",
         description: errorMessage,
+        placement: "topRight",
+      });
+    }
+  };
+
+  // Update handleAddNewBank to refresh the bank list after adding
+  const handleAddNewBank = async () => {
+    if (!newBankName.trim()) {
+      notification.error({
+        message: "Error",
+        description: "Bank name is required",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    // Capitalize the bank name before sending to API
+    const capitalizedBankName = capitalizeWords(newBankName);
+
+    try {
+      const response = await fn_createBankName(capitalizedBankName);
+      
+      if (response.status) {
+        // Fetch updated bank list instead of just adding to state
+        await fetchBankNames();
+
+        // Clear form and close modal
+        setNewBankName('');
+        setAddBankModalOpen(false);
+        
+        notification.success({
+          message: "Success",
+          description: response.message || "New bank added successfully!",
+          placement: "topRight",
+        });
+      } else {
+        notification.error({
+          message: "Error",
+          description: response.message || "Failed to add bank",
+          placement: "topRight",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to add bank",
         placement: "topRight",
       });
     }
@@ -345,6 +463,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                         Account Title
                       </th>
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">No of Transactions</th>
                       <th className="p-5 text-[13px] font-[600]">Limit</th>
                       {activeTab !== "banklogs" && (
                         <th className="p-5 text-[13px] font-[600] text-nowrap">
@@ -353,7 +472,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       )}
                       <th className="p-5 text-[13px] font-[600]">Status</th>
                       <th className="p-5 text-[13px] font-[600] pl-10">
-                        Action
+                        {activeTab === "banklogs" ? "Reason" : "Action"}
                       </th>
                     </tr>
                   </thead>
@@ -380,15 +499,15 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               )}
                             </td>
                             <td className="p-2 text-[13px]"><div className="ml-2">{log.bankId?.accountHolderName}</div></td>
+                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.noOfTrans}</div></td>
                             <td className="p-2 text-[13px]"><div className="ml-3 text-nowrap">₹ {log.bankId?.remainingLimit}</div></td>
                             <td className="text-center">
-                              <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                                log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" : 
-                                log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" : 
-                                log.status?.toLowerCase() === 'disabled' ? "bg-[#F3F4F6] text-[#4B5563]" : 
-                                log.status?.toLowerCase() === 'enable' ? "bg-[#E0F2FE] text-[#0369A1]" : 
-                                "bg-[#F3F4F6] text-[#4B5563]"
-                              }`}>
+                              <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" :
+                                  log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
+                                    log.status?.toLowerCase() === 'disabled' ? "bg-[#F3F4F6] text-[#4B5563]" :
+                                      log.status?.toLowerCase() === 'enable' ? "bg-[#E0F2FE] text-[#0369A1]" :
+                                        "bg-[#F3F4F6] text-[#4B5563]"
+                                }`}>
                                 {log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1).toLowerCase() : 'N/A'}
                               </button>
                             </td>
@@ -416,26 +535,19 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                 <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
                                   {activeTab === "bank" ? (
                                     <div className="flex items-center gap-[3px]">
-                                      <img
-                                        src={
-                                          Banks?.find(
-                                            (bank) =>
-                                              bank?.title === account?.bankName
-                                          )?.img
-                                        }
-                                        alt=""
-                                        className="w-[50px]"
-                                      />
                                       <span className="whitespace-nowrap">
                                         {account.bankName}
                                       </span>
                                     </div>
                                   ) : (
-                                    <img
-                                      src={upilogo2}
-                                      alt=""
-                                      className="w-[50px]"
-                                    />
+                                    <div className="flex items-center gap-[3px]">
+                                      <img
+                                        src={upilogo2}
+                                        alt=""
+                                        className="w-[50px]"
+                                      />
+                                      <span>UPI</span>
+                                    </div>
                                   )}
                                 </div>
                               </td>
@@ -454,9 +566,15 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               </td>
                               <td className="p-3 text-[13px] font-[400] text-nowrap">
                                 <div className="ml-1">
+                                  {account.noOfTrans}
+                                </div>
+                              </td>
+                              <td className="p-3 text-[13px] font-[400] text-nowrap">
+                                <div className="ml-1">
                                   ₹ {account.accountLimit}
                                 </div>
                               </td>
+
                               <td className="p-3 text-[13px] font-[400]">
                                 <div className="ml-3">
                                   ₹ {account.remainingLimit}
@@ -605,7 +723,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       >
                                         <MdOutlineCheckCircle size={18} />
                                       </Button>
-                                      <Button
+                                      {/* <Button
                                         className="bg-red-100 text-red-600 rounded-full px-2 py-2"
                                         title="Delete"
                                         onClick={async () => {
@@ -635,7 +753,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                         }}
                                       >
                                         <FaTrash size={16} />
-                                      </Button>
+                                      </Button> */}
                                     </>
                                   )}
                                 </div>
@@ -657,6 +775,16 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     )}
                   </tbody>
                 </table>
+                {/* Add pagination below table */}
+                <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
+                  <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
+                  <Pagination
+                    className="self-center md:self-auto"
+                    onChange={(page) => setCurrentPage(page)}
+                    current={currentPage}
+                    total={totalPages * 10}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -716,11 +844,21 @@ const BankManagement = ({ authorization, showSidebar }) => {
                   <option value="" disabled>
                     ---Select Bank---
                   </option>
-                  {Banks.map((item, index) => (
+                  {banksList.map((item, index) => (
                     <option key={index} value={item.title}>
-                      {item.title}
+                      {capitalizeWords(item.title)}
                     </option>
                   ))}
+                  <option 
+                    value="add_new" 
+                    style={{ 
+                      backgroundColor: '#0050B3 ',
+                      color: 'white',
+                      fontWeight: '500'
+                    }}
+                  >
+                    + Add New Bank
+                  </option>
                 </select>
               </div>
               {/* Account Number */}
@@ -797,23 +935,72 @@ const BankManagement = ({ authorization, showSidebar }) => {
               placeholder="Account Limit "
             />
           </div>
-          {/* Account QR Code - only show for UPI */}
-          {activeTab === "upi" && (
-            <div className="flex-1 my-2">
-              <p className="text-[12px] font-[500] pb-1">
-                UPI QR Code <span className="text-[#D50000]">*</span>
-              </p>
-              <Input
-                type="file"
-                required
-                onChange={(e) =>
-                  setData((prev) => ({ ...prev, image: e.target.files[0] }))
-                }
-                className="w-full text-[12px]"
-                placeholder="Select QR Code"
-              />
-            </div>
-          )}
+          <div className="flex-1 my-2">
+            <p className="text-[12px] font-[500] pb-1">
+              No of Transactions <span className="text-[#D50000]">*</span>
+            </p>
+            <Input
+              value={data?.noOfTrans}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, noOfTrans: e.target.value }))
+              }
+              className="w-full text-[12px]"
+              placeholder="No of Transactions"
+            />
+          </div>
+        </div>
+        {/* UPI QR Code in new row */}
+        {activeTab === "upi" && (
+          <div className="flex-1 my-2">
+            <p className="text-[12px] font-[500] pb-1">
+              UPI QR Code <span className="text-[#D50000]">*</span>
+            </p>
+            <Input
+              type="file"
+              required
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, image: e.target.files[0] }))
+              }
+              className="w-full text-[12px]"
+              placeholder="Select QR Code"
+            />
+          </div>
+        )}
+      </Modal>
+      <Modal
+        centered
+        width={400}
+        open={addBankModalOpen}
+        title={<p className="text-[16px] font-[700]">Add New Bank</p>}
+        footer={
+          <div className="flex gap-4 mt-6">
+            <Button
+              className="flex start px-10 text-[12px]"
+              type="primary"
+              onClick={handleAddNewBank}
+            >
+              Add Bank
+            </Button>
+            <Button
+              className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
+              onClick={() => setAddBankModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        }
+        onCancel={() => setAddBankModalOpen(false)}
+      >
+        <div className="flex-1 my-2">
+          <p className="text-[12px] font-[500] pb-1">
+            Bank Name <span className="text-[#D50000]">*</span>
+          </p>
+          <Input
+            value={newBankName}
+            onChange={(e) => setNewBankName(e.target.value)}
+            className="w-full text-[12px]"
+            placeholder="Enter Bank Name"
+          />
         </div>
       </Modal>
     </>
