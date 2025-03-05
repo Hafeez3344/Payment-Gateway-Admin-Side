@@ -79,7 +79,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         try {
             const response = await axios.get(`${BACKEND_URL}/exchange/get`)
             if (response?.status === 200) {
-                setExchanges(response?.data?.data?.map((item) => ({  // Changed from setChanges to setExchanges
+                setExchanges(response?.data?.data?.map((item) => ({ 
                     value: item?._id,
                     label: item?.currency,
                     rate: item?.currencyRate,
@@ -184,7 +184,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             if (response?.status === 200) {
                 fetchTransactions();
                 setWithdrawModalOpen(false);
-                resetForm(); // Reset form after successful submission
+                resetForm(); 
                 notification.success({
                     message: "Success",
                     description: "Withdraw Request Created!",
@@ -263,7 +263,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         const file = e.target.files?.[0];
         if (file) {
             setImage(file);
-            // Create preview URL
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
         }
@@ -342,6 +341,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <th className="p-4 text-nowrap">MERCHANT NAME</th>
                                             <th className="p-4 text-nowrap">EXCHANGE</th>
                                             <th className="p-4 text-nowrap">AMOUNT</th>
+                                            <th className="p-4 text-nowrap">Withdraw AMOUNT</th>
                                             <th className="pl-8">Status</th>
                                             <th className="pl-7">Action</th>
                                         </tr>
@@ -359,6 +359,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 </td>
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.exchangeId?.currency || 'N/A'}
+                                                </td>
+                                                <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                                                    {transaction?.amountINR} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}
                                                 </td>
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}
