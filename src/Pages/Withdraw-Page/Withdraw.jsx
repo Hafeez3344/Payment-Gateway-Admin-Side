@@ -1,15 +1,17 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import TextArea from "antd/es/input/TextArea";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, Select, Button } from "antd";
-import TextArea from "antd/es/input/TextArea";
-import { FaIndianRupeeSign } from "react-icons/fa6";
+
 
 import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
+import { FaIndianRupeeSign } from "react-icons/fa6";
+
 import BACKEND_URL, { fn_getAllWithdrawTransactions, fn_getMerchantApi, fn_getBankByAccountTypeApi } from "../../api/api";
 
 const getImageUrl = (imagePath) => {
@@ -30,18 +32,19 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [selectedTransaction, setSelectedTransaction] = useState(null);
 
     const [note, setNote] = useState("");
-    const [exchange, setExchange] = useState(null);
+    const [banks, setBanks] = useState([]);
+    const [merchants, setMerchants] = useState([]);
     const [exchanges, setExchanges] = useState([]);
+    const [exchange, setExchange] = useState(null);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
     const [exchangeData, setExchangeData] = useState({});
     const [selectedBank, setSelectedBank] = useState(null);
     const [withdrawAmount, setWithdrawAmount] = useState('');
-    const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
-    const [merchants, setMerchants] = useState([]);
-    const [selectedMerchant, setSelectedMerchant] = useState(null);
-    const [banks, setBanks] = useState([]);
     const [imagePreview, setImagePreview] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-     const [totalPages, setTotalPages] = useState(1);
+    const [merchantWallet, setMerchantWallet] = useState(null);
+    const [selectedMerchant, setSelectedMerchant] = useState(null);
+    const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -52,10 +55,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         fetchTransactions();
         fn_getExchanges();
         fetchMerchants();
-        if (selectedMerchant) {
-            fn_getMerchantBanks();
-        }
-    }, [authorization, navigate, setSelectedPage, selectedMerchant, currentPage]);
+    }, [authorization, navigate, setSelectedPage, currentPage]);
 
     const fetchTransactions = async () => {
         try {
@@ -114,7 +114,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     };
 
     const fn_getMerchantBanks = async () => {
-        const response = await fn_getBankByAccountTypeApi("");
+        const response = await fn_getBankByAccountTypeApi(selectedMerchant);
         if (response?.status) {
             setBanks(response?.data?.data?.map((item) => {
                 return {
@@ -129,7 +129,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         setWithdrawModalOpen(true);
     };
 
-    // Add reset form function
     const resetForm = () => {
         setNote("");
         setExchange(null);
@@ -156,25 +155,22 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             });
         }
 
-        const calculatedAmount = withdrawAmount && exchangeData?.rate && exchangeData?.charges
-            ? ((parseFloat(withdrawAmount) - parseFloat(exchangeData.charges)) * parseFloat(exchangeData.rate)).toFixed(2)
-            : null;
-
-        if (!calculatedAmount || isNaN(calculatedAmount)) {
+        if (exchange === "67c1e65de5d59894e5a19435" && !selectedBank) {
             return notification.error({
                 message: "Error",
-                description: "Invalid amount calculation",
+                description: "Please Select Bank",
                 placement: "topRight",
             });
         }
 
         const data = {
-            merchantId: selectedMerchant,
-            amount: calculatedAmount,
+            amount: ((parseFloat(withdrawAmount) - (parseFloat(exchangeData?.charges) * parseFloat(withdrawAmount)) / 100) / parseFloat(exchangeData?.rate)).toFixed(2),
             withdrawBankId: exchange === "67c1e65de5d59894e5a19435" ? selectedBank : null,
             note: note,
             exchangeId: exchange,
-            amountINR: withdrawAmount
+            amountINR: withdrawAmount,
+            merchantId: selectedMerchant,
+            createdBy: "admin"
         };
 
         try {
@@ -205,30 +201,25 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     };
 
     const handleViewTransaction = (transaction) => {
-        // Reset UTR, image and preview when opening new transaction
         setUtr("");
         setImage(null);
-        // setImagePreview(null);
-        
         setSelectedTransaction(transaction);
         setOpen(true);
     };
 
     const handleModalClose = () => {
-        // Also reset when closing modal
         setUtr("");
         setImage(null);
         setImagePreview(null);
         setOpen(false);
-        // setSelectedTransaction(null);
     };
 
     const handleTransactionAction = async (action, id) => {
         try {
             const isBankOrUPI = selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435";
-            if (action === "Approved" && 
-                selectedTransaction?.withdrawBankId && 
-                isBankOrUPI && 
+            if (action === "Approved" &&
+                selectedTransaction?.withdrawBankId &&
+                isBankOrUPI &&
                 utr === "") {
                 return notification.error({
                     message: "Error",
@@ -278,6 +269,23 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         }
     };
 
+    const fn_merchantWallet = async () => {
+        try {
+            const token = Cookies.get("token");
+            const response = await axios.get(`${BACKEND_URL}/ledger/withdrawData?merchantId=${selectedMerchant}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setMerchantWallet(response?.data);
+            }
+        } catch (error) {
+            console.log(`error while getting wallet `, error);
+        }
+    }
+
     useEffect(() => {
         return () => {
             if (imagePreview) {
@@ -285,6 +293,13 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             }
         };
     }, [imagePreview]);
+
+    useEffect(() => {
+        if (selectedMerchant) {
+            fn_getMerchantBanks();
+            fn_merchantWallet();
+        }
+    }, [selectedMerchant]);
 
     return (
         <>
@@ -307,9 +322,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                 </p>
                             </div>
                             {/* Add back the withdraw button */}
-                            {/* <Button type="primary" onClick={handleWithdrawRequest}>
+                            <Button type="primary" onClick={handleWithdrawRequest}>
                                 Create Withdraw
-                            </Button> */}
+                            </Button>
                         </div>
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
                         <div className="overflow-x-auto">
@@ -348,12 +363,15 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}
                                                 </td>
-                                                <td className="p-4 text-[13px] font-[500]">
+                                                <td className="relative p-4 text-[13px] font-[500]">
                                                     <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${transaction.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
                                                         transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" :
                                                             "bg-[#10CB0026] text-[#0DA000]"}`}>
                                                         {transaction?.status}
                                                     </span>
+                                                    {transaction?.createdBy === "admin" && (
+                                                        <p className="absolute bottom-[-2px] left-[20px] text-[10px] text-gray-600">Created by Admin</p>
+                                                    )}
                                                 </td>
                                                 <td className="p-4">
                                                     <button
@@ -388,9 +406,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 open={open}
                 onOk={handleModalClose}
                 onCancel={handleModalClose}
-                width={selectedTransaction?.status === "Pending" || 
-                       selectedTransaction?.status === "Decline" || 
-                       (selectedTransaction?.status === "Approved" && !selectedTransaction?.utr) ? 600 : 900}
+                width={selectedTransaction?.status === "Pending" ||
+                    selectedTransaction?.status === "Decline" ||
+                    (selectedTransaction?.status === "Approved" && !selectedTransaction?.utr) ? 600 : 900}
                 style={{
                     fontFamily: "sans-serif"
                 }}
@@ -399,7 +417,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 {selectedTransaction && (
                     <div className="flex justify-between gap-4">
                         {/* Left Column - Existing Details */}
-                        <div className={`${(selectedTransaction.status === "Pending" || 
+                        <div className={`${(selectedTransaction.status === "Pending" ||
                             (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) ? "w-full" : "w-[450px]"}`}>
                             <div className="flex flex-col gap-2 mt-3">
                                 <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{new Date(selectedTransaction?.createdAt).toDateString()}, {new Date(selectedTransaction?.createdAt).toLocaleTimeString()}</span></p>
@@ -496,25 +514,25 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                 {selectedTransaction?.status === "Pending" && selectedTransaction?.withdrawBankId && (
                                     <>
                                         <div className="border-t mt-2 mb-1"></div>
-                                        
+
                                         {/* Show UTR only if not By Cash */}
                                         {selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" && (
                                             <div className="flex items-center mb-3">
                                                 <p className="min-w-[150px] text-gray-600 text-[12px] font-[600]">
                                                     Enter UTR<span className="text-red-500">{" "}*</span>:
                                                 </p>
-                                                <Input 
-                                                    className="text-[12px]" 
-                                                    value={utr} 
-                                                    onChange={(e) => setUtr(e.target.value)} 
+                                                <Input
+                                                    className="text-[12px]"
+                                                    value={utr}
+                                                    onChange={(e) => setUtr(e.target.value)}
                                                 />
                                             </div>
                                         )}
 
                                         <div className="flex flex-col gap-2">
                                             <p className="text-gray-600 text-[12px] font-[600]">Upload Proof:</p>
-                                            <input 
-                                                type="file" 
+                                            <input
+                                                type="file"
                                                 onChange={handleImageChange}
                                                 accept="image/*"
                                                 className="mb-2"
@@ -553,69 +571,66 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                     </div>
                                 )}
                                 {/* Show status at bottom if approved without UTR or declined */}
-                                {(selectedTransaction.status === "Decline" || 
-                                  (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) && (
-                                    <>
-                                        <div className="border-t mt-2 mb-1"></div>
-                                        <div>
-                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] ${
-                                                selectedTransaction.status === "Decline" ? 
-                                                "bg-[#FF7A8F33] text-[#FF002A]" : 
-                                                "bg-[#10CB0026] text-[#0DA000]"
-                                            }`}>
-                                                {selectedTransaction.status}
+                                {(selectedTransaction.status === "Decline" ||
+                                    (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) && (
+                                        <>
+                                            <div className="border-t mt-2 mb-1"></div>
+                                            <div>
+                                                <div className={`w-[100px] px-3 py-2 rounded-[20px] text-center text-[13px] font-[600] ${selectedTransaction.status === "Decline" ?
+                                                    "bg-[#FF7A8F33] text-[#FF002A]" :
+                                                    "bg-[#10CB0026] text-[#0DA000]"
+                                                    }`}>
+                                                    {selectedTransaction.status}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </>
-                                )}
+                                        </>
+                                    )}
                             </div>
                         </div>
 
                         {/* Right Column - Only show for Approved with UTR */}
-                        {selectedTransaction.status !== "Pending" && 
-                         selectedTransaction.status !== "Decline" && 
-                         selectedTransaction.utr && (
-                            <div className="w-[350px] border-l pl-4">
-                                <div className="flex flex-col gap-4">
-                                    {/* Current Status */}
-                                    <div>
-                                        <div className="px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#10CB0026] text-[#0DA000]">
-                                            {selectedTransaction.status}
-                                        </div>
-                                    </div>
-
-                                    {/* UTR Details */}
-                                    <div>
-                                        <p className="text-[14px] font-[600] mb-2">UTR Number</p>
-                                        <Input
-                                            className="text-[12px] bg-gray-100"
-                                            readOnly
-                                            value={selectedTransaction.utr}
-                                        />
-                                    </div>
-
-                                    {/* Proof Image */}
-                                    {selectedTransaction.image && (
+                        {selectedTransaction.status !== "Pending" &&
+                            selectedTransaction.status !== "Decline" &&
+                            selectedTransaction.utr && (
+                                <div className="w-[350px] border-l pl-4">
+                                    <div className="flex flex-col gap-4">
+                                        {/* Proof Image */}
+                                        {selectedTransaction.image && (
+                                            <div>
+                                                <p className="text-[14px] font-[600] mb-2">Payment Proof</p>
+                                                <div className="max-h-[400px] overflow-auto">
+                                                    <img
+                                                        src={getImageUrl(selectedTransaction.image)}
+                                                        alt="Payment Proof"
+                                                        className="w-full object-contain cursor-pointer"
+                                                        style={{ maxHeight: '400px' }}
+                                                        onClick={() => window.open(getImageUrl(selectedTransaction.image), '_blank')}
+                                                        onError={(e) => {
+                                                            console.error('Image load error:', e);
+                                                            e.target.src = 'fallback-image-url';
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* UTR Details */}
                                         <div>
-                                            <p className="text-[14px] font-[600] mb-2">Payment Proof</p>
-                                            <div className="max-h-[400px] overflow-auto">
-                                                <img
-                                                    src={getImageUrl(selectedTransaction.image)}
-                                                    alt="Payment Proof"
-                                                    className="w-full object-contain cursor-pointer"
-                                                    style={{ maxHeight: '400px' }}
-                                                    onClick={() => window.open(getImageUrl(selectedTransaction.image), '_blank')}
-                                                    onError={(e) => {
-                                                        console.error('Image load error:', e);
-                                                        e.target.src = 'fallback-image-url';
-                                                    }}
-                                                />
+                                            <p className="text-[14px] font-[600] mb-2">UTR Number</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-100"
+                                                readOnly
+                                                value={selectedTransaction.utr}
+                                            />
+                                        </div>
+                                        {/* Current Status */}
+                                        <div>
+                                            <div className="px-3 py-2 w-[100px] rounded-[20px] text-center text-[13px] font-[600] bg-[#10CB0026] text-[#0DA000]">
+                                                {selectedTransaction.status}
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
                     </div>
                 )}
             </Modal>
@@ -643,10 +658,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             onChange={(value) => setSelectedMerchant(value)}
                             options={merchants}
                             showSearch
-                            filterOption={(input, option) =>
-                                option?.label.toLowerCase().includes(input.toLowerCase())
-                            }
+                            filterOption={(input, option) => option?.label.toLowerCase().includes(input.toLowerCase())}
                         />
+                        <p className="text-gray-500 text-[13px] font-[500]">Avaiable for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount?.toFixed(2) || 0} INR</span></p>
                     </div>
 
                     <div>
@@ -677,19 +691,14 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
                     {exchange && (
                         <div>
-                            <p className="text-[12px] font-[500] flex items-center">
-                                <span className="text-gray-400 w-[150px] block">Exchange Rate:</span>
-                                {" "}1 INR = {exchangeData?.rate} {exchangeData?.label}
-                            </p>
-                            <p className="text-[12px] font-[500] flex items-center">
-                                <span className="text-gray-400 w-[150px] block">Exchange Charges:</span>
-                                {" "}{exchangeData?.charges} INR
-                            </p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Rate:</span>{" "}1 {exchangeData?.label} = {exchangeData?.rate} INR</p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Charges:</span>{" "}{exchangeData?.charges}%</p>
                             <p className="text-[13px] font-[500] flex items-center text-green-500">
                                 <span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>
-                                {" "}{withdrawAmount ?
-                                    ((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2)
-                                    : "0.00"} {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
+                                {" "}
+                                {((parseFloat(withdrawAmount) - (parseFloat(exchangeData?.charges) * parseFloat(withdrawAmount)) / 100) / parseFloat(exchangeData?.rate)).toFixed(2)}
+                                {" "}
+                                {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
                             </p>
                         </div>
                     )}

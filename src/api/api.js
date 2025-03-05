@@ -125,10 +125,10 @@ export const fn_BankUpdate = async (id, data) => {
     }
 };
 
-export const fn_getBankByAccountTypeApi = async (accountType) => {
+export const fn_getBankByAccountTypeApi = async (data) => {
     try {
-        const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/bank/getAll?accountType=${accountType}`,
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/withdrawBank/getAll?merchantId=${data}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -482,7 +482,7 @@ export const fn_BankActivateApi = async (id, accountType) => {
     try {
         const token = Cookies.get("token");
         const type = accountType === "upi" ? "upi" : "bank";
-        
+
         const response = await axios.post(  // Changed from put to post
             `${BACKEND_URL}/bank/active?id=${id}&accountType=${type}`,
             {},  // Empty body
