@@ -832,22 +832,22 @@ export const fn_createBankName = async (bankName) => {
         }
         return { status: false, message: "Network Error" };
     }
-};
-
+};                           
+                                                                         
 export const fn_getAllBankNames = async () => {
     try {
-        const token = Cookies.get("token");
-        const response = await axios.get(
+        const token = Cookies.get("token");                                        
+        const response = await axios.get(                                                          
             `${BACKEND_URL}/bankNames/getAll`,
-            {
+            {                                              
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        return {
-            status: true,
+                    Authorization: `Bearer ${token}`,                                              
+                    "Content-Type": "application/json",                                       
+                },                                  
+            }                                                                                                                     
+        );                                                                                                                                                                                                                                                                                
+        return {                        
+            status: true,                         
             data: response.data?.data || []
         };
     } catch (error) {

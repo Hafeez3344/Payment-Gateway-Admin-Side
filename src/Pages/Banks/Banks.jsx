@@ -463,8 +463,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                         Account Title
                       </th>
-                      <th className="p-5 text-[13px] font-[600] text-nowrap">No of Transactions</th>
-                      <th className="p-5 text-[13px] font-[600]">Limit</th>
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">Amount Limit</th>
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">Transactions Limit</th>
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">Remaining Transactions Limit</th>
                       {activeTab !== "banklogs" && (
                         <th className="p-5 text-[13px] font-[600] text-nowrap">
                           Remaining Limit
@@ -499,8 +500,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               )}
                             </td>
                             <td className="p-2 text-[13px]"><div className="ml-2">{log.bankId?.accountHolderName}</div></td>
-                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.noOfTrans}</div></td>
                             <td className="p-2 text-[13px]"><div className="ml-3 text-nowrap">₹ {log.bankId?.remainingLimit}</div></td>
+                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.noOfTrans}</div></td>
+                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.remainingTransLimit}</div></td>
                             <td className="text-center">
                               <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" :
                                   log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
@@ -564,16 +566,19 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                   {account.accountHolderName}
                                 </div>
                               </td>
-                              <td className="p-3 text-[13px] font-[400] text-nowrap">
-                                <div className="ml-1">
-                                  {account.noOfTrans}
-                                </div>
-                              </td>
+                              
                               <td className="p-3 text-[13px] font-[400] text-nowrap">
                                 <div className="ml-1">
                                   ₹ {account.accountLimit}
                                 </div>
                               </td>
+
+                              <td className="p-3 text-[13px] font-[400] text-nowrap">
+                                <div className="ml-1">
+                                  {account.noOfTrans}
+                                </div>
+                              </td>
+                              <td className="p-2 text-[13px]"><div className="ml-3">{account?.remainingTransLimit}</div></td>
 
                               <td className="p-3 text-[13px] font-[400]">
                                 <div className="ml-3">
@@ -947,7 +952,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
               className="w-full text-[12px]"
               placeholder="No of Transactions"
             />
-          </div>
+          </div>                       
         </div>
         {/* UPI QR Code in new row */}
         {activeTab === "upi" && (
