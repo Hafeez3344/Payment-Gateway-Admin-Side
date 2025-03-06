@@ -463,14 +463,13 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                         Account Title
                       </th>
-                      <th className="p-5 text-[13px] font-[600] text-nowrap">Amount Limit</th>
-                      <th className="p-5 text-[13px] font-[600] text-nowrap">Transactions Limit</th>
-                      <th className="p-5 text-[13px] font-[600] text-nowrap">Remaining Transactions Limit</th>
-                      {activeTab !== "banklogs" && (
-                        <th className="p-5 text-[13px] font-[600] text-nowrap">
-                          Remaining Limit
-                        </th>
-                      )}
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">
+                        Total Amount
+
+                      </th>
+                      <th className="p-5 text-[13px] font-[600] text-nowrap">
+                        {activeTab === "banklogs" ? "Transactions Limit" : "Transactions Limit"}
+                      </th>
                       <th className="p-5 text-[13px] font-[600]">Status</th>
                       <th className="p-5 text-[13px] font-[600] pl-10">
                         {activeTab === "banklogs" ? "Reason" : "Action"}
@@ -481,7 +480,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     {activeTab === "banklogs" ? (
                       loadingLogs ? (
                         <tr>
-                          <td colSpan="7" className="text-center p-4">Loading...</td>
+                          <td colSpan="6" className="text-center p-4">Loading...</td>
                         </tr>
                       ) : bankLogs?.length > 0 ? (
                         bankLogs.map((log, index) => (
@@ -496,13 +495,25 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                   <span className="text-gray-600">- {log.bankId?.iban}</span>
                                 </div>
                               ) : (
-                                log.bankId?.bankName
+                                <div className="flex items-center gap-2">
+                                  <span>{log.bankId?.bankName}</span>
+                                  <span className="text-gray-600">- {log.bankId?.accountNo}</span>
+                                </div>
                               )}
                             </td>
-                            <td className="p-2 text-[13px]"><div className="ml-2">{log.bankId?.accountHolderName}</div></td>
-                            <td className="p-2 text-[13px]"><div className="ml-3 text-nowrap">₹ {log.bankId?.remainingLimit}</div></td>
-                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.noOfTrans}</div></td>
-                            <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.remainingTransLimit}</div></td>
+                            <td className="p-2 text-[13px]">
+                              <div className="ml-2">{log.bankId?.accountHolderName}</div>
+                            </td>
+                            <td className="p-2 text-[13px]">
+                              <div className="ml-3 text-nowrap">
+                                ₹ {log.bankId?.accountLimit}
+                              </div>
+                            </td>
+                            <td className="p-2 text-[13px]">
+                              <div className="ml-3">
+                                {log.bankId?.noOfTrans}
+                              </div>
+                            </td>
                             <td className="text-center">
                               <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" :
                                 log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
@@ -540,6 +551,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       <span className="whitespace-nowrap capitalize">
                                         {account.bankName}
                                       </span>
+                                      <span className="text-gray-600">- {account.accountNo}</span>
                                     </div>
                                   ) : (
                                     <div className="flex items-center gap-[3px]">
@@ -567,21 +579,14 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               </td>
 
                               <td className="p-3 text-[13px] font-[400] text-nowrap">
-                                <div className="ml-1">
-                                  ₹ {account.accountLimit}
+                                <div className="ml-1" style={{ color: account.remainingLimit === 0 ? 'red' : 'inherit' }}>
+                                  ₹ {account.accountLimit} / ₹ {account.remainingLimit}
                                 </div>
                               </td>
 
                               <td className="p-3 text-[13px] font-[400] text-nowrap">
-                                <div className="ml-1">
-                                  {account.noOfTrans}
-                                </div>
-                              </td>
-                              <td className="p-2 text-[13px]"><div className="ml-3">{account?.remainingTransLimit}</div></td>
-
-                              <td className="p-3 text-[13px] font-[400]">
-                                <div className="ml-3">
-                                  ₹ {account.remainingLimit}
+                                <div className="ml-1" style={{ color: account.remainingTransLimit === 0 ? 'red' : 'inherit' }}>
+                                  {account.noOfTrans} / {account.remainingTransLimit}
                                 </div>
                               </td>
                               <td className="text-center">
@@ -727,37 +732,6 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       >
                                         <MdOutlineCheckCircle size={18} />
                                       </Button>
-                                      {/* <Button
-                                        className="bg-red-100 text-red-600 rounded-full px-2 py-2"
-                                        title="Delete"
-                                        onClick={async () => {
-                                          try {
-                                            const response = await fn_DeleteBank(account?._id);
-                                            if (response?.status) {
-                                              fetchAllBanksData(activeTab);
-                                              notification.success({
-                                                message: "Success",
-                                                description: "Bank has been deleted",
-                                                placement: "topRight",
-                                              });
-                                            } else {
-                                              notification.error({
-                                                message: "Error",
-                                                description: response.message || "Failed to delete bank",
-                                                placement: "topRight",
-                                              });
-                                            }
-                                          } catch (error) {
-                                            notification.error({
-                                              message: "Error",
-                                              description: "Failed to delete bank",
-                                              placement: "topRight",
-                                            });
-                                          }
-                                        }}
-                                      >
-                                        <FaTrash size={16} />
-                                      </Button> */}
                                     </>
                                   )}
                                 </div>
@@ -1012,3 +986,10 @@ const BankManagement = ({ authorization, showSidebar }) => {
 };
 
 export default BankManagement;
+
+
+
+
+
+
+

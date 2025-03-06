@@ -832,8 +832,8 @@ export const fn_createBankName = async (bankName) => {
         }
         return { status: false, message: "Network Error" };
     }
-};                           
-                                                                         
+};
+
 export const fn_getAllBankNames = async () => {
     try {
         const token = Cookies.get("token");                                        
@@ -843,9 +843,9 @@ export const fn_getAllBankNames = async () => {
                 headers: {
                     Authorization: `Bearer ${token}`,                                              
                     "Content-Type": "application/json",                                       
-                },                                  
-            }                                                                                                                     
-        );                                                                                                                                                                                                                                                                                
+                },
+            }                        
+        );                                                                                                                                                                                                                          
         return {                        
             status: true,                         
             data: response.data?.data || []
