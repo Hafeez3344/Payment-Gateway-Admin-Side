@@ -311,7 +311,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <h1 className="text-[25px] font-[500]">Withdraw Request</h1>
                         <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
                             Dashboard - Data Table
-                        </p>m 
+                        </p>
                     </div>                                                                                       
                     <div className="bg-white rounded-lg p-4">
                         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
