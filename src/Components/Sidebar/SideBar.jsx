@@ -1,18 +1,19 @@
 import Cookies from "js-cookie";
 import { BsBank } from "react-icons/bs";
-import Royal247Logo from "../../assets/Royal247Logo.png"
 import { LuLogOut } from "react-icons/lu";
-import { PiHandWithdraw, PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
 import { FaHeadphones } from "react-icons/fa";
-import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
+import { TbReportSearch } from "react-icons/tb";
+import { FaMoneyBillWave } from "react-icons/fa";
+import { FaHandHoldingUsd } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
-import { useNavigate, useLocation } from "react-router-dom";
-import { TbReportSearch } from "react-icons/tb";
-import { FaHandHoldingUsd } from "react-icons/fa";
+import Royal247Logo from "../../assets/Royal247Logo.png"
 import { MdOutlineCurrencyExchange } from "react-icons/md";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PiHandWithdraw, PiNotebook } from "react-icons/pi";
+import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
 
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
@@ -156,6 +157,16 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             label="Reports"
             icon={<TbReportSearch className="text-[20px]" />}
             isActive={selectedPage === "reports"}
+          />
+        )}
+         {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("payout", "/payout")
+            }
+            label="Payout"
+            icon={<FaMoneyBillWave className="text-[20px]" />}
+            isActive={selectedPage === "payout"}
           />
         )}
         {loginType === "admin" && (

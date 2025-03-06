@@ -40,7 +40,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [loader, setLoader] = useState(false);
-  const [loading, setLoading] = useState(true);  
+  const [loading, setLoading] = useState(true);
 
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,7 +116,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
   const fetchTransactions = async (pageNumber, statusFilter) => {
     try {
-      setLoading(true); 
+      setLoading(true);
       const result = await fn_getAllTransactionApi(
         statusFilter,
         pageNumber,
@@ -138,7 +138,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       console.error("Error fetching data:", error);
       setTransactions([]);
     } finally {
-      setLoading(false);  
+      setLoading(false);
     }
   };
 
@@ -233,122 +233,97 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     "others",
   ];
 
+
   const handleDownloadReport = async () => {
     try {
       setLoader(true);
       const pdf = new jsPDF("l", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
-      const rowsPerPage = 20;
-
-      const totalPages = Math.ceil(allTrns.length / rowsPerPage);
-
-      for (let page = 0; page < totalPages; page++) {
-        const pageTransactions = allTrns.slice(
-          page * rowsPerPage,
-          (page + 1) * rowsPerPage
-        );
-
-        // Create table for current page
-        const tempTable = document.createElement("div");
-        tempTable.innerHTML = `
-          <div id="reportTable${page}" style="padding: 20px; width: 100%;">
-            ${page === 0
-            ? `
-              <h2 style="text-align: center; margin-bottom: 20px;">Transaction Report</h2>
-              <h4 style="text-align: center; margin-bottom: 20px;">Generated on: ${new Date().toLocaleString()}</h4>
-            `
-            : ""
-          }
-            <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr style="background-color: #f0f0f0;">
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 12%;">TRN-ID</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">Date</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">User Name</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">Bank Name</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 12%;">Amount</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">UTR#</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; width: 16%;">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${pageTransactions
-            .map(
-              (trn) => `
-                  <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.trnNo
-                }</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(
-                  trn.createdAt
-                ).toLocaleString()}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.username || "GUEST"
-                }</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.bankId?.bankName || "UPI"
-                }</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">₹ ${trn.total
-                }</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.utr
-                }</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${trn.status
-                }</td>
-                  </tr>
-                `
-            )
-            .join("")}
-              </tbody>
-            </table>
-            <div style="text-align: right; margin-top: 10px;">
-              Page ${page + 1} of ${totalPages}
-            </div>
-          </div>
-        `;
-
-        document.body.appendChild(tempTable);
-
-        // Convert to image
-        const element = document.getElementById(`reportTable${page}`);
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
+      const rowsPerPage = 10;
+  
+      const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
+      const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25]; 
+      const startX = margin;
+      let startY = 40;
+      const rowHeight = 12;
+  
+      pdf.setFontSize(16);
+      pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
+      pdf.setFontSize(12);
+      pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: "center" });
+  
+      for (let i = 0; i < allTrns.length; i += rowsPerPage) {
+        if (i > 0) pdf.addPage();
+        
+        startY = i === 0 ? 40 + rowHeight : 40;
+        
+        pdf.setFillColor(240, 240, 240);
+        pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont("helvetica", "bold");
+  
+        let currentX = startX;
+        headers.forEach((header, index) => {
+          pdf.text(header, currentX + 3, startY + 8);
+          currentX += columnWidths[index];
         });
-
-        document.body.removeChild(tempTable);
-
-        // Add new page if not first page
-        if (page > 0) {
-          pdf.addPage();
-        }
-
-        // Add image to PDF
-        const imgData = canvas.toDataURL("image/png");
-        const imgWidth = pageWidth - 2 * margin;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight);
+  
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+  
+        const transactions = allTrns.slice(i, i + rowsPerPage);
+        transactions.forEach((trn, index) => {
+          startY += rowHeight;
+          if (index % 2 === 1) {
+            pdf.setFillColor(248, 248, 248);
+            pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
+          }
+  
+          currentX = startX;
+          pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
+          currentX += columnWidths[0];
+          pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
+          currentX += columnWidths[1];
+          pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
+          currentX += columnWidths[2];
+          
+          const bankName = trn.bankId?.bankName === "UPI" 
+            ? `UPI - ${trn.bankId?.iban || ""}` 
+            : (trn.bankId?.bankName || "N/A");
+          pdf.text(bankName, currentX + 3, startY + 8);
+          currentX += columnWidths[3];
+          
+          const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
+          pdf.text(merchantName, currentX + 3, startY + 8);
+          currentX += columnWidths[4];
+          
+          pdf.text(`${trn.total || "0" } INR`, currentX + 3, startY + 8, { align: "left" });
+          currentX += columnWidths[5];
+          pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
+          currentX += columnWidths[6];
+          pdf.text(trn.status || "N/A", currentX + 3, startY + 8);
+        });
+  
+        pdf.setFontSize(10);
+        pdf.text(`Page ${Math.floor(i / rowsPerPage) + 1} of ${Math.ceil(allTrns.length / rowsPerPage)}`, margin, pageHeight - 10);
       }
-
-      pdf.save(
-        `transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`
-      );
+  
+      pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
       setLoader(false);
-      notification.success({
-        message: "Success",
-        description: "Report downloaded successfully!",
-        placement: "topRight",
-      });
+      notification.success({ message: "Success", description: "Report downloaded successfully!", placement: "topRight" });
     } catch (error) {
-      setLoader(false);
       console.error("Error generating PDF:", error);
-      notification.error({
-        message: "Error",
-        description: "Failed to generate report",
-        placement: "topRight",
-      });
+      setLoader(false);
+      notification.error({ message: "Error", description: "Failed to generate report. Please try again.", placement: "topRight" });
     }
   };
 
+
+  
+  
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.target.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -613,16 +588,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       <Modal
         centered
         footer={null}
-        width={900} 
+        width={900}
         style={{
           fontFamily: "sans-serif",
           padding: "20px",
-          maxWidth: "95vw", 
-          minHeight: "90vh", 
+          maxWidth: "95vw",
+          minHeight: "90vh",
         }}
         bodyStyle={{
           height: "100%",
-          overflow: "hidden", 
+          overflow: "hidden",
         }}
         title={<p className="text-[20px] font-[700]">Transaction Details</p>}
         open={open}

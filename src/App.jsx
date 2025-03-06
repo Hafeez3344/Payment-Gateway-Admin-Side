@@ -21,6 +21,8 @@ import Staff from "./Pages/Staff/Staff";
 import Reports from "./Pages/Reports/Reports";
 import Commission from "./Pages/Commission/Commission";
 import Withdraw from "./Pages/Withdraw-Page/Withdraw";
+import Payout from "./Pages/Payout/Payout";
+import PayoutDetails from "./Pages/Payout/PayoutDetails";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -190,6 +192,25 @@ function App() {
               />
             }
           />
+          <Route
+            path="/payout"
+            element={
+              <Payout
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+           <Route
+            path="/payout-details"
+            element={
+              <PayoutDetails
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+
         </Routes>
         {authorization && <Footer />}
       </div>

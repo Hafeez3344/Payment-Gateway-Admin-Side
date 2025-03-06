@@ -15,7 +15,6 @@ import upilogo2 from "../../assets/upilogo2.svg";
 import { Banks } from "../../json-data/banks";
 import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData, fn_DeleteBank, fn_BankActivateApi, fn_getAllBankLogs, fn_createBankName, fn_getAllBankNames } from "../../api/api";
 
-// Add this helper function at the top of your component
 const capitalizeWords = (str) => {
   return str
     .toLowerCase()
@@ -46,15 +45,13 @@ const BankManagement = ({ authorization, showSidebar }) => {
   });
   const [bankLogs, setBankLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
-
   const [addBankModalOpen, setAddBankModalOpen] = useState(false);
   const [newBankName, setNewBankName] = useState('');
   const [banksList, setBanksList] = useState(Banks);
-
-  // Add these new state variables
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [searchBankTerm, setSearchBankTerm] = useState('');
 
   const fetchAllBanksData = async (tab) => {
     if (tab === "banklogs") {
@@ -362,6 +359,17 @@ const BankManagement = ({ authorization, showSidebar }) => {
     }
   };
 
+  const filteredBankLogs = bankLogs.filter(log => {
+    const searchTerm = searchBankTerm.toLowerCase();
+    const bankName = log.bankId?.bankName?.toLowerCase() || '';
+    const accountNo = log.bankId?.accountNo?.toLowerCase() || '';
+    const upiId = log.bankId?.iban?.toLowerCase() || '';
+
+    return bankName.includes(searchTerm) ||
+      accountNo.includes(searchTerm) ||
+      upiId.includes(searchTerm);
+  });
+
   return (
     <>
       <div
@@ -432,8 +440,17 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     Bank Logs
                   </button>
                 </div>
-                {/* add bank button */}
-                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                <div className="flex flex-col md:flex-row items-center space-y-4 justify-end md:space-y-0 md:space-x-4 w-full md:w-auto">
+                  {activeTab === "banklogs" && (
+                    <input
+                      type="text"
+                      placeholder="Search by Bank / UPI"
+                      value={searchBankTerm}
+                      onChange={(e) => setSearchBankTerm(e.target.value)}
+                      className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  )}
+                  {/* add bank button */}
                   {activeTab !== "disabledBanks" && activeTab !== "banklogs" && (
                     <Button type="primary" onClick={handleAddAccount}>
                       Add Account
@@ -482,8 +499,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
                         <tr>
                           <td colSpan="6" className="text-center p-4">Loading...</td>
                         </tr>
-                      ) : bankLogs?.length > 0 ? (
-                        bankLogs.map((log, index) => (
+                      ) : filteredBankLogs?.length > 0 ? (
+                        filteredBankLogs.map((log, index) => (
                           <tr key={index} className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""}`}>
                             <td className="p-4 text-[13px] text-nowrap">
                               {new Date(log.createdAt).toLocaleString()}
@@ -551,7 +568,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       <span className="whitespace-nowrap capitalize">
                                         {account.bankName}
                                       </span>
-                                      <span className="text-gray-600">- {account.accountNo}</span>
+                                      <span className="text-gray-600 text-nowrap">- {account.accountNo}</span>
                                     </div>
                                   ) : (
                                     <div className="flex items-center gap-[3px]">
