@@ -332,7 +332,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
 
     try {
       const response = await fn_createBankName(capitalizedBankName);
-      
+
       if (response.status) {
         // Fetch updated bank list instead of just adding to state
         await fetchBankNames();
@@ -340,7 +340,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
         // Clear form and close modal
         setNewBankName('');
         setAddBankModalOpen(false);
-        
+
         notification.success({
           message: "Success",
           description: response.message || "New bank added successfully!",
@@ -505,10 +505,10 @@ const BankManagement = ({ authorization, showSidebar }) => {
                             <td className="p-2 text-[13px]"><div className="ml-3">{log.bankId?.remainingTransLimit}</div></td>
                             <td className="text-center">
                               <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" :
-                                  log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
-                                    log.status?.toLowerCase() === 'disabled' ? "bg-[#F3F4F6] text-[#4B5563]" :
-                                      log.status?.toLowerCase() === 'enable' ? "bg-[#E0F2FE] text-[#0369A1]" :
-                                        "bg-[#F3F4F6] text-[#4B5563]"
+                                log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
+                                  log.status?.toLowerCase() === 'disabled' ? "bg-[#F3F4F6] text-[#4B5563]" :
+                                    log.status?.toLowerCase() === 'enable' ? "bg-[#E0F2FE] text-[#0369A1]" :
+                                      "bg-[#F3F4F6] text-[#4B5563]"
                                 }`}>
                                 {log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1).toLowerCase() : 'N/A'}
                               </button>
@@ -537,7 +537,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                 <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
                                   {activeTab === "bank" ? (
                                     <div className="flex items-center gap-[3px]">
-                                      <span className="whitespace-nowrap">
+                                      <span className="whitespace-nowrap capitalize">
                                         {account.bankName}
                                       </span>
                                     </div>
@@ -548,7 +548,6 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                         alt=""
                                         className="w-[50px]"
                                       />
-                                      <span>UPI</span>
                                     </div>
                                   )}
                                 </div>
@@ -566,7 +565,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                   {account.accountHolderName}
                                 </div>
                               </td>
-                              
+
                               <td className="p-3 text-[13px] font-[400] text-nowrap">
                                 <div className="ml-1">
                                   ₹ {account.accountLimit}
@@ -854,9 +853,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       {capitalizeWords(item.title)}
                     </option>
                   ))}
-                  <option 
-                    value="add_new" 
-                    style={{ 
+                  <option
+                    value="add_new"
+                    style={{
                       backgroundColor: '#0050B3 ',
                       color: 'white',
                       fontWeight: '500'
@@ -952,7 +951,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
               className="w-full text-[12px]"
               placeholder="No of Transactions"
             />
-          </div>                       
+          </div>
         </div>
         {/* UPI QR Code in new row */}
         {activeTab === "upi" && (

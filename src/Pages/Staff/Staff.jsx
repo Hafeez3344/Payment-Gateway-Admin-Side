@@ -19,6 +19,7 @@ const Staff = ({ showSidebar }) => {
     const [banksOption, setBanksOption] = useState([]);
     const [merchantOptions, setMerchantOption] = useState([]);
     const [editModal, setEditModal] = useState(false);
+    const [loader, setLoader] = useState(false);
     const transactionTypeOptions = [{ label: "Manual Transaction", value: "manual" }, { label: "Direct Payment", value: "direct" }];
 
     const [staffForm, setStaffForm] = useState({
@@ -55,7 +56,8 @@ const Staff = ({ showSidebar }) => {
 
     const fn_changeLedgerType = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        if (!editForm) {
+        console.log(selectedValues)
+        if (!editModal) {
             setStaffForm(() => ({ ...staffForm, ledgerType: selectedValues }));
         } else {
             setEditForm(() => ({ ...editForm, ledgerType: selectedValues }));
@@ -80,7 +82,7 @@ const Staff = ({ showSidebar }) => {
 
     const fn_changeMerchant = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        if (!editForm) {
+        if (!editModal) {
             setStaffForm(() => ({ ...staffForm, ledgerMerchant: selectedValues }));
         } else {
             setEditForm(() => ({ ...editForm, ledgerMerchant: selectedValues }));
@@ -89,7 +91,7 @@ const Staff = ({ showSidebar }) => {
 
     const fn_changeBank = (value) => {
         const selectedValues = Array.isArray(value) ? value : [value];
-        if (!editForm) {
+        if (!editModal) {
             setStaffForm(() => ({ ...staffForm, ledgerBank: selectedValues }));
         } else {
             setEditForm(() => ({ ...editForm, ledgerBank: selectedValues }));
@@ -153,6 +155,8 @@ const Staff = ({ showSidebar }) => {
     }
 
     const fn_submit = async () => {
+        console.log(staffForm);
+        setLoader(true);
         if (staffForm?.userName === "" || staffForm?.email === "" || staffForm?.password === "" || staffForm?.ledgerType?.length === 0 || staffForm?.ledgerMerchant?.length === 0 || staffForm?.ledgerBank?.length === 0) {
             return notification.error({
                 message: "Error",
@@ -169,6 +173,7 @@ const Staff = ({ showSidebar }) => {
             });
             if (response?.status === 200) {
                 setOpen(false);
+                setLoader(false);
                 fn_getAllStaffs();
                 notification.success({
                     message: "Staff Created",
@@ -178,6 +183,7 @@ const Staff = ({ showSidebar }) => {
             }
         } catch (error) {
             console.log("staff creation error ", error);
+            setLoader(false);
             return notification.error({
                 message: "Staff Creation Error",
                 description: error?.response?.data?.message || "Network",
@@ -211,6 +217,7 @@ const Staff = ({ showSidebar }) => {
                 placement: "topRight",
             });
         }
+        setLoader(true);
         try {
             const response = await axios.put(`${BACKEND_URL}/adminStaff/update/${editForm?.id}`, editForm, {
                 headers: {
@@ -221,6 +228,7 @@ const Staff = ({ showSidebar }) => {
             if (response?.status === 200) {
                 setOpen(false);
                 setEditModal(false);
+                setLoader(false);
                 fn_getAllStaffs();
                 notification.success({
                     message: "Staff Updated",
@@ -230,6 +238,7 @@ const Staff = ({ showSidebar }) => {
             }
         } catch (error) {
             console.log("staff creation error ", error);
+            setLoader(false);
             setEditModal(false);
             return notification.error({
                 message: "Staff Creation Error",
@@ -340,8 +349,8 @@ const Staff = ({ showSidebar }) => {
                     <Button key="cancel" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>,
-                    <Button key="submit" type="primary" onClick={fn_submit}>
-                        Save
+                    <Button key="submit" type="primary" onClick={fn_submit} disabled={loader}>
+                        {loader ? "Loading..." : "Save"}
                     </Button>,
                 ]}
                 width={600}
@@ -419,8 +428,8 @@ const Staff = ({ showSidebar }) => {
                     <Button key="cancel" onClick={() => setEditModal(false)}>
                         Cancel
                     </Button>,
-                    <Button key="submit" type="primary" onClick={fn_update}>
-                        Update
+                    <Button key="submit" type="primary" onClick={fn_update} disabled={loader}>
+                        {loader ? "Loading..." : "Update"}
                     </Button>,
                 ]}
                 width={600}
