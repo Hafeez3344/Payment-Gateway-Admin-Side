@@ -858,4 +858,78 @@ export const fn_getAllBankNames = async () => {
     }
 };
 
+
+//------------------------------------  Get Upload Excel File API --------------------------------------
+export const fn_uploadExcelFile = async () => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(
+            `${BACKEND_URL}/excelFile/getAll`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+}
+
+
+//------------------------------------  Get Upload Excel File Data API --------------------------------------
+export const fn_getUploadExcelFileData = async (page) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/excelFile/getAll?pageNumber=${page}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+};
+
+export const fn_getExcelFileWithdrawData = async (id) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+};
+
 export default BACKEND_URL;

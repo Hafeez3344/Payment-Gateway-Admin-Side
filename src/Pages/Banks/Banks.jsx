@@ -494,7 +494,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                         Account Title
                       </th>
                       <th className="p-5 text-[13px] font-[600] text-nowrap">
-                        Total Amount
+                        Amount Limit
                       </th>
                       <th className="p-5 text-[13px] font-[600] text-nowrap">
                         {activeTab === "banklogs"
