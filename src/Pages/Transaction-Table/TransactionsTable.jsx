@@ -234,26 +234,128 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   ];
 
 
+  // const handleDownloadReport = async () => {
+  //   try {
+  //     setLoader(true);
+  //     const pdf = new jsPDF("l", "mm", "a4");
+  //     const pageWidth = pdf.internal.pageSize.getWidth();
+  //     const pageHeight = pdf.internal.pageSize.getHeight();
+  //     const margin = 10;
+  //     const rowsPerPage = 10;
+  
+  //     const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
+  //     const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25]; 
+  //     const startX = margin;
+  //     let startY = 40;
+  //     const rowHeight = 12;
+  
+  //     pdf.setFontSize(16);
+  //     pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
+  //     pdf.setFontSize(12);
+  //     pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: "center" });
+  
+  //     for (let i = 0; i < allTrns.length; i += rowsPerPage) {
+  //       if (i > 0) pdf.addPage();
+        
+  //       startY = i === 0 ? 40 + rowHeight : 40;
+        
+  //       pdf.setFillColor(240, 240, 240);
+  //       pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
+  //       pdf.setFontSize(10);
+  //       pdf.setTextColor(0, 0, 0);
+  //       pdf.setFont("helvetica", "bold");
+  
+  //       let currentX = startX;
+  //       headers.forEach((header, index) => {
+  //         pdf.text(header, currentX + 3, startY + 8);
+  //         currentX += columnWidths[index];
+  //       });
+  
+  //       pdf.setFont("helvetica", "normal");
+  //       pdf.setFontSize(9);
+  
+  //       const transactions = allTrns.slice(i, i + rowsPerPage);
+  //       transactions.forEach((trn, index) => {
+  //         startY += rowHeight;
+  //         if (index % 2 === 1) {
+  //           pdf.setFillColor(248, 248, 248);
+  //           pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
+  //         }
+  
+  //         currentX = startX;
+  //         pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
+  //         currentX += columnWidths[0];
+  //         pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
+  //         currentX += columnWidths[1];
+  //         pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
+  //         currentX += columnWidths[2];
+          
+  //         const bankName = trn.bankId?.bankName === "UPI" 
+  //           ? `UPI - ${trn.bankId?.iban || ""}` 
+  //           : (trn.bankId?.bankName || "N/A");
+  //         pdf.text(bankName, currentX + 3, startY + 8);
+  //         currentX += columnWidths[3];
+          
+  //         const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
+  //         pdf.text(merchantName, currentX + 3, startY + 8);
+  //         currentX += columnWidths[4];
+          
+  //         pdf.text(`${trn.total || "0" } INR`, currentX + 3, startY + 8, { align: "left" });
+  //         currentX += columnWidths[5];
+  //         pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
+  //         currentX += columnWidths[6];
+  //         pdf.text(trn.status || "N/A", currentX + 3, startY + 8);
+  //       });
+  
+  //       pdf.setFontSize(10);
+  //       pdf.text(`Page ${Math.floor(i / rowsPerPage) + 1} of ${Math.ceil(allTrns.length / rowsPerPage)}`, margin, pageHeight - 10);
+  //     }
+  
+  //     pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  //     setLoader(false);
+  //     notification.success({ message: "Success", description: "Report downloaded successfully!", placement: "topRight" });
+  //   } catch (error) {
+  //     console.error("Error generating PDF:", error);
+  //     setLoader(false);
+  //     notification.error({ message: "Error", description: "Failed to generate report. Please try again.", placement: "topRight" });
+  //   }
+  // };
+
+
   const handleDownloadReport = async () => {
     try {
+      // First, check if data exists
+      if (!allTrns || allTrns.length === 0) {
+        notification.warning({
+          message: "No Data",
+          description: "There are no transactions to include in the report.",
+          placement: "topRight"
+        });
+        return; // Exit the function early
+      }
+  
+      // Log for debugging
+      console.log(`Generating PDF with ${allTrns.length} transactions`);
+  
       setLoader(true);
       const pdf = new jsPDF("l", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const rowsPerPage = 10;
-  
+      
       const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
-      const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25]; 
+      const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25];
+      
       const startX = margin;
       let startY = 40;
       const rowHeight = 12;
-  
+      
       pdf.setFontSize(16);
       pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
       pdf.setFontSize(12);
       pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: "center" });
-  
+      
       for (let i = 0; i < allTrns.length; i += rowsPerPage) {
         if (i > 0) pdf.addPage();
         
@@ -264,16 +366,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
         pdf.setFontSize(10);
         pdf.setTextColor(0, 0, 0);
         pdf.setFont("helvetica", "bold");
-  
+        
         let currentX = startX;
         headers.forEach((header, index) => {
           pdf.text(header, currentX + 3, startY + 8);
           currentX += columnWidths[index];
         });
-  
+        
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
-  
+        
         const transactions = allTrns.slice(i, i + rowsPerPage);
         transactions.forEach((trn, index) => {
           startY += rowHeight;
@@ -281,7 +383,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
             pdf.setFillColor(248, 248, 248);
             pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
           }
-  
+          
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
@@ -290,8 +392,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
           
-          const bankName = trn.bankId?.bankName === "UPI" 
-            ? `UPI - ${trn.bankId?.iban || ""}` 
+          const bankName = trn.bankId?.bankName === "UPI"
+            ? `UPI - ${trn.bankId?.iban || ""}`
             : (trn.bankId?.bankName || "N/A");
           pdf.text(bankName, currentX + 3, startY + 8);
           currentX += columnWidths[3];
@@ -306,23 +408,28 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX += columnWidths[6];
           pdf.text(trn.status || "N/A", currentX + 3, startY + 8);
         });
-  
+        
         pdf.setFontSize(10);
         pdf.text(`Page ${Math.floor(i / rowsPerPage) + 1} of ${Math.ceil(allTrns.length / rowsPerPage)}`, margin, pageHeight - 10);
       }
-  
+      
       pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
       setLoader(false);
-      notification.success({ message: "Success", description: "Report downloaded successfully!", placement: "topRight" });
+      notification.success({ 
+        message: "Success", 
+        description: "Report downloaded successfully!", 
+        placement: "topRight" 
+      });
     } catch (error) {
       console.error("Error generating PDF:", error);
       setLoader(false);
-      notification.error({ message: "Error", description: "Failed to generate report. Please try again.", placement: "topRight" });
+      notification.error({ 
+        message: "Error", 
+        description: `Failed to generate report: ${error.message}`, 
+        placement: "topRight" 
+      });
     }
   };
-
-
-  
   
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.target.getBoundingClientRect();

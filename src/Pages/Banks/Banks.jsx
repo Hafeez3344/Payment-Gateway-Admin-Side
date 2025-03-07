@@ -13,14 +13,22 @@ import { MdOutlineCheckCircle } from "react-icons/md";
 import upilogo2 from "../../assets/upilogo2.svg";
 
 import { Banks } from "../../json-data/banks";
-import BACKEND_URL, { fn_BankUpdate, fn_getAllBanksData, fn_DeleteBank, fn_BankActivateApi, fn_getAllBankLogs, fn_createBankName, fn_getAllBankNames } from "../../api/api";
+import BACKEND_URL, {
+  fn_BankUpdate,
+  fn_getAllBanksData,
+  fn_DeleteBank,
+  fn_BankActivateApi,
+  fn_getAllBankLogs,
+  fn_createBankName,
+  fn_getAllBankNames,
+} from "../../api/api";
 
 const capitalizeWords = (str) => {
   return str
     .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 const BankManagement = ({ authorization, showSidebar }) => {
@@ -46,12 +54,12 @@ const BankManagement = ({ authorization, showSidebar }) => {
   const [bankLogs, setBankLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [addBankModalOpen, setAddBankModalOpen] = useState(false);
-  const [newBankName, setNewBankName] = useState('');
+  const [newBankName, setNewBankName] = useState("");
   const [banksList, setBanksList] = useState(Banks);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [searchBankTerm, setSearchBankTerm] = useState('');
+  const [searchBankTerm, setSearchBankTerm] = useState("");
 
   const fetchAllBanksData = async (tab) => {
     if (tab === "banklogs") {
@@ -110,9 +118,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
       const response = await fn_getAllBankNames();
       if (response.status) {
         // Combine static Banks with dynamic bank names from API
-        const dynamicBanks = response.data.map(bank => ({
+        const dynamicBanks = response.data.map((bank) => ({
           title: bank.bankName,
-          img: "/default-bank-image.png"
+          img: "/default-bank-image.png",
         }));
         setBanksList([...dynamicBanks]);
       }
@@ -209,8 +217,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
       if (data?.iban === "") {
         notification.error({
           message: "Error",
-          description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
-            }`,
+          description: `Enter ${
+            activeTab === "bank" ? "IFSC Number" : "UPI ID"
+          }`,
           placement: "topRight",
         });
         return;
@@ -335,7 +344,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
         await fetchBankNames();
 
         // Clear form and close modal
-        setNewBankName('');
+        setNewBankName("");
         setAddBankModalOpen(false);
 
         notification.success({
@@ -359,22 +368,25 @@ const BankManagement = ({ authorization, showSidebar }) => {
     }
   };
 
-  const filteredBankLogs = bankLogs.filter(log => {
+  const filteredBankLogs = bankLogs.filter((log) => {
     const searchTerm = searchBankTerm.toLowerCase();
-    const bankName = log.bankId?.bankName?.toLowerCase() || '';
-    const accountNo = log.bankId?.accountNo?.toLowerCase() || '';
-    const upiId = log.bankId?.iban?.toLowerCase() || '';
+    const bankName = log.bankId?.bankName?.toLowerCase() || "";
+    const accountNo = log.bankId?.accountNo?.toLowerCase() || "";
+    const upiId = log.bankId?.iban?.toLowerCase() || "";
 
-    return bankName.includes(searchTerm) ||
+    return (
+      bankName.includes(searchTerm) ||
       accountNo.includes(searchTerm) ||
-      upiId.includes(searchTerm);
+      upiId.includes(searchTerm)
+    );
   });
 
   return (
     <>
       <div
-        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-          }`}
+        className={`bg-gray-100 transition-all duration-500 ${
+          showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
         style={{ minHeight: `${containerHeight}px` }}
       >
         <div className="p-7">
@@ -451,11 +463,12 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     />
                   )}
                   {/* add bank button */}
-                  {activeTab !== "disabledBanks" && activeTab !== "banklogs" && (
-                    <Button type="primary" onClick={handleAddAccount}>
-                      Add Account
-                    </Button>
-                  )}
+                  {activeTab !== "disabledBanks" &&
+                    activeTab !== "banklogs" && (
+                      <Button type="primary" onClick={handleAddAccount}>
+                        Add Account
+                      </Button>
+                    )}
                 </div>
               </div>
 
@@ -482,10 +495,11 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       </th>
                       <th className="p-5 text-[13px] font-[600] text-nowrap">
                         Total Amount
-
                       </th>
                       <th className="p-5 text-[13px] font-[600] text-nowrap">
-                        {activeTab === "banklogs" ? "Transactions Limit" : "Transactions Limit"}
+                        {activeTab === "banklogs"
+                          ? "Transactions Limit"
+                          : "Transactions Limit"}
                       </th>
                       <th className="p-5 text-[13px] font-[600]">Status</th>
                       <th className="p-5 text-[13px] font-[600] pl-10">
@@ -497,11 +511,18 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     {activeTab === "banklogs" ? (
                       loadingLogs ? (
                         <tr>
-                          <td colSpan="6" className="text-center p-4">Loading...</td>
+                          <td colSpan="6" className="text-center p-4">
+                            Loading...
+                          </td>
                         </tr>
                       ) : filteredBankLogs?.length > 0 ? (
                         filteredBankLogs.map((log, index) => (
-                          <tr key={index} className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""}`}>
+                          <tr
+                            key={index}
+                            className={`border-t border-b ${
+                              index % 2 === 0 ? "bg-white" : ""
+                            }`}
+                          >
                             <td className="p-4 text-[13px] text-nowrap">
                               {new Date(log.createdAt).toLocaleString()}
                             </td>
@@ -509,17 +530,23 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               {log.bankId?.bankName === "UPI" ? (
                                 <div className="flex items-center gap-2">
                                   <span>UPI</span>
-                                  <span className="text-gray-600">- {log.bankId?.iban}</span>
+                                  <span className="text-gray-600">
+                                    - {log.bankId?.iban}
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <span>{log.bankId?.bankName}</span>
-                                  <span className="text-gray-600">- {log.bankId?.accountNo}</span>
+                                  <span className="text-gray-600">
+                                    - {log.bankId?.accountNo}
+                                  </span>
                                 </div>
                               )}
                             </td>
-                            <td className="p-2 text-[13px]">
-                              <div className="ml-2">{log.bankId?.accountHolderName}</div>
+                            <td className="p-2 text-[13px] text-nowrap">
+                              <div className="ml-2">
+                                {log.bankId?.accountHolderName}
+                              </div>
                             </td>
                             <td className="p-2 text-[13px]">
                               <div className="ml-3 text-nowrap">
@@ -532,16 +559,28 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               </div>
                             </td>
                             <td className="text-center">
-                              <button className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === 'active' ? "bg-[#DCFCE7] text-[#22C55E]" :
-                                log.status?.toLowerCase() === 'inactive' ? "bg-[#FFE4E4] text-[#DC2626]" :
-                                  log.status?.toLowerCase() === 'disabled' ? "bg-[#F3F4F6] text-[#4B5563]" :
-                                    log.status?.toLowerCase() === 'enable' ? "bg-[#E0F2FE] text-[#0369A1]" :
-                                      "bg-[#F3F4F6] text-[#4B5563]"
-                                }`}>
-                                {log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1).toLowerCase() : 'N/A'}
+                              <button
+                                className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                                  log.status?.toLowerCase() === "active"
+                                    ? "bg-[#DCFCE7] text-[#22C55E]"
+                                    : log.status?.toLowerCase() === "inactive"
+                                    ? "bg-[#FFE4E4] text-[#DC2626]"
+                                    : log.status?.toLowerCase() === "disabled"
+                                    ? "bg-[#F3F4F6] text-[#4B5563]"
+                                    : log.status?.toLowerCase() === "enable"
+                                    ? "bg-[#E0F2FE] text-[#0369A1]"
+                                    : "bg-[#F3F4F6] text-[#4B5563]"
+                                }`}
+                              >
+                                {log.status
+                                  ? log.status.charAt(0).toUpperCase() +
+                                    log.status.slice(1).toLowerCase()
+                                  : "N/A"}
                               </button>
                             </td>
-                            <td className="p-3 text-[13px] text-nowrap">{log.reason || "N/A"}</td>
+                            <td className="p-3 text-[13px] text-nowrap">
+                              {log.reason || "N/A"}
+                            </td>
                           </tr>
                         ))
                       ) : (
@@ -552,221 +591,247 @@ const BankManagement = ({ authorization, showSidebar }) => {
                           </td>
                         </tr>
                       )
-                    ) : (
-                      banksData?.length > 0 ? (
-                        banksData?.map((account, index) => {
-                          return (
-                            <tr
-                              key={index}
-                              className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
-                                }`}
-                            >
-                              <td className="p-3 text-[13px] font-[600]">
-                                <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                                  {activeTab === "bank" ? (
-                                    <div className="flex items-center gap-[3px]">
-                                      <span className="whitespace-nowrap capitalize">
-                                        {account.bankName}
-                                      </span>
-                                      <span className="text-gray-600 text-nowrap">- {account.accountNo}</span>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-[3px]">
-                                      <img
-                                        src={upilogo2}
-                                        alt=""
-                                        className="w-[50px]"
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="p-3 text-[13px]">
-                                <div className="ml-14">
-                                  {" "}
-                                  <span className="whitespace-nowrap">
-                                    {account.iban}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="p-3 text-[13px] whitespace-nowrap">
-                                <div className="ml-2">
-                                  {account.accountHolderName}
-                                </div>
-                              </td>
+                    ) : banksData?.length > 0 ? (
+                      banksData?.map((account, index) => {
+                        return (
+                          <tr
+                            key={index}
+                            className={`border-t border-b ${
+                              index % 2 === 0 ? "bg-white" : ""
+                            }`}
+                          >
+                            <td className="p-3 text-[13px] font-[600]">
+                              <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
+                                {activeTab === "bank" ? (
+                                  <div className="flex items-center gap-[3px]">
+                                    <span className="whitespace-nowrap capitalize">
+                                      {account.bankName}
+                                    </span>
+                                    <span className="text-gray-600 text-nowrap">
+                                      - {account.accountNo}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-[3px]">
+                                    <img
+                                      src={upilogo2}
+                                      alt=""
+                                      className="w-[50px]"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px]">
+                              <div className="ml-14">
+                                {" "}
+                                <span className="whitespace-nowrap">
+                                  {account.iban}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-[13px] whitespace-nowrap">
+                              <div className="ml-2">
+                                {account.accountHolderName}
+                              </div>
+                            </td>
 
-                              <td className="p-3 text-[13px] font-[400] text-nowrap">
-                                <div className="ml-1" style={{ color: account.remainingLimit === 0 ? 'red' : 'inherit' }}>
-                                  ₹ {account.accountLimit} / ₹ {account.remainingLimit}
-                                </div>
-                              </td>
+                            <td className="p-3 text-[13px] font-[400] text-nowrap">
+                              <div
+                                className="ml-1"
+                                style={{
+                                  color:
+                                    account.remainingLimit === 0
+                                      ? "red"
+                                      : "inherit",
+                                }}
+                              >
+                                ₹ {account.accountLimit} / ₹{" "}
+                                {account.remainingLimit}
+                              </div>
+                            </td>
 
-                              <td className="p-3 text-[13px] font-[400] text-nowrap">
-                                <div className="ml-1" style={{ color: account.remainingTransLimit === 0 ? 'red' : 'inherit' }}>
-                                  {account.noOfTrans} / {account.remainingTransLimit}
-                                </div>
-                              </td>
-                              <td className="text-center">
-                                <button
-                                  className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                            <td className="p-3 text-[13px] font-[400] text-nowrap">
+                              <div
+                                className="ml-1"
+                                style={{
+                                  color:
+                                    account.remainingTransLimit === 0
+                                      ? "red"
+                                      : "inherit",
+                                }}
+                              >
+                                {account.noOfTrans} /{" "}
+                                {account.remainingTransLimit}
+                              </div>
+                            </td>
+                            <td className="text-center">
+                              <button
+                                className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                                  account?.block === false
                                     ? "bg-[#10CB0026] text-[#0DA000]"
                                     : "bg-[#FF173D33] text-[#D50000]"
-                                    }`}
-                                >
-                                  {!account?.block ? "Active" : "Inactive"}
-                                </button>
-                              </td>
-                              <td className="p-3 text-center">
-                                <div className="flex justify-center items-center ml-6">
-                                  {activeTab !== "disabledBanks" ? (
-                                    <>
-                                      <Switch
-                                        size="small"
-                                        checked={!account?.block}
-                                        onChange={async (checked) => {
-                                          try {
-                                            // Pass the current activeTab value which will be either "bank" or "upi"
-                                            const response = await fn_BankActivateApi(
+                                }`}
+                              >
+                                {!account?.block ? "Active" : "Inactive"}
+                              </button>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex justify-center items-center ml-6">
+                                {activeTab !== "disabledBanks" ? (
+                                  <>
+                                    <Switch
+                                      size="small"
+                                      checked={!account?.block}
+                                      onChange={async (checked) => {
+                                        try {
+                                          // Pass the current activeTab value which will be either "bank" or "upi"
+                                          const response =
+                                            await fn_BankActivateApi(
                                               account?._id,
                                               activeTab
                                             );
-                                            if (response?.status) {
-                                              fetchAllBanksData(activeTab);
-                                              notification.success({
-                                                message: "Status Updated",
-                                                description: checked
-                                                  ? `${activeTab.toUpperCase()} Activated`
-                                                  : `${activeTab.toUpperCase()} Deactivated`,
-                                                placement: "topRight",
-                                              });
-                                            } else {
-                                              notification.error({
-                                                message: "Error",
-                                                description: response.message || `Failed to update ${activeTab} status`,
-                                                placement: "topRight",
-                                              });
-                                            }
-                                          } catch (error) {
-                                            notification.error({
-                                              message: "Error",
-                                              description: `Failed to update ${activeTab} status`,
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Status Updated",
+                                              description: checked
+                                                ? `${activeTab.toUpperCase()} Activated`
+                                                : `${activeTab.toUpperCase()} Deactivated`,
                                               placement: "topRight",
                                             });
-                                          }
-                                        }}
-                                      />
-                                      <Button
-                                        className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                                        title="Edit"
-                                        onClick={() => handleEdit(account)}
-                                      >
-                                        <FiEdit />
-                                      </Button>
-                                      <Button
-                                        className="bg-red-100 text-red-600 rounded-full px-2 py-2"
-                                        title="Disable"
-                                        onClick={async () => {
-                                          try {
-                                            const response = await fn_BankUpdate(
-                                              account?._id,
-                                              {
-                                                disable: true,
-                                              }
-                                            );
-                                            if (response?.status) {
-                                              fetchAllBanksData(activeTab);
-                                              notification.success({
-                                                message: "Status Updated",
-                                                description:
-                                                  "Bank has been moved to disabled banks",
-                                                placement: "topRight",
-                                              });
-                                            }
-                                          } catch (error) {
+                                          } else {
                                             notification.error({
                                               message: "Error",
                                               description:
-                                                "Failed to disable bank",
+                                                response.message ||
+                                                `Failed to update ${activeTab} status`,
                                               placement: "topRight",
                                             });
                                           }
-                                        }}
-                                      >
-                                        <MdDoNotDisturb size={18} />
-                                      </Button>
-                                      <Button
-                                        className="bg-red-100 text-red-600 rounded-full px-2 py-2 text-[11px] ms-[5px]"
-                                        title="Reset Limit"
-                                        onClick={async () => {
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description: `Failed to update ${activeTab} status`,
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    />
+                                    <Button
+                                      className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                                      title="Edit"
+                                      onClick={() => handleEdit(account)}
+                                    >
+                                      <FiEdit />
+                                    </Button>
+                                    <Button
+                                      className="bg-red-100 text-red-600 rounded-full px-2 py-2"
+                                      title="Disable"
+                                      onClick={async () => {
+                                        try {
                                           const response = await fn_BankUpdate(
                                             account?._id,
                                             {
-                                              remainingLimit: account?.accountLimit,
+                                              disable: true,
                                             }
                                           );
                                           if (response?.status) {
                                             fetchAllBanksData(activeTab);
                                             notification.success({
-                                              message: "Bank Updated",
-                                              description: "Bank Limit Released",
+                                              message: "Status Updated",
+                                              description:
+                                                "Bank has been moved to disabled banks",
                                               placement: "topRight",
                                             });
                                           }
-                                        }}
-                                      >
-                                        Reset Limit
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Button
-                                        className="bg-green-100 text-green-600 rounded-full px-2 py-2 mr-2"
-                                        title="Enable"
-                                        onClick={async () => {
-                                          try {
-                                            const response = await fn_BankUpdate(
-                                              account?._id,
-                                              {
-                                                disable: false,
-                                              }
-                                            );
-                                            if (response?.status) {
-                                              fetchAllBanksData(activeTab);
-                                              notification.success({
-                                                message: "Status Updated",
-                                                description: "Bank has been enabled",
-                                                placement: "topRight",
-                                              });
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description:
+                                              "Failed to disable bank",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <MdDoNotDisturb size={18} />
+                                    </Button>
+                                    <Button
+                                      className="bg-red-100 text-red-600 rounded-full px-2 py-2 text-[11px] ms-[5px]"
+                                      title="Reset Limit"
+                                      onClick={async () => {
+                                        const response = await fn_BankUpdate(
+                                          account?._id,
+                                          {
+                                            remainingLimit:
+                                              account?.accountLimit,
+                                          }
+                                        );
+                                        if (response?.status) {
+                                          fetchAllBanksData(activeTab);
+                                          notification.success({
+                                            message: "Bank Updated",
+                                            description: "Bank Limit Released",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      Reset Limit
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      className="bg-green-100 text-green-600 rounded-full px-2 py-2 mr-2"
+                                      title="Enable"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fn_BankUpdate(
+                                            account?._id,
+                                            {
+                                              disable: false,
                                             }
-                                          } catch (error) {
-                                            notification.error({
-                                              message: "Error",
-                                              description: "Failed to enable bank",
+                                          );
+                                          if (response?.status) {
+                                            fetchAllBanksData(activeTab);
+                                            notification.success({
+                                              message: "Status Updated",
+                                              description:
+                                                "Bank has been enabled",
                                               placement: "topRight",
                                             });
                                           }
-                                        }}
-                                      >
-                                        <MdOutlineCheckCircle size={18} />
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ) : (
-                        <tr className="h-[50px]">
-                          <td
-                            colSpan="7"
-                            className="text-center text-[13px] font-[500] italic text-gray-600"
-                          >
-                            <FaExclamationCircle className="inline-block text-[18px] mt-[-2px] me-[10px]" />
-                            No Data Found
-                          </td>
-                        </tr>
-                      )
+                                        } catch (error) {
+                                          notification.error({
+                                            message: "Error",
+                                            description:
+                                              "Failed to enable bank",
+                                            placement: "topRight",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <MdOutlineCheckCircle size={18} />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="h-[50px]">
+                        <td
+                          colSpan="7"
+                          className="text-center text-[13px] font-[500] italic text-gray-600"
+                        >
+                          <FaExclamationCircle className="inline-block text-[18px] mt-[-2px] me-[10px]" />
+                          No Data Found
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
@@ -847,9 +912,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                   <option
                     value="add_new"
                     style={{
-                      backgroundColor: '#0050B3 ',
-                      color: 'white',
-                      fontWeight: '500'
+                      backgroundColor: "#0050B3 ",
+                      color: "white",
+                      fontWeight: "500",
                     }}
                   >
                     + Add New Bank
@@ -893,8 +958,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                 setData((prev) => ({ ...prev, iban: e.target.value }))
               }
               className="w-full text-[12px]"
-              placeholder={`${activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
-                }`}
+              placeholder={`${
+                activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
+              }`}
             />
           </div>
           {/* account Holder Name */}
@@ -1003,10 +1069,3 @@ const BankManagement = ({ authorization, showSidebar }) => {
 };
 
 export default BankManagement;
-
-
-
-
-
-
-
