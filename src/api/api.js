@@ -900,7 +900,7 @@ export const fn_getUploadExcelFileData = async (page) => {
         return {
             status: true,
             data: response.data,
-        };
+        };KI
     } catch (error) {
         return {
             status: false,
@@ -929,6 +929,31 @@ export const fn_getExcelFileWithdrawData = async (id) => {
             status: false,
             message: error?.response?.data?.message || "Failed to get excel file data"
         };
+    }
+};
+
+export const fn_updatePayoutStatus = async (id, data) => {
+    try {
+        const token = Cookies.get("token");
+        const response = await axios.put(`${BACKEND_URL}/excelWithdraw/update/${id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: response.data.status === "ok",
+            message: response.data.message || "Payout status updated successfully",
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
     }
 };
 

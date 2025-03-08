@@ -17,7 +17,6 @@ const Payout = ({ authorization, showSidebar }) => {
   const [slipData, setSlipData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-
   const getExcelFile = async () => {
     try {
       const response = await fn_getUploadExcelFileData(currentPage);
@@ -50,8 +49,9 @@ const Payout = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -63,11 +63,12 @@ const Payout = ({ authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">Payout ID</th>
-                  <th className="p-4">Excel File Name</th>
-                  <th className="p-4">DATE</th>
-                  <th className="p-4">No Of Withdraw</th>
-                  <th className="p-4 cursor-pointer">Action</th>
+                  <th className="p-4 text-nowrap">Payout ID</th>
+                  <th className="p-4 text-nowrap">Excel File Name</th>
+                  <th className="p-4 text-nowrap">Merchant Name</th>
+                  <th className="p-4 text-nowrap">DATE</th>
+                  <th className="p-4 text-nowrap">No Of Withdraw</th>
+                  <th className="p-4 cursor-pointer text-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,6 +85,9 @@ const Payout = ({ authorization, showSidebar }) => {
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction?.fileName}
                         </span>
+                      </td>
+                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {transaction?.merchantId?.merchantName}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
                         {new Date(transaction?.createdAt).toDateString()},
