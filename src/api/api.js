@@ -170,11 +170,10 @@ export const fn_getMerchantData = async () => {
 export const fn_getAllBanksData = async (accountType, page = 1) => {
     try {
         const token = Cookies.get("token");
-        const url = `${BACKEND_URL}/bank/getAll?${
-            accountType === "disabledBanks"
-                ? "disable=true"
-                : `accountType=${accountType}&disable=false`
-        }&page=${page}`;
+        const url = `${BACKEND_URL}/bank/getAll?${accountType === "disabledBanks"
+            ? "disable=true"
+            : `accountType=${accountType}&disable=false`
+            }&page=${page}`;
 
         const response = await axios.get(url, {
             headers: {
@@ -836,24 +835,24 @@ export const fn_createBankName = async (bankName) => {
 
 export const fn_getAllBankNames = async () => {
     try {
-        const token = Cookies.get("token");                                        
-        const response = await axios.get(                                                          
+        const token = Cookies.get("token");
+        const response = await axios.get(
             `${BACKEND_URL}/bankNames/getAll`,
-            {                                              
+            {
                 headers: {
-                    Authorization: `Bearer ${token}`,                                              
-                    "Content-Type": "application/json",                                       
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
-            }                        
-        );                                                                                                                                                                                                                          
-        return {                        
-            status: true,                         
+            }
+        );
+        return {
+            status: true,
             data: response.data?.data || []
         };
     } catch (error) {
-        return { 
-            status: false, 
-            message: error?.response?.data?.message || "Failed to fetch bank names" 
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to fetch bank names"
         };
     }
 };
@@ -889,7 +888,7 @@ export const fn_uploadExcelFile = async () => {
 export const fn_getUploadExcelFileData = async (page) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/excelFile/getAll?pageNumber=${page}`,
+        const response = await axios.get(`${BACKEND_URL}/excelFile/getAll?page=${page}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -900,7 +899,7 @@ export const fn_getUploadExcelFileData = async (page) => {
         return {
             status: true,
             data: response.data,
-        };KI
+        }; KI
     } catch (error) {
         return {
             status: false,
@@ -909,10 +908,10 @@ export const fn_getUploadExcelFileData = async (page) => {
     }
 };
 
-export const fn_getExcelFileWithdrawData = async (id) => {
+export const fn_getExcelFileWithdrawData = async (id, page) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}`,
+        const response = await axios.get(`${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}&page=${page}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -938,7 +937,6 @@ export const fn_updatePayoutStatus = async (id, data) => {
         const response = await axios.put(`${BACKEND_URL}/excelWithdraw/update/${id}`, data, {
             headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
             },
         });
         return {

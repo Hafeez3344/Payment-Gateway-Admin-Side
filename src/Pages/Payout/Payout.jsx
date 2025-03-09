@@ -49,9 +49,8 @@ const Payout = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">

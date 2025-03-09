@@ -201,7 +201,7 @@ function App() {
               />
             }
           />
-           <Route
+          <Route
             path="/payout-details"
             element={
               <PayoutDetails
