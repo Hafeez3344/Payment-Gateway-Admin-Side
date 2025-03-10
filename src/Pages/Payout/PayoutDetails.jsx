@@ -193,9 +193,10 @@ const PayoutDetails = ({ showSidebar }) => {
                   <thead>
                     <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                       <th className="p-4">S_ID</th>
-                      <th className="p-4">Username</th>
+                      <th className="p-4">Account Holder Name</th>
+                      <th className="p-4">Account Number</th>
+                      <th className="p-4">IFSC Number</th>
                       <th className="p-4">Amount</th>
-                      <th className="p-4">Bank / UPI</th>
                       <th className="p-4">Status</th>
                       <th className="p-4">Action</th>
                     </tr>
@@ -209,12 +210,20 @@ const PayoutDetails = ({ showSidebar }) => {
                         <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
                           {item?.username}
                         </td>
-                        <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
-                          ₹ {item?.amount}
-                        </td>
                         <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
                           {item?.account}
                         </td>
+                        <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
+                          {item?.accountType === "bank" ? (
+                            item?.ifsc || "IFSC Number"
+                          ) : (
+                            <span className="text-center inline-block w-full">-</span>
+                          )}
+                        </td>
+                        <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
+                          ₹ {item?.amount}
+                        </td>
+
                         <td className="p-4 text-[13px] font-[500]">
                           <span
                             className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${getStatusClass(
