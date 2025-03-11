@@ -95,7 +95,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             onClick={() =>
               handleMenuClick("commission", "/commission")
             }
-            label="Commission"
+            label="Pay-In"
             icon={<FaHandHoldingUsd className="text-[20px]" />}
             isActive={selectedPage === "commission"}
           />

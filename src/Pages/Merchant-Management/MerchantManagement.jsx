@@ -21,12 +21,14 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
   const [website, setWebsite] = useState("");
   const [password, setPassword] = useState("");
   const [open, setOpen] = React.useState(false);
+  const [commision, setCommision] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const containerHeight = window.innerHeight - 120;
   const [accountLimit, setAccountLimit] = useState("");
   const [merchantName, setMerchantName] = useState("");
   const [merchantsData, setMerchantsData] = useState([]);
   const [merchantWebsite, setMerchantWebsite] = useState("");
+  const [payoutCommision, setPayoutCommision] = useState("");
   const [websiteUseForPayment, setWebsiteUseForPayment] = useState("");
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   // const firstMerchant = merchantsData.length > 0 ? merchantsData[0] : null;
@@ -76,6 +78,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     if (!String(merchantWebsite).trim())
       newErrors.merchantWebsite = "Merchant Website is required.";
     if (!String(tax).trim()) newErrors.tax = "Tax is required.";
+    if (!String(payoutCommision).trim())
+      newErrors.payoutCommision = "Payout Commission is required.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -93,7 +97,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     formData.append("accountLimit", accountLimit);
     formData.append("merchantWebsite", merchantWebsite);
     formData.append("commision", parseFloat(tax));
-
+    formData.append("payoutCommision", parseFloat(payoutCommision));
     try {
       let response;
       if (selectedMerchant) {
@@ -113,8 +117,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
           placement: "topRight",
         });
         setOpen(false);
-        setSelectedMerchant(null); // Reset selected merchant
-        // Reset form fields
+        setSelectedMerchant(null); 
         setMerchantName("");
         setPhone("");
         setEmail("");
@@ -123,8 +126,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
         setWebsiteUseForPayment("");
         setMerchantWebsite("");
         setTax("");
+        setPayoutCommision("");
         setImage(null);
-        fn_getMerchant(); // Refresh the merchant list
+        fn_getMerchant(); 
       } else {
         notification.error({
           message: "Error",
@@ -264,8 +268,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       <Button
                         onClick={() => {
                           setOpen(false);
-                          setSelectedMerchant(null); // Reset selected merchant
-                          // Reset form fields
+                          setSelectedMerchant(null);
                           setMerchantName("");
                           setPhone("");
                           setEmail("");
@@ -274,6 +277,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                           setWebsiteUseForPayment("");
                           setMerchantWebsite("");
                           setTax("");
+                          setPayoutCommision("");
                           setImage(null);
                         }}
                       >
@@ -294,6 +298,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                     setWebsiteUseForPayment("");
                     setMerchantWebsite("");
                     setTax("");
+                    setPayoutCommision("");
                     setImage(null);
                   }}
                 >
@@ -435,6 +440,22 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       <p className="text-red-500">{errors?.tax}</p>
                     )}
                   </div>
+                  <div className="my-2">
+                    <p>
+                      Payout Commission (%) <span className="text-[#D50000]">*</span>
+                    </p>
+                    <Input
+                      type="number"
+                      suffix={"%"}
+                      // step={0.01}
+                      // min={0}
+                      value={payoutCommision}
+                      onChange={(e) => setPayoutCommision(e.target.value)}
+                    />
+                    {errors?.payoutCommision && (
+                      <p className="text-red-500">{errors?.payoutCommision}</p>
+                    )}
+                  </div>
                 </Modal>
               </div>
             </div>
@@ -456,7 +477,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       Website For Payment
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
-                    <th className="p-5 text-[13px] font-[600]">Admin Commission</th>
+                    <th className="p-5 pl-2 text-[13px] font-[600]">Pay-In-Commission</th>
+                    <th className="p-5 pl-2 text-[13px] font-[600]">Pay-Out-Commission</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600]">Action</th>
                   </tr>
@@ -495,6 +517,9 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
                           {merchant.commision}%
+                        </td>
+                        <td className="p-3 text-[13px] font-[400]">
+                          {merchant.payoutCommision}%
                         </td>
                         <td className="text-center">
                           <button
@@ -539,6 +564,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                                 setWebsiteUseForPayment(merchant.website);
                                 setMerchantWebsite(merchant.merchantWebsite);
                                 setTax(merchant.commision);
+                                setPayoutCommision(merchant.payoutCommision);
                                 setOpen(true);
                               }}
                             >

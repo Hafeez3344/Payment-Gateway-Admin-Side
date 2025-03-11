@@ -1,13 +1,13 @@
+import { TiTick } from "react-icons/ti";
+import { FiEye } from "react-icons/fi";
+import { FaRegCopy } from "react-icons/fa";
+import { LuImageMinus } from "react-icons/lu";
 import { useLocation } from "react-router-dom";
+import { GoCircleSlash } from "react-icons/go";
+import { IoMdCheckmark } from "react-icons/io";
 import React, { useState, useEffect } from "react";
 import { notification, Pagination, Modal, Input } from "antd";
-
-import { FiEye } from "react-icons/fi";
-import { IoMdCheckmark } from "react-icons/io";
-import { GoCircleSlash } from "react-icons/go";
-
 import BACKEND_URL, { fn_getExcelFileWithdrawData, fn_updatePayoutStatus } from "../../api/api";
-import { LuImageMinus } from "react-icons/lu";
 
 const PayoutDetails = ({ showSidebar }) => {
 
@@ -15,14 +15,24 @@ const PayoutDetails = ({ showSidebar }) => {
   const [utr, setUtr] = useState("");
   const { withraw } = location.state;
   const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [slipData, setSlipData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
+  const [isHovering, setIsHovering] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedWithdrawData, setSelectedWithdrawData] = useState(null);
+
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.target.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePosition({ x, y });
+  };
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -156,6 +166,24 @@ const PayoutDetails = ({ showSidebar }) => {
     }
   }, [withraw?._id, currentPage]);
 
+  const handleCopyDetails = (item, index) => {
+    const isUPI = item?.account?.includes("@");
+    const detailsToCopy = `Account Holder Name: ${item.username}
+Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || ""}` : '-'}
+Amount: ₹ ${item.amount}
+UTR Number: ${item.utr || "N/A"}`;
+    navigator.clipboard.writeText(detailsToCopy).then(() => {
+      setCopiedId(index);
+      notification.success({
+        message: "Copied!",
+        description: "Payout details copied to clipboard",
+        placement: "topRight",
+        duration: 2
+      });
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
   return (
     <>
       <div
@@ -177,7 +205,7 @@ const PayoutDetails = ({ showSidebar }) => {
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>
                 <p className="text-black font-medium text-lg">
-                  List of Payout Transactions
+                  List of Payout
                 </p>
               </div>
             </div>
@@ -213,25 +241,32 @@ const PayoutDetails = ({ showSidebar }) => {
                         <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
                           {item?.account}
                         </td>
-                        <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
-                          {item?.accountType === "bank" ? (
-                            item?.ifsc || "IFSC Number"
-                          ) : (
-                            <span className="text-center inline-block w-full">-</span>
-                          )}
+                        <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
+                          {item?.ifsc || "IFSC Number"}
                         </td>
                         <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
                           ₹ {item?.amount}
                         </td>
 
                         <td className="p-4 text-[13px] font-[500]">
-                          <span
-                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${getStatusClass(
-                              item?.status
-                            )}`}
-                          >
-                            {item?.status}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`py-1 rounded-[20px] text-nowrap text-[11px] font-[600] w-[100px] flex items-center justify-center ${getStatusClass(item?.status)}`}>
+                              {item?.status}
+                            </span>
+                            {item?.status === "Approved" && (
+                              <button
+                                onClick={() => handleCopyDetails(item, index)}
+                                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Copy payout details"
+                              >
+                                {copiedId === index ? (
+                                  <TiTick className="text-green-600 text-lg" />
+                                ) : (
+                                  <FaRegCopy className="text-gray-600 text-sm" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4">
                           <button
@@ -292,11 +327,31 @@ const PayoutDetails = ({ showSidebar }) => {
 
                   {/* Username */}
                   <div className="flex items-center gap-4 mt-[10px]">
-                    <p className="text-[12px] font-[600] w-[200px]">Username:</p>
+                    <p className="text-[12px] font-[600] w-[200px]">Account Holder Name:</p>
                     <Input
                       className="text-[12px] bg-gray-200"
                       readOnly
                       value={selectedWithdrawData?.username || "N/A"}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <p className="text-[12px] font-[600] w-[200px]">
+                      Account Number:
+                    </p>
+                    <Input
+                      className="text-[12px] bg-gray-200"
+                      readOnly
+                      value={selectedWithdrawData?.account || "N/A"}
+                    />
+                  </div>
+                  {/* IFSC Number */}
+                  <div className="flex items-center gap-4">
+                    <p className="text-[12px] font-[600] w-[200px]">IFSC Number:</p>
+                    <Input
+                      className="text-[12px] bg-gray-200"
+                      readOnly
+                      value={selectedWithdrawData?.ifsc || "-"}
                     />
                   </div>
 
@@ -310,40 +365,40 @@ const PayoutDetails = ({ showSidebar }) => {
                     />
                   </div>
 
-                  {/* Account Details */}
-                  <div className="border-t mt-2 mb-1"></div>
-                  <p className="font-[600] text-[14px] mb-2">Account Details</p>
-
+                  {/* Withdraw Amount  */}
                   <div className="flex items-center gap-4">
-                    <p className="text-[12px] font-[600] w-[200px]">Account Type:</p>
+                    <p className="text-[12px] font-[600] w-[200px]">Withdrawal Amount:</p>
                     <Input
                       className="text-[12px] bg-gray-200"
                       readOnly
-                      value={selectedWithdrawData?.account?.includes("@") ? "UPI" : "Bank"}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <p className="text-[12px] font-[600] w-[200px]">
-                      Account Info:
-                    </p>
-                    <Input
-                      className="text-[12px] bg-gray-200"
-                      readOnly
-                      value={selectedWithdrawData?.account || "N/A"}
+                      value={`₹ ${selectedWithdrawData?.withdrawAmount ?? ""}`}
                     />
                   </div>
 
                   {/* Status Section */}
                   <div className="border-t mt-2 mb-1"></div>
-                  <div className="flex items-center gap-4">
-                    <p className="text-[12px] font-[600] w-[140px]">Status:</p>
+
+                  {/* UTR Number */}
+                  {selectedWithdrawData.utr && (
+                    <div className="flex items-center gap-4">
+                      <p className="text-[14px] font-[600] w-[200px]">UTR Number:</p>
+                      <Input
+                        className="text-[12px] bg-gray-100"
+                        readOnly
+                        value={selectedWithdrawData.utr}
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center mt-2 gap-2">
+                    <p className="text-[14px] font-[600] w-[150px]">STATUS:</p>
                     <div
                       className={`px-3 py-2 rounded-[20px] w-[100px] text-center text-[13px] font-[600] ${getStatusClass(selectedWithdrawData?.status)}`}
                     >
                       {selectedWithdrawData?.status}
                     </div>
                   </div>
+
+
 
                   {/* Action Section for Pending Status */}
                   {selectedWithdrawData?.status === "Pending" && selectedWithdrawData?.status !== "Cancel" && (
@@ -413,36 +468,27 @@ const PayoutDetails = ({ showSidebar }) => {
               {selectedWithdrawData.status !== "Pending" && selectedWithdrawData.status !== "Cancel" && selectedWithdrawData?.status !== "Decline" && (
                 <div className="w-[350px] border-l pl-4">
                   <div className="flex flex-col gap-4">
-
-                    {/* UTR Number */}
-                    {selectedWithdrawData.utr && (
-                      <div>
-                        <p className="text-[14px] font-[600] mb-2">UTR Number</p>
-                        <Input
-                          className="text-[12px] bg-gray-100"
-                          readOnly
-                          value={selectedWithdrawData.utr}
-                        />
-                      </div>
-                    )}
-
                     {/* Payment Proof */}
                     {selectedWithdrawData?.image ? (
                       <div>
                         <p className="text-[14px] font-[600] mb-2">
                           Payment Proof
                         </p>
-                        <div className="max-h-[400px] overflow-auto">
+                        <div className="relative w-full max-w-[400px] overflow-hidden cursor-zoom-in"
+                          style={{ aspectRatio: "1" }}
+                        >
                           <img
                             src={`${BACKEND_URL}/${selectedWithdrawData.image}`}
                             alt="Payment Proof"
-                            className="w-full object-contain cursor-pointer"
-                            onClick={() =>
-                              window.open(
-                                selectedWithdrawData.image,
-                                "_blank"
-                              )
-                            }
+                            className="w-full h-full object-contain"
+                            style={{
+                              transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
+                              transform: isHovering ? "scale(2)" : "scale(1)",
+                              transition: "transform 0.1s ease-out",
+                            }}
+                            onMouseEnter={() => setIsHovering(true)}
+                            onMouseLeave={() => setIsHovering(false)}
+                            onMouseMove={handleMouseMove}
                           />
                         </div>
                       </div>
