@@ -363,12 +363,23 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         const token = Cookies.get("token");
         const type = Cookies.get("type");
         const adminId = Cookies.get("adminId");
-        let url = "";
-        if (type === "staff") {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?adminStaffId=${adminId}&limit=100&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
-        } else {
-            url = `${BACKEND_URL}/ledger/getAllAdmin?limit=100&page=${pageNumber}${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        
+        // Construct URL with date range parameters
+        let url = `${BACKEND_URL}/ledger/getAllAdmin?limit=100&page=${pageNumber}`;
+        
+        // Add other parameters
+        if (status) url += `&status=${status}`;
+        if (searchTrnId) url += `&trnNo=${searchTrnId}`;
+        if (searchQuery) url += `&utr=${searchQuery}`;
+        if (merchantId) url += `&merchantId=${merchantId}`;
+        if (bankId) url += `&bankId=${bankId}`;
+        
+        // Add date range parameters if they exist
+        if (dateRange && dateRange[0]) {
+            url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
+            url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
         }
+
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -376,7 +387,6 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
             },
         });
 
-        console.log("API Response:", response.data);
         return {
             status: true,
             message: "Transactions fetched successfully",
@@ -384,13 +394,10 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         };
     } catch (error) {
         console.error("API Error:", error);
-        if (error?.response) {
-            return {
-                status: false,
-                message: error?.response?.data?.message || "An error occurred",
-            };
-        }
-        return { status: false, message: "Network Error" };
+        return {
+            status: false,
+            message: error?.response?.data?.message || "An error occurred",
+        };
     }
 };
 
@@ -398,12 +405,30 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
     try {
         const token = Cookies.get("token");
         const type = Cookies.get("type");
-        let url = "";
-        if (type === "staff") {
-            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?adminStaffId=${adminId}&${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
-        } else {
-            url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag?${status ? `&status=${status}` : ''}${searchTrnId ? `&trnNo=${searchTrnId}` : ''}${searchQuery ? `&utr=${searchQuery}` : ''}${merchantId ? `&merchantId=${merchantId}` : ''}${bankId ? `&bankId=${bankId}` : ''}${(dateRange && dateRange?.[0]) ? `&startDate=${new Date(dateRange?.[0]?.$d)}&endDate=${new Date(dateRange?.[1]?.$d)}` : ""}`;
+        const adminId = Cookies.get("adminId");
+        
+        let url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag`;
+        
+        // Add query parameters
+        const params = new URLSearchParams();
+        if (type === "staff") params.append("adminStaffId", adminId);
+        if (status) params.append("status", status);
+        if (searchTrnId) params.append("trnNo", searchTrnId);
+        if (searchQuery) params.append("utr", searchQuery);
+        if (merchantId) params.append("merchantId", merchantId);
+        if (bankId) params.append("bankId", bankId);
+        
+        // Add date range if present
+        if (dateRange && dateRange[0]) {
+            params.append("startDate", new Date(dateRange[0].$d).toISOString());
+            params.append("endDate", new Date(dateRange[1].$d).toISOString());
         }
+
+        // Append params to URL if there are any
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -411,7 +436,6 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
             },
         });
 
-        console.log("API Response:", response.data);
         return {
             status: true,
             message: "Transactions fetched successfully",
@@ -419,13 +443,11 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         };
     } catch (error) {
         console.error("API Error:", error);
-        if (error?.response) {
-            return {
-                status: false,
-                message: error?.response?.data?.message || "An error occurred",
-            };
-        }
-        return { status: false, message: "Network Error" };
+        return {
+            status: false,
+            message: error?.response?.data?.message || "An error occurred",
+            data: { data: [] } // Return empty array for consistent structure
+        };
     }
 };
 
@@ -605,10 +627,18 @@ export const fn_updateTicketStatusApi = async (ticketId, data) => {
     }
 };
 
-export const fn_getCardDataByStatus = async (status, filter) => {
+export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/ledger/cardAdminData?status=${status}&filter=${filter}`, {
+        let url = `${BACKEND_URL}/ledger/cardAdminData?status=${status}&filter=${filter}`;
+        
+        // Add date range parameters if they exist
+        if (dateRange && dateRange[0]) {
+            url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
+            url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
+        }
+
+        const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",

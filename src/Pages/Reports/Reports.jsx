@@ -64,9 +64,10 @@ const Reports = ({ authorization, showSidebar }) => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [dateRange, setDateRange] = useState([null, null]);
     const [disableButton, setDisableButton] = useState(false);
-    const [selectedMerchant, setSelectedMerchant] = useState("");
-    const [selectedMerchantName, setSelectedMerchantName] = useState("All");
+    const [selectedMerchant, setSelectedMerchant] = useState([]);
     const [selectedBankName, setSelectedBankName] = useState("All");
+    const [selectedMerchantName, setSelectedMerchantName] = useState(["All"]);
+    const [selectedMerchantuserName, setSelecteduserMerchantName] = useState(["All"]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [reportData, setReportData] = useState(null);
 
@@ -108,10 +109,21 @@ const Reports = ({ authorization, showSidebar }) => {
         }
     };
 
-    const fn_changeMerchant = (value) => {
-        setSelectedMerchant(value);
-        const merchant = merchantOptions?.find((m) => m?.value === value);
-        setSelectedMerchantName(merchant?.label);
+    const fn_changeMerchant = (values) => {
+        const filteredValues = values.filter(value => value !== "");
+        setSelectedMerchant(filteredValues);
+        
+        const merchantNames = filteredValues.length > 0 ? merchantOptions
+                .filter(m => filteredValues.includes(m.value))
+                .map(m => m.value)
+            : ["All"];
+        setSelectedMerchantName(merchantNames);
+
+        const merchantuserNames = filteredValues.length > 0 ? merchantOptions
+                .filter(m => filteredValues.includes(m.value))
+                .map(m => m.label)
+            : ["All"];
+            setSelecteduserMerchantName(merchantuserNames);
     };
 
     const fn_changeBank = (value) => {
@@ -147,7 +159,9 @@ const Reports = ({ authorization, showSidebar }) => {
             queryParams.append('endDate', toDate);
             queryParams.append('filterByAdminId', adminId);
             
-            if (selectedMerchant) queryParams.append('merchantId', selectedMerchant);
+            if (selectedMerchant.length > 0) {
+                queryParams.append('merchantId', JSON.stringify(selectedMerchant));
+            }
             if (selectedStatus) queryParams.append('status', selectedStatus);
             if (selectedBank) queryParams.append('bankId', selectedBank);
 
@@ -182,7 +196,7 @@ const Reports = ({ authorization, showSidebar }) => {
             } else if (format === 'excel') {
                 downloadExcel(reportData);
             }
-            await fn_getReportsLog(); // Update table after successful download
+            await fn_getReportsLog(); 
             setIsModalVisible(false);
             setDisableButton(false);
         } catch (error) {
@@ -215,7 +229,7 @@ const Reports = ({ authorization, showSidebar }) => {
         const tableRows = data?.data?.map((item) => {
             return [
                 item.Date || "All",
-                selectedMerchant ? selectedMerchantName : "All",
+                selectedMerchantuserName.length > 0 ? selectedMerchantuserName.join(", ") : "All",
                 selectedBank ? selectedBankName : "All", 
                 (!item.Status || item.Status === "") ? "All" : item.Status,
                 item.NoOfTransaction || "0",
@@ -261,7 +275,7 @@ const Reports = ({ authorization, showSidebar }) => {
         const tableRows = data?.data?.map((item) => {
             return {
                 Date: item.Date || "All",
-                Merchant: selectedMerchant ? selectedMerchantName : "All",
+                Merchant: selectedMerchantuserName.length > 0 ? selectedMerchantuserName.join(", ") : "All",
                 Bank: selectedBank ? selectedBankName : "All", 
                 Status: (!item.Status || item.Status === "") ? "All" : item.Status,
                 "No. of Transactions": item.NoOfTransaction || "0",
@@ -326,7 +340,7 @@ const Reports = ({ authorization, showSidebar }) => {
                             key: `${index + 1}`,
                             reportId: `${index + 1}`,
                             createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
-                            merchant: item?.merchantId?.merchantName || "All",
+                            merchant: item?.merchantId?.map((m) => m?.merchantName).join(", ") || "All",
                             bank: bankName,
                             status: item?.status && item?.status !== "" ? item?.status : "All",
                             dateRange: item?.startDate && item?.endDate ? `${new Date(item?.startDate).toDateString()} - ${new Date(item?.endDate).toDateString()}` : "All"
@@ -360,10 +374,12 @@ const Reports = ({ authorization, showSidebar }) => {
                     <div className="flex flex-col gap-[2px]">
                         <p className="text-[13px] font-[500]">Select Merchant</p>
                         <Select
+                            mode="multiple"
                             style={{ width: '100%', height: "38px" }}
                             placeholder="Please Select Merchant"
                             onChange={fn_changeMerchant}
                             options={[{ value: "", label: "All" }, ...merchantOptions]}
+                            maxTagCount="responsive"
                         />
                     </div>
                     <div className="flex flex-col gap-[2px]">

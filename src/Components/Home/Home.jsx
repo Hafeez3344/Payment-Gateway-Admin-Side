@@ -12,9 +12,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
 import { Bar } from "react-chartjs-2";
-
+import { DatePicker, Space } from "antd";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const Home = ({ authorization, showSidebar }) => {
@@ -28,13 +27,15 @@ const Home = ({ authorization, showSidebar }) => {
     pending: {},
     failed: {}
   });
+  const { RangePicker } = DatePicker;
+  const [totalTrns, setTotalTrns] = useState(0);
+  const [adminCharges, setAdminCharges] = useState("")
   const [activeFilter, setActiveFilter] = useState("all");
+  const [dateRange, setDateRange] = useState([null, null]);
   const [totalTransaction, setTotalTransactions] = useState(0);
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
-  const [adminCharges, setAdminCharges] = useState("")
-  const [totalTrns, setTotalTrns] = useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -54,11 +55,11 @@ const Home = ({ authorization, showSidebar }) => {
         totalData,
         recentTrxData
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', activeFilter),
-        fn_getCardDataByStatus('Pending', activeFilter),
-        fn_getCardDataByStatus('Decline', activeFilter),
-        fn_getAllTransactionApi(),
-        fn_getAdminsTransactionApi()
+        fn_getCardDataByStatus('Approved', activeFilter, dateRange),
+        fn_getCardDataByStatus('Pending', activeFilter, dateRange),
+        fn_getCardDataByStatus('Decline', activeFilter, dateRange),
+        fn_getAllTransactionApi(null, 1, null, null, null, dateRange),
+        fn_getAdminsTransactionApi(null, null, null, null, dateRange)
       ]);
       console.log("activeFilter ", activeFilter);
       console.log("approvedData ", approvedData);
@@ -80,33 +81,51 @@ const Home = ({ authorization, showSidebar }) => {
         failed: declineData?.data || {}
       });
 
-      // Set recent transactions
-      if (recentTrxData?.status) {
-        setRecentTransactions(recentTrxData.data?.data?.slice(0, 10) || []);
+      // Update recent transactions
+      if (recentTrxData?.status && recentTrxData?.data?.data) {
+        setRecentTransactions(recentTrxData.data.data.slice(0, 10));
+      } else {
+        setRecentTransactions([]);
       }
 
     } catch (err) {
       console.error('Error fetching data:', err);
       setError("Failed to fetch dashboard data");
+      setRecentTransactions([]); 
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (authorization) {
+      fetchAllData();
+    }
+  }, [dateRange]);
+
+  const resetFilters = () => {
+    setDateRange([null, null]);
+    setActiveFilter('all');
+    fetchAllData();
+  };
+
   const handleFilterClick = async (filterType) => {
     setLoading(true);
     setActiveFilter(filterType);
+    setDateRange([null, null]);
     try {
       const [
         approvedData,
         pendingData,
         declineData,
         totalData,
+        recentTrxData
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', filterType),
-        fn_getCardDataByStatus('Pending', filterType),
-        fn_getCardDataByStatus('Decline', filterType),
-        fn_getAllTransactionApi(),
+        fn_getCardDataByStatus('Approved', filterType, null),
+        fn_getCardDataByStatus('Pending', filterType, null),
+        fn_getCardDataByStatus('Decline', filterType, null),
+        fn_getAllTransactionApi(null, 1, null, null, null, null),
+        fn_getAdminsTransactionApi(null, null, null, null, null)
       ]);
 
       // Set transaction counts
@@ -123,9 +142,18 @@ const Home = ({ authorization, showSidebar }) => {
         pending: pendingData?.data || {},
         failed: declineData?.data || {}
       });
+
+      // Update recent transactions
+      if (recentTrxData?.status && recentTrxData?.data?.data) {
+        setRecentTransactions(recentTrxData.data.data.slice(0, 10));
+      } else {
+        setRecentTransactions([]);
+      }
+
     } catch (err) {
       console.error('Error fetching filtered data:', err);
       setError("Failed to fetch filtered data");
+      setRecentTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -202,32 +230,52 @@ const Home = ({ authorization, showSidebar }) => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-5">
           <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
-          <div className="flex space-x-2 text-[12px]">
-            <button
-              onClick={() => handleFilterClick('all')} className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
-              ALL
-            </button>
-            <button
-              onClick={() => handleFilterClick('today')}
-              className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} 
-                border w-[70px] sm:w-[70px] p-1 rounded`}
-            >
-              TODAY
-            </button>
-            <button
-              onClick={() => handleFilterClick('7days')}
-              className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
-                border w-[70px] sm:w-[70px] p-1 rounded`}
-            >
-              7 DAYS
-            </button>
-            <button
-              onClick={() => handleFilterClick('30days')}
-              className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
-                border w-[70px] sm:w-[70px] p-1 rounded`}
-            >
-              30 DAYS
-            </button>
+          <div className="flex items-center space-x-2">
+            <div className="flex space-x-2 text-[12px]">
+              <button
+                onClick={() => handleFilterClick('all')} className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                ALL
+              </button>
+              <button
+                onClick={() => handleFilterClick('today')}
+                className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                  border w-[70px] sm:w-[70px] p-1 rounded`}
+              >
+                TODAY
+              </button>
+              <button
+                onClick={() => handleFilterClick('7days')}
+                className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                  border w-[70px] sm:w-[70px] p-1 rounded`}
+              >
+                7 DAYS
+              </button>
+              <button
+                onClick={() => handleFilterClick('30days')}
+                className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                  border w-[70px] sm:w-[70px] p-1.5 rounded`}
+              >
+                30 DAYS
+              </button>
+            </div>
+
+            {/* Date Range Picker */}
+            <Space direction="vertical" size={10}>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  if (!dates) {
+                    resetFilters();
+                  } else {
+                    setDateRange(dates);
+                    setActiveFilter('custom');
+                  }
+                }}
+                className="bg-gray-100"
+              />
+            </Space>
+
+
           </div>
         </div>
 

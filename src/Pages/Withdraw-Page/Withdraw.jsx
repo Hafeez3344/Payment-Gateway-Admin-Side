@@ -79,7 +79,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         try {
             const response = await axios.get(`${BACKEND_URL}/exchange/get`)
             if (response?.status === 200) {
-                setExchanges(response?.data?.data?.map((item) => ({ 
+                setExchanges(response?.data?.data?.map((item) => ({
                     value: item?._id,
                     label: item?.currency,
                     rate: item?.currencyRate,
@@ -119,7 +119,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             setBanks(response?.data?.data?.map((item) => {
                 return {
                     value: item?._id,
-                    label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}`
+                    label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.accountNo}`}`
                 }
             }));
         }
@@ -184,7 +184,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             if (response?.status === 200) {
                 fetchTransactions();
                 setWithdrawModalOpen(false);
-                resetForm(); 
+                resetForm();
                 notification.success({
                     message: "Success",
                     description: "Withdraw Request Created!",
@@ -312,7 +312,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
                             Dashboard - Data Table
                         </p>
-                    </div>                                                                                       
+                    </div>
                     <div className="bg-white rounded-lg p-4">
                         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
                             <div>
@@ -637,13 +637,12 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                     </div>
                 )}
             </Modal>
-
+            {/* 
             <Modal
                 title="Withdraw Request"
                 open={withdrawModalOpen}
                 onOk={handleWithdrawSubmit}
-                onCancel={() => {
-                    setWithdrawModalOpen(false);
+                onCancel={() => { setWithdrawModalOpen(false);
                     resetForm();
                 }}
                 okText="Submit"
@@ -718,6 +717,106 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                 value={selectedBank}
                                 options={banks}
                                 loading={!banks.length}
+                            />
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Note
+                        </label>
+                        <TextArea
+                            placeholder="Write anything about Transaction"
+                            autoSize={{ minRows: 4, maxRows: 8 }}
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </Modal> */}
+
+            <Modal
+                title="Withdraw Request"
+                open={withdrawModalOpen}
+                onOk={handleWithdrawSubmit}
+                onCancel={() => {
+                    setWithdrawModalOpen(false);
+                    resetForm();
+                }}
+                okText="Submit"
+                cancelText="Cancel"
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Select Merchant
+                        </label>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select Merchant"
+                            value={selectedMerchant}
+                            onChange={(value) => setSelectedMerchant(value)}
+                            options={merchants}
+                            showSearch
+                            filterOption={(input, option) => option?.label.toLowerCase().includes(input.toLowerCase())}
+                        />
+                        <p className="text-gray-500 text-[13px] font-[500]">Available for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount?.toFixed(2) || 0} INR</span></p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Amount
+                        </label>
+                        <Input
+                            prefix={<FaIndianRupeeSign />}
+                            type="number"
+                            placeholder="Enter amount"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Exchange
+                        </label>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select Exchange"
+                            value={exchange}
+                            onChange={handleExchangeChange}
+                            options={exchanges}
+                        />
+                    </div>
+
+                    {exchange && (
+                        <div>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Rate:</span>{" "}1 {exchangeData?.label} = {exchangeData?.rate} INR</p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Charges:</span>{" "}{exchangeData?.charges}%</p>
+                            <p className="text-[13px] font-[500] flex items-center text-green-500">
+                                <span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>
+                                {" "}
+                                {((parseFloat(withdrawAmount) - (parseFloat(exchangeData?.charges) * parseFloat(withdrawAmount)) / 100) / parseFloat(exchangeData?.rate)).toFixed(2)}
+                                {" "}
+                                {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
+                            </p>
+                        </div>
+                    )}
+
+                    {exchange === "67c1e65de5d59894e5a19435" && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Select Bank
+                            </label>
+                            <Select
+                                style={{ width: '100%' }}
+                                placeholder="Select Your Bank"
+                                onChange={(value) => setSelectedBank(value)}
+                                value={selectedBank}
+                                options={banks}
+                                loading={!banks.length}
+                                showSearch
+                                filterOption={(input, option) => option?.label.toLowerCase().includes(input.toLowerCase())}
                             />
                         </div>
                     )}
