@@ -103,7 +103,7 @@ const Commission = ({ showSidebar }) => {
       >
         <div className="p-7">
           <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-            <h1 className="text-[25px] font-[500]">Commission</h1>
+            <h1 className="text-[25px] font-[500]">Pay-In</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table
             </p>
@@ -112,9 +112,9 @@ const Commission = ({ showSidebar }) => {
             <div className="w-full bg-white rounded-lg shadow-md border">
               {/* Header */}
               <div className="p-3 flex justify-between border-b text-[20px] font-[500]">
-                <p>Merchant Commission Table</p>
+                <p>Merchant Pay-In Charges Table</p>
                 <div><Button type="primary" onClick={handleAddAccount}>
-                  Update Merchant Commission
+                  Update Merchant Charges
                 </Button></div>
               </div>
 
@@ -125,7 +125,7 @@ const Commission = ({ showSidebar }) => {
                     <tr>
                       <th className="p-3 text-[13px] font-[600]">S.No</th>
                       <th className="p-3 text-[13px] font-[600]">Merchant Name</th>
-                      <th className="p-3 text-[13px] font-[600]">Commission</th>
+                      <th className="p-3 text-[13px] font-[600]">Pay-in Charges</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,11 +196,11 @@ const Commission = ({ showSidebar }) => {
         </div>
         <div className="flex-1 my-2">
           <p className="text-[12px] font-[500] pb-1">
-            Commission <span className="text-[#D50000]">*</span>
+            Charges <span className="text-[#D50000]">*</span>
           </p>
           <div className="relative">
             <Input
-              placeholder="Enter Commission"
+              placeholder="Enter Charges"
               className="pr-6"
               value={commissionValue}
               onChange={handleCommissionChange}
