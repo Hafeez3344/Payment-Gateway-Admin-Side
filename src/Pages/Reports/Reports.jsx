@@ -21,6 +21,14 @@ import BACKEND_URL, {
   fn_getMerchantApi,
 } from "../../api/api";
 
+const selectStyles = {
+  ".merchant-select .ant-select-selection-placeholder": {
+    textAlign: "center",
+    left: "40%",
+    transform: "translateX(-50%)",
+  }
+};
+
 const columns = [
   {
     title: "Sr No",
@@ -97,12 +105,21 @@ const Reports = ({ authorization, showSidebar }) => {
     fn_getAllBanks();
     fn_getReportsLog(currentPage);
     fn_getAllMerchants();
-  }, [currentPage]);
+  }, [currentPage, dateRange, selectedStatus, selectedBank, selectedMerchant]);
 
   useEffect(() => {
     if (dateRange[0] && dateRange[1]) {
-      setFromDate(new Date(dateRange[0]?.$d));
-      setToDate(new Date(dateRange[1]?.$d));
+      const startDate = new Date(dateRange[0].$d);
+      const endDate = new Date(dateRange[1].$d);
+      
+      // Set start date to beginning of day
+      startDate.setHours(0, 0, 0, 0);
+      
+      // Set end date to end of day
+      endDate.setHours(23, 59, 59, 999);
+      
+      setFromDate(startDate);
+      setToDate(endDate);
     }
   }, [dateRange]);
 
@@ -171,20 +188,35 @@ const Reports = ({ authorization, showSidebar }) => {
 
   const fn_submit = async () => {
     try {
-      if (fromDate === "" || toDate === "") {
+      if (!dateRange || !dateRange[0] || !dateRange[1]) {
         return notification.error({
           message: "Error",
-          description: "Please Select Date",
+          description: "Please Select Date Range",
           placement: "topRight",
         });
       }
+
       const token = Cookies.get("token");
       const adminId = Cookies.get("adminId");
       setDisableButton(true);
 
+      // Convert dates to start of day and end of day
+      const startDate = new Date(dateRange[0].$d);
+      const endDate = new Date(dateRange[1].$d);
+      
+      // Set start date to beginning of day
+      startDate.setHours(0, 0, 0, 0);
+      
+      // Set end date to end of day
+      endDate.setHours(23, 59, 59, 999);
+      
+      // Adjust for timezone difference
+      const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+      const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+
       const queryParams = new URLSearchParams();
-      queryParams.append("startDate", fromDate);
-      queryParams.append("endDate", toDate);
+      queryParams.append("startDate", startISOString);
+      queryParams.append("endDate", endISOString);
       queryParams.append("filterByAdminId", adminId);
 
       if (selectedMerchant.length > 0) {
@@ -383,15 +415,45 @@ const Reports = ({ authorization, showSidebar }) => {
     try {
       const token = Cookies.get("token");
       const adminId = Cookies.get("adminId");
-      const response = await axios.get(
-        `${BACKEND_URL}/ledgerLog/getAll?filterByAdminId=${adminId}&page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+
+      let url = `${BACKEND_URL}/ledgerLog/getAll?filterByAdminId=${adminId}&page=${page}`;
+
+      // Add date range parameters if they exist
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        const startDate = new Date(dateRange[0].$d);
+        const endDate = new Date(dateRange[1].$d);
+        
+        // Set start date to beginning of day
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Set end date to end of day
+        endDate.setHours(23, 59, 59, 999);
+        
+        // Adjust for timezone difference
+        const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+        const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+        
+        url += `&startDate=${startISOString}&endDate=${endISOString}`;
+      }
+
+      // Add other filters
+      if (selectedMerchant.length > 0) {
+        url += `&merchantId=${JSON.stringify(selectedMerchant)}`;
+      }
+      if (selectedStatus) {
+        url += `&status=${selectedStatus}`;
+      }
+      if (selectedBank) {
+        url += `&bankId=${selectedBank}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (response?.status) {
         if (response?.data?.status === "ok") {
           setTableData(
@@ -426,6 +488,11 @@ const Reports = ({ authorization, showSidebar }) => {
       }
     } catch (error) {
       console.log("error in fetching reports log ", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch reports",
+        placement: "topRight",
+      });
     }
   };
 
@@ -436,6 +503,23 @@ const Reports = ({ authorization, showSidebar }) => {
         showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
       }`}
     >
+      <style>
+        {`
+          .merchant-select .ant-select-selection-placeholder {
+            text-align: center !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            top: 18% !important;
+            width: 100% !important;
+            padding-right: 30px !important;
+          }
+          .merchant-select .ant-select-selector {
+            display: flex;
+            align-items: flex-start !important;
+            padding-top: 2px !important;
+          }
+        `}
+      </style>
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[20px] md:text-[25px] font-[500]">Reports</h1>
@@ -456,6 +540,7 @@ const Reports = ({ authorization, showSidebar }) => {
               onChange={fn_changeMerchant}
               options={[{ value: "", label: "All" }, ...merchantOptions]}
               maxTagCount="responsive"
+              className="merchant-select"
             />
           </div>
           <div className="flex flex-col gap-[2px]">
@@ -483,6 +568,9 @@ const Reports = ({ authorization, showSidebar }) => {
                 value={dateRange}
                 onChange={(dates) => setDateRange(dates)}
                 style={{ width: "100%", height: "38px" }}
+                format="DD/MM/YYYY"
+                placeholder={["Start Date", "End Date"]}
+                allowClear={true}
               />
             </Space>
           </div>

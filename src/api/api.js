@@ -375,10 +375,26 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         if (bankId) url += `&bankId=${bankId}`;
         
         // Add date range parameters if they exist
+        // if (dateRange && dateRange[0]) {
+        //     url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
+        //     url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
+        // }
+
         if (dateRange && dateRange[0]) {
-            url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
-            url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
-        }
+            const startDate = new Date(dateRange[0].$d);
+            const endDate = new Date(dateRange[1].$d);
+            
+            // Adjust for timezone difference and set start date to beginning of day
+            startDate.setHours(0, 0, 0, 0);
+            const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+            
+            // Adjust for timezone difference and set end date to end of day
+            endDate.setHours(23, 59, 59, 999);
+            const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+            
+            url += `&startDate=${startISOString}`;
+            url += `&endDate=${endISOString}`;
+          }
 
         const response = await axios.get(url, {
             headers: {
@@ -419,11 +435,27 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         if (bankId) params.append("bankId", bankId);
         
         // Add date range if present
-        if (dateRange && dateRange[0]) {
-            params.append("startDate", new Date(dateRange[0].$d).toISOString());
-            params.append("endDate", new Date(dateRange[1].$d).toISOString());
-        }
+        // if (dateRange && dateRange[0]) {
+        //     params.append("startDate", new Date(dateRange[0].$d).toISOString());
+        //     params.append("endDate", new Date(dateRange[1].$d).toISOString());
+        // }
 
+        if (dateRange && dateRange[0]) {
+            const startDate = new Date(dateRange[0].$d);
+            const endDate = new Date(dateRange[1].$d);
+            
+            // Set start date to beginning of day
+            startDate.setHours(0, 0, 0, 0);
+            
+            // Set end date to end of day
+            endDate.setHours(23, 59, 59, 999);
+            
+            // Adjust for timezone difference
+            params.append("startDate", new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString());
+            params.append("endDate", new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString());
+          }
+
+        
         // Append params to URL if there are any
         if (params.toString()) {
             url += `?${params.toString()}`;
@@ -633,10 +665,23 @@ export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
         let url = `${BACKEND_URL}/ledger/cardAdminData?status=${status}&filter=${filter}`;
         
         // Add date range parameters if they exist
+        // if (dateRange && dateRange[0]) {
+        //     url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
+        //     url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
+        // }
+
         if (dateRange && dateRange[0]) {
-            url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
-            url += `&endDate=${new Date(dateRange[1].$d).toISOString()}`;
-        }
+            const startDate = new Date(dateRange[0].$d);
+            startDate.setHours(0, 0, 0, 0);
+            const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+            
+            const endDate = new Date(dateRange[1].$d);
+            endDate.setHours(23, 59, 59, 999);
+            const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+            
+            url += `&startDate=${startISOString}`;
+            url += `&endDate=${endISOString}`;
+          }
 
         const response = await axios.get(url, {
             headers: {

@@ -274,8 +274,6 @@ const Home = ({ authorization, showSidebar }) => {
                 className="bg-gray-100"
               />
             </Space>
-
-
           </div>
         </div>
 

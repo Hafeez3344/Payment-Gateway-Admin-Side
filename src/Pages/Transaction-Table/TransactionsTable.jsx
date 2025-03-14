@@ -766,10 +766,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {new Date(transaction?.createdAt).toDateString()},{" "}
-                          {new Date(
-                            transaction?.createdAt
-                          ).toLocaleTimeString()}
+                          {new Date(transaction?.createdAt).toUTCString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                           {transaction?.username && transaction?.username !== ""
