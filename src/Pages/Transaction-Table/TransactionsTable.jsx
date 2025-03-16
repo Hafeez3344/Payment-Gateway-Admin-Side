@@ -304,7 +304,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? new Date(trn.createdAt).toUTCString() : "", currentX + 3, startY + 8);
+          pdf.text(trn.createdAt ? `${new Date(trn?.createdAt).getUTCDate()} ${getMonthName(new Date(trn?.createdAt).getUTCMonth())} ${new Date(trn?.createdAt).getUTCFullYear()}, ${new Date(trn?.createdAt).toLocaleTimeString()}` : "", currentX + 3, startY + 8);
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
@@ -364,7 +364,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? new Date(trn.createdAt).toUTCString() : "", currentX + 3, startY + 8);
+          pdf.text(trn.createdAt ? `${new Date(trn?.createdAt).getUTCDate()} ${getMonthName(new Date(trn?.createdAt).getUTCMonth())} ${new Date(trn?.createdAt).getUTCFullYear()}, ${new Date(trn?.createdAt).toLocaleTimeString()}` : "", currentX + 3, startY + 8);
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
@@ -595,7 +595,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}
+                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                           {transaction?.username && transaction?.username !== ""
@@ -721,9 +721,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 },
                 {
                   label: "Date & Time:",
-                  value: `${new Date(
-                    selectedTransaction.createdAt
-                  ).toUTCString()}`,
+                  value: `${new Date(selectedTransaction?.createdAt).getUTCDate()} ${getMonthName(new Date(selectedTransaction?.createdAt).getUTCMonth())} ${new Date(selectedTransaction?.createdAt).getUTCFullYear()}, ${new Date(selectedTransaction?.createdAt).toLocaleTimeString()}`,
                 },
                 {
                   label: "Bank Name:",
