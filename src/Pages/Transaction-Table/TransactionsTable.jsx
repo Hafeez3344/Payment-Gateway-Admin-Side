@@ -231,180 +231,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     setMousePosition({ x, y });
   };
   
-  // const handleDownloadReport = async () => {
-  //   try {
-  //     if (!allTrns || allTrns.length === 0) {
-  //       notification.warning({
-  //         message: "No Data",
-  //         description: "There are no transactions to include in the report.",
-  //         placement: "topRight"
-  //       });
-  //       return;
-  //     }
-
-  //     console.log(`Generating PDF with ${allTrns.length} transactions`);
-
-  //     setLoader(true);
-  //     const pdf = new jsPDF("l", "mm", "a4");
-  //     const pageWidth = pdf.internal.pageSize.getWidth();
-  //     const pageHeight = pdf.internal.pageSize.getHeight();
-  //     const margin = 10;
-
-  //     const firstPageRows = 12;
-  //     const subsequentPageRows = 13;
-
-  //     const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
-  //     const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25];
-
-  //     const startX = margin;
-  //     let startY = 40;
-  //     const rowHeight = 12;
-
-  //     pdf.setFontSize(16);
-  //     pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
-  //     pdf.setFontSize(12);
-  //     pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: "center" });
-
-  //     // Calculate total pages needed
-  //     const remainingTrns = allTrns.length > firstPageRows ? allTrns.length - firstPageRows : 0;
-  //     const additionalPages = Math.ceil(remainingTrns / subsequentPageRows);
-  //     const totalPages = additionalPages + (allTrns.length > 0 ? 1 : 0);
-
-  //     let processedTrns = 0;
-
-  //     // First page with 10 rows
-  //     if (allTrns.length > 0) {
-  //       startY = 25 + rowHeight;
-
-  //       pdf.setFillColor(240, 240, 240);
-  //       pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
-  //       pdf.setFontSize(10);
-  //       pdf.setTextColor(0, 0, 0);
-  //       pdf.setFont("helvetica", "bold");
-
-  //       let currentX = startX;
-  //       headers.forEach((header, index) => {
-  //         pdf.text(header, currentX + 3, startY + 8);
-  //         currentX += columnWidths[index];
-  //       });
-
-  //       pdf.setFont("helvetica", "normal");
-  //       pdf.setFontSize(9);
-
-  //       const firstPageTransactions = allTrns.slice(0, firstPageRows);
-  //       firstPageTransactions.forEach((trn, index) => {
-  //         startY += rowHeight;
-  //         if (index % 2 === 1) {
-  //           pdf.setFillColor(248, 248, 248);
-  //           pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
-  //         }
-
-  //         currentX = startX;
-  //         pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[0];
-  //         pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[1];
-  //         pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
-  //         currentX += columnWidths[2];
-
-  //         const bankName = trn.bankId?.bankName === "UPI"
-  //           ? `UPI - ${trn.bankId?.iban || ""}`
-  //           : (trn.bankId?.bankName || "N/A");
-  //         pdf.text(bankName, currentX + 3, startY + 8);
-  //         currentX += columnWidths[3];
-
-  //         const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
-  //         pdf.text(merchantName, currentX + 3, startY + 8);
-  //         currentX += columnWidths[4];
-
-  //         pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, { align: "left" });
-  //         currentX += columnWidths[5];
-  //         pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[6];
-  //         pdf.text(trn.status || "N/A", currentX + 3, startY + 8);
-  //       });
-
-  //       processedTrns = firstPageRows;
-  //       pdf.setFontSize(10);
-  //       pdf.text(`Page 1 of ${totalPages}`, margin, pageHeight - 10);
-  //     }
-
-  //     // Subsequent pages with 13 rows each
-  //     for (let page = 1; page <= additionalPages; page++) {
-  //       pdf.addPage();
-
-  //       startY = 20;
-
-  //       pdf.setFillColor(240, 240, 240);
-  //       pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
-  //       pdf.setFontSize(10);
-  //       pdf.setTextColor(0, 0, 0);
-  //       pdf.setFont("helvetica", "bold");
-
-  //       let currentX = startX;
-  //       headers.forEach((header, index) => {
-  //         pdf.text(header, currentX + 3, startY + 8);
-  //         currentX += columnWidths[index];
-  //       });
-
-  //       pdf.setFont("helvetica", "normal");
-  //       pdf.setFontSize(9);
-
-  //       const pageTransactions = allTrns.slice(processedTrns, processedTrns + subsequentPageRows);
-  //       pageTransactions.forEach((trn, index) => {
-  //         startY += rowHeight;
-  //         if (index % 2 === 1) {
-  //           pdf.setFillColor(248, 248, 248);
-  //           pdf.rect(startX, startY, pageWidth - 2 * margin, rowHeight, 'F');
-  //         }
-
-  //         currentX = startX;
-  //         pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[0];
-  //         pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[1];
-  //         pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
-  //         currentX += columnWidths[2];
-
-  //         const bankName = trn.bankId?.bankName === "UPI"
-  //           ? `UPI - ${trn.bankId?.iban || ""}`
-  //           : (trn.bankId?.bankName || "N/A");
-  //         pdf.text(bankName, currentX + 3, startY + 8);
-  //         currentX += columnWidths[3];
-
-  //         const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
-  //         pdf.text(merchantName, currentX + 3, startY + 8);
-  //         currentX += columnWidths[4];
-
-  //         pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, { align: "left" });
-  //         currentX += columnWidths[5];
-  //         pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
-  //         currentX += columnWidths[6];
-  //         pdf.text(trn.status || "N/A", currentX + 3, startY + 8);
-  //       });
-
-  //       processedTrns += pageTransactions.length;
-  //       pdf.setFontSize(10);
-  //       pdf.text(`Page ${page + 1} of ${totalPages}`, margin, pageHeight - 10);
-  //     }
-
-  //     pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
-  //     setLoader(false);
-  //     notification.success({
-  //       message: "Success",
-  //       description: "Report downloaded successfully!",
-  //       placement: "topRight"
-  //     });
-  //   } catch (error) {
-  //     console.error("Error generating PDF:", error);
-  //     setLoader(false);
-  //     notification.error({
-  //       message: "Error",
-  //       description: `Failed to generate report: ${error.message}`,
-  //       placement: "topRight"
-  //     });
-  //   }
-  // };
   const handleDownloadReport = async () => {
     try {
       if (!allTrns || allTrns.length === 0) {
@@ -428,7 +254,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       const subsequentPageRows = 13;
   
       const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
-      const columnWidths = [25, 35, 35, 55, 40, 30, 35, 25];
+      const columnWidths = [25, 50, 25, 55, 30, 30, 35, 25];
   
       const startX = margin;
       let startY = 40;
@@ -439,7 +265,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       pdf.setFontSize(16);
       pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
       pdf.setFontSize(12);
-      pdf.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 30, { align: "center" });
+      pdf.text(`Generated on: ${new Date().toUTCString()}`, pageWidth / 2, 30, { align: "center" });
   
       // Calculate total pages needed
       const remainingTrns = allTrns.length > firstPageRows ? allTrns.length - firstPageRows : 0;
@@ -478,7 +304,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
+          pdf.text(trn.createdAt ? new Date(trn.createdAt).toUTCString() : "", currentX + 3, startY + 8);
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
@@ -538,7 +364,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? new Date(trn.createdAt).toLocaleDateString() : "", currentX + 3, startY + 8);
+          pdf.text(trn.createdAt ? new Date(trn.createdAt).toUTCString() : "", currentX + 3, startY + 8);
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
@@ -595,7 +421,10 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     }
   };
   
-
+  function getMonthName(monthIndex) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return months[monthIndex];
+  }
 
   return (
     <>
@@ -766,7 +595,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {new Date(transaction?.createdAt).toUTCString()}
+                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                           {transaction?.username && transaction?.username !== ""
@@ -894,7 +723,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   label: "Date & Time:",
                   value: `${new Date(
                     selectedTransaction.createdAt
-                  ).toLocaleString()}`,
+                  ).toUTCString()}`,
                 },
                 {
                   label: "Bank Name:",
@@ -1014,7 +843,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                       {selectedTransaction?.status}
                     </span>
                     <p className="text-[14px] font-[400] ml-6">
-                      {new Date(selectedTransaction.updatedAt).toLocaleString()}
+                      {new Date(selectedTransaction.updatedAt).toUTCString()}
                     </p>
                   </div>
                 </div>

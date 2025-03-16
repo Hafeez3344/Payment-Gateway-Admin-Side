@@ -26,7 +26,7 @@ const selectStyles = {
     textAlign: "center",
     left: "40%",
     transform: "translateX(-50%)",
-  }
+  },
 };
 
 const columns = [
@@ -111,13 +111,13 @@ const Reports = ({ authorization, showSidebar }) => {
     if (dateRange[0] && dateRange[1]) {
       const startDate = new Date(dateRange[0].$d);
       const endDate = new Date(dateRange[1].$d);
-      
+
       // Set start date to beginning of day
       startDate.setHours(0, 0, 0, 0);
-      
+
       // Set end date to end of day
       endDate.setHours(23, 59, 59, 999);
-      
+
       setFromDate(startDate);
       setToDate(endDate);
     }
@@ -203,16 +203,20 @@ const Reports = ({ authorization, showSidebar }) => {
       // Convert dates to start of day and end of day
       const startDate = new Date(dateRange[0].$d);
       const endDate = new Date(dateRange[1].$d);
-      
+
       // Set start date to beginning of day
       startDate.setHours(0, 0, 0, 0);
-      
+
       // Set end date to end of day
       endDate.setHours(23, 59, 59, 999);
-      
+
       // Adjust for timezone difference
-      const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
-      const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+      const startISOString = new Date(
+        startDate.getTime() - startDate.getTimezoneOffset() * 60000
+      ).toISOString();
+      const endISOString = new Date(
+        endDate.getTime() - endDate.getTimezoneOffset() * 60000
+      ).toISOString();
 
       const queryParams = new URLSearchParams();
       queryParams.append("startDate", startISOString);
@@ -422,17 +426,21 @@ const Reports = ({ authorization, showSidebar }) => {
       if (dateRange && dateRange[0] && dateRange[1]) {
         const startDate = new Date(dateRange[0].$d);
         const endDate = new Date(dateRange[1].$d);
-        
+
         // Set start date to beginning of day
         startDate.setHours(0, 0, 0, 0);
-        
+
         // Set end date to end of day
         endDate.setHours(23, 59, 59, 999);
-        
+
         // Adjust for timezone difference
-        const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
-        const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
-        
+        const startISOString = new Date(
+          startDate.getTime() - startDate.getTimezoneOffset() * 60000
+        ).toISOString();
+        const endISOString = new Date(
+          endDate.getTime() - endDate.getTimezoneOffset() * 60000
+        ).toISOString();
+
         url += `&startDate=${startISOString}&endDate=${endISOString}`;
       }
 
@@ -456,6 +464,12 @@ const Reports = ({ authorization, showSidebar }) => {
 
       if (response?.status) {
         if (response?.data?.status === "ok") {
+          // Helper function to get month name
+          function getMonthName(monthIndex) {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return months[monthIndex];
+          }
+          
           setTableData(
             response?.data?.data?.map((item, index) => {
               const bankName = item?.bankId?.bankName
@@ -463,23 +477,27 @@ const Reports = ({ authorization, showSidebar }) => {
                   ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}`
                   : item?.bankId?.bankName
                 : "All";
-
+                
               return {
                 key: `${index + 1}`,
                 reportId: `${index + 1}`,
-                createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
+                createdAt: new Date(item?.createdAt).toLocaleDateString(
+                  "en-GB",
+                  {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }
+                ),
                 merchant:
                   item?.merchantId?.map((m) => m?.merchantName).join(", ") ||
                   "All",
                 bank: bankName,
                 status:
                   item?.status && item?.status !== "" ? item?.status : "All",
-                dateRange:
-                  item?.startDate && item?.endDate
-                    ? `${new Date(item?.startDate).toDateString()} - ${new Date(
-                        item?.endDate
-                      ).toDateString()}`
-                    : "All",
+                dateRange: item?.startDate && item?.endDate
+                  ? `${new Date(item?.startDate).getUTCDate()} ${getMonthName(new Date(item?.startDate).getUTCMonth())} ${new Date(item?.startDate).getUTCFullYear()} - ${new Date(item?.endDate).getUTCDate()} ${getMonthName(new Date(item?.endDate).getUTCMonth())} ${new Date(item?.endDate).getUTCFullYear()}`
+                  : "All",
               };
             })
           );
