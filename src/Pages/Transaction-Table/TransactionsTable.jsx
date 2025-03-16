@@ -589,7 +589,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     transactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
-                        className="text-gray-800 text-sm border-b"
+                        className="text-gray-800 text-sm border-b" 
                       >
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
                           {transaction?.trnNo}

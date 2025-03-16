@@ -481,14 +481,7 @@ const Reports = ({ authorization, showSidebar }) => {
               return {
                 key: `${index + 1}`,
                 reportId: `${index + 1}`,
-                createdAt: new Date(item?.createdAt).toLocaleDateString(
-                  "en-GB",
-                  {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  }
-                ),
+                createdAt: `${new Date(item?.createdAt).getUTCDate()} ${getMonthName(new Date(item?.createdAt).getUTCMonth())} ${new Date(item?.createdAt).getUTCFullYear()}, ${new Date(item?.createdAt).toLocaleTimeString()}`,
                 merchant:
                   item?.merchantId?.map((m) => m?.merchantName).join(", ") ||
                   "All",
