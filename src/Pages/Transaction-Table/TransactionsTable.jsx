@@ -595,7 +595,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()}
+                          {/* {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()} */}
+                          {new Date(transaction?.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                           {transaction?.username && transaction?.username !== ""

@@ -117,7 +117,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
           placement: "topRight",
         });
         setOpen(false);
-        setSelectedMerchant(null); 
+        setSelectedMerchant(null);
         setMerchantName("");
         setPhone("");
         setEmail("");
@@ -128,7 +128,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
         setTax("");
         setPayoutCommision("");
         setImage(null);
-        fn_getMerchant(); 
+        fn_getMerchant();
       } else {
         notification.error({
           message: "Error",
@@ -477,8 +477,8 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                       Website For Payment
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
-                    <th className="p-5 pl-2 text-[13px] font-[600]">Pay-In-Commission</th>
-                    <th className="p-5 pl-2 text-[13px] font-[600]">Pay-Out-Commission</th>
+                    <th className="p-5 pl-2 text-[13px] font-[600] text-nowrap">Pay-In-Commission</th>
+                    <th className="p-5 pl-2 text-[13px] font-[600] text-nowrap">Pay-Out-Commission</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600]">Action</th>
                   </tr>
@@ -569,6 +569,15 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                               }}
                             >
                               <FiEdit />
+                            </button>
+                            <button className="bg-indigo-100 text-indigo-700 text-nowrap hover:bg-indigo-200 rounded px-3 py-1.5 mx-2 font-medium transition-colors duration-200 text-center flex items-center justify-center"
+                              onClick={() => {
+                                console.log('Merchant Email:', merchant.email);
+                                console.log('Merchant Password:', merchant.password);
+                                // navigate('/login');
+                              }}
+                            >
+                              Access Dashboard
                             </button>
                           </div>
                         </td>
