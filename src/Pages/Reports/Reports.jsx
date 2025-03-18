@@ -289,7 +289,21 @@ const Reports = ({ authorization, showSidebar }) => {
       unit: "pt",
       format: "a4",
     });
+  
+    // Add centered title and timestamp
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    const titleText = "Transactions Report";
+    const titleWidth = doc.getStringUnitWidth(titleText) * doc.internal.getFontSize();
+    doc.text(titleText, (pageWidth - titleWidth) / 2, 40);
 
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    const timestampText = `Generated on: ${moment().format('M/D/YYYY, h:mm:ss A')}`;
+    const timestampWidth = doc.getStringUnitWidth(timestampText) * doc.internal.getFontSize();
+    doc.text(timestampText, (pageWidth - timestampWidth) / 2, 60);
+  
     const tableColumn = [
       "Date",
       "Merchant",
@@ -301,7 +315,7 @@ const Reports = ({ authorization, showSidebar }) => {
       "Charges (INR)",
       "Net Amount (INR)",
     ];
-
+  
     const tableRows =
       data?.data?.map((item) => {
         const isPayIn = item.Type === "payIn";
@@ -320,93 +334,37 @@ const Reports = ({ authorization, showSidebar }) => {
                    (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-"),
         ];
       }) || [];
-
-    // Add PayIn Summary rows
+  
+    // Calculate total transactions (PayIn + Payout)
+    const totalTransactions = (data.payIn?.totalTransaction || 0) + (data.payout?.totalTransaction || 0);
+    
+    // Add a single clean subtotal row with just the sums
     tableRows.push([
-      { content: "Total PayIn", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: data.payIn?.totalTransaction?.toString() || "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: Number(data.payIn?.totalPayIn || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
+      { content: "SUBTOTAL", styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: "", styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: "", styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: "", styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: totalTransactions.toString(), styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: Number(data.payIn?.totalPayIn || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: Number(data.payout?.totalAmount || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: Number((data.payIn?.totalCharges || 0) + (data.payout?.totalCharges || 0)).toFixed(2), 
+        styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
+      { content: Number((data.payIn?.totalAmount || 0) + (data.payout?.totalAmount || 0)).toFixed(2), 
+        styles: { fontStyle: "bold", fillColor: [220, 220, 240] } },
     ]);
-
-    tableRows.push([
-      { content: "PayIn Charges", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: Number(data.payIn?.totalCharges || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-    ]);
-
-    tableRows.push([
-      { content: "PayIn Net Amount", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-      { content: Number(data.payIn?.totalAmount || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [220, 230, 241] } },
-    ]);
-
-    // Add Payout Summary rows
-    tableRows.push([
-      { content: "Total Payout", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: data.payout?.totalTransaction?.toString() || "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: Number(data.payout?.totalAmount || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-    ]);
-
-    tableRows.push([
-      { content: "Payout Charges", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: Number(data.payout?.totalCharges || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-    ]);
-
-    tableRows.push([
-      { content: "Payout Net Amount", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: "-", styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-      { content: Number(data.payout?.totalAmount || 0).toFixed(2), styles: { fontStyle: "bold", fillColor: [200, 220, 255] } },
-    ]);
-
+  
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
       styles: { fontSize: 10 },
       theme: "",
-      margin: { top: 30 },
+      margin: { top: 80 }, // Increased top margin to accommodate title
     });
-
+  
     doc.save("report.pdf");
     setDisableButton(false);
   };
-
+  
   const downloadExcel = (data) => {
     const tableColumn = [
       "Date",
@@ -419,7 +377,14 @@ const Reports = ({ authorization, showSidebar }) => {
       "Charges (INR)",
       "Net Amount (INR)",
     ];
-
+  
+    // Create title rows with merged cells for centering
+    const titleRows = [
+      { 'A': 'Transactions Report' },
+      { 'A': `Generated on: ${moment().format('M/D/YYYY, h:mm:ss A')}` },
+      {} // Empty row for spacing
+    ];
+  
     const tableRows =
       data?.data?.map((item) => {
         const isPayIn = item.Type === "payIn";
@@ -439,114 +404,75 @@ const Reports = ({ authorization, showSidebar }) => {
                              (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-"),
         };
       }) || [];
-
-    // Add PayIn Summary rows
+  
+    // Calculate total transactions (PayIn + Payout)
+    const totalTransactions = (data.payIn?.totalTransaction || 0) + (data.payout?.totalTransaction || 0);
+    
+    // Add a single clean subtotal row with just the sums
     tableRows.push({
-      Date: "Total PayIn",
+      Date: "SUBTOTAL",
       Merchant: "",
       Bank: "",
       Status: "",
-      "No. of Transactions": data.payIn?.totalTransaction?.toString() || "-",
+      "No. of Transactions": totalTransactions.toString(),
       "PayIn (INR)": Number(data.payIn?.totalPayIn || 0).toFixed(2),
-      "Payout (INR)": "-",
-      "Charges (INR)": "-",
-      "Net Amount (INR)": "-",
-    });
-
-    tableRows.push({
-      Date: "PayIn Charges",
-      Merchant: "",
-      Bank: "",
-      Status: "",
-      "No. of Transactions": "-",
-      "PayIn (INR)": "-",
-      "Payout (INR)": "-",
-      "Charges (INR)": Number(data.payIn?.totalCharges || 0).toFixed(2),
-      "Net Amount (INR)": "-",
-    });
-
-    tableRows.push({
-      Date: "PayIn Net Amount",
-      Merchant: "",
-      Bank: "",
-      Status: "",
-      "No. of Transactions": "-",
-      "PayIn (INR)": "-",
-      "Payout (INR)": "-",
-      "Charges (INR)": "-",
-      "Net Amount (INR)": Number(data.payIn?.totalAmount || 0).toFixed(2),
-    });
-
-    // Add Payout Summary rows
-    tableRows.push({
-      Date: "Total Payout",
-      Merchant: "",
-      Bank: "",
-      Status: "",
-      "No. of Transactions": data.payout?.totalTransaction?.toString() || "-",
-      "PayIn (INR)": "-",
       "Payout (INR)": Number(data.payout?.totalAmount || 0).toFixed(2),
-      "Charges (INR)": "-",
-      "Net Amount (INR)": "-",
+      "Charges (INR)": Number((data.payIn?.totalCharges || 0) + (data.payout?.totalCharges || 0)).toFixed(2),
+      "Net Amount (INR)": Number((data.payIn?.totalAmount || 0) + (data.payout?.totalAmount || 0)).toFixed(2),
+    });
+  
+    // Create worksheet with title first
+    const worksheet = XLSX.utils.json_to_sheet(titleRows, { header: ['A'], skipHeader: true });
+
+    // Add data starting from row A4 (after title and spacing)
+    XLSX.utils.sheet_add_json(worksheet, tableRows, { 
+      origin: 'A4',
+      skipHeader: false,
+      header: tableColumn 
     });
 
-    tableRows.push({
-      Date: "Payout Charges",
-      Merchant: "",
-      Bank: "",
-      Status: "",
-      "No. of Transactions": "-",
-      "PayIn (INR)": "-",
-      "Payout (INR)": "-",
-      "Charges (INR)": Number(data.payout?.totalCharges || 0).toFixed(2),
-      "Net Amount (INR)": "-",
+    // Style the title rows and center them
+    worksheet['A1'].s = { 
+      font: { bold: true, sz: 14 },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+    worksheet['A2'].s = { 
+      font: { sz: 12 },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+
+    // Merge cells for title and timestamp to center them across columns
+    if (!worksheet['!merges']) worksheet['!merges'] = [];
+    // Merge cells A1:I1 for title
+    worksheet['!merges'].push({ 
+      s: { r: 0, c: 0 }, 
+      e: { r: 0, c: 8 } 
+    });
+    // Merge cells A2:I2 for timestamp
+    worksheet['!merges'].push({ 
+      s: { r: 1, c: 0 }, 
+      e: { r: 1, c: 8 } 
     });
 
-    tableRows.push({
-      Date: "Payout Net Amount",
-      Merchant: "",
-      Bank: "",
-      Status: "",
-      "No. of Transactions": "-",
-      "PayIn (INR)": "-",
-      "Payout (INR)": "-",
-      "Charges (INR)": "-",
-      "Net Amount (INR)": Number(data.payout?.totalAmount || 0).toFixed(2),
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(tableRows);
-    const range = XLSX.utils.decode_range(worksheet["!ref"]);
-
-    // Style PayIn Summary rows
-    for (let row = range.e.r - 5; row <= range.e.r - 3; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellRef]) worksheet[cellRef] = {};
-        worksheet[cellRef].s = {
-          font: { bold: true },
-          fill: { fgColor: { rgb: "DCE6F1" } },
-        };
-      }
-    }
-
-    // Style Payout Summary rows
-    for (let row = range.e.r - 2; row <= range.e.r; row++) {
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-        if (!worksheet[cellRef]) worksheet[cellRef] = {};
-        worksheet[cellRef].s = {
-          font: { bold: true },
-          fill: { fgColor: { rgb: "C8E0FF" } },
-        };
-      }
-    }
-
+    // Set column widths
+    const colWidths = [
+      { wch: 15 }, // Date
+      { wch: 20 }, // Merchant
+      { wch: 20 }, // Bank
+      { wch: 15 }, // Status
+      { wch: 15 }, // No. of Transactions
+      { wch: 15 }, // PayIn
+      { wch: 15 }, // Payout
+      { wch: 15 }, // Charges
+      { wch: 15 }, // Net Amount
+    ];
+    worksheet['!cols'] = colWidths;
+  
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
     XLSX.writeFile(workbook, "report.xlsx");
     setDisableButton(false);
   };
-
   const fn_getReportsLog = async (page) => {
     try {
       const token = Cookies.get("token");
