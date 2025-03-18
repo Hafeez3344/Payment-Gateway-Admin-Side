@@ -1,3 +1,4 @@
+import moment from "moment/moment";
 import { MagnifyingGlass } from "react-loader-spinner";
 import { Pagination, notification } from "antd";
 import "react-datepicker/dist/react-datepicker.css";
@@ -89,8 +90,7 @@ const Payout = ({ authorization, showSidebar }) => {
                         {transaction?.merchantId?.merchantName}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {new Date(transaction?.createdAt).toDateString()},
-                        {new Date(transaction?.createdAt).toLocaleTimeString()}
+                        {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
                         {transaction?.noOfWithdraws}

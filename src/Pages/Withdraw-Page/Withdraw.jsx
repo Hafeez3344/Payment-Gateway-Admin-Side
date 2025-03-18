@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import moment from "moment/moment";
 import TextArea from "antd/es/input/TextArea";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
@@ -351,8 +352,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <tr key={transaction?._id} className="text-gray-800 text-sm border-b">
                                                 <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{index + 1}</td>
                                                 <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                                                    {new Date(transaction?.createdAt).toDateString()},{" "}
-                                                    {new Date(transaction?.createdAt).toLocaleTimeString()}
+                                                    {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                                                 </td>
                                                 <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
                                                     {transaction?.merchantId?.merchantName || 'N/A'}
@@ -423,7 +423,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <div className={`${(selectedTransaction.status === "Pending" ||
                             (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) ? "w-full" : "w-[450px]"}`}>
                             <div className="flex flex-col gap-2 mt-3">
-                                <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{new Date(selectedTransaction?.createdAt).toDateString()}, {new Date(selectedTransaction?.createdAt).toLocaleTimeString()}</span></p>
+                                <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}</span></p>
                                 {/* Merchant Name */}
                                 <div className="flex items-center gap-4 mt-[10px]">
                                     <p className="text-[12px] font-[600] w-[200px]">Merchant Name:</p>

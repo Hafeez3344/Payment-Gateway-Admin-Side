@@ -3,6 +3,7 @@ import "jspdf-autotable";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import Cookies from "js-cookie";
+import moment from "moment/moment";
 import { FaDownload } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
@@ -612,7 +613,7 @@ const Reports = ({ authorization, showSidebar }) => {
               return {
                 key: `${index + 1}`,
                 reportId: `${index + 1}`,
-                createdAt: `${new Date(item?.createdAt).toISOString()}`,
+                createdAt: `${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                 merchant:
                   item?.merchantId?.map((m) => m?.merchantName).join(", ") ||
                   "All",

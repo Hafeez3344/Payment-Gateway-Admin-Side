@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import moment from "moment/moment";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Switch, Button, Modal, Input, notification, Pagination } from "antd";
@@ -524,7 +525,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                             }`}
                           >
                             <td className="p-4 text-[13px] text-nowrap">
-                              {new Date(log.createdAt).toLocaleString()}
+                              {moment.utc(log?.createdAt).format('DD MMM YYYY, hh:mm A')}
                             </td>
                             <td className="p-2 text-[13px] text-nowrap">
                               {log.bankId?.bankName === "UPI" ? (

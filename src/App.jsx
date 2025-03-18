@@ -117,6 +117,7 @@ function App() {
               <MerchantManagement
                 authorization={authorization}
                 showSidebar={showSidebar}
+                setAuthorization={setAuthorization}
               />
             }
           />

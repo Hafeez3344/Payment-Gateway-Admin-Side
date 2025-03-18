@@ -9,8 +9,9 @@ import BACKEND_URL, {
   fn_getMerchantApi,
   fn_MerchantUpdate,
 } from "../../api/api";
+import Cookies from "js-cookie";
 
-const MerchantManagement = ({ authorization, showSidebar }) => {
+const MerchantManagement = ({ authorization, showSidebar, setAuthorization }) => {
   const { TextArea } = Input;
   const navigate = useNavigate();
   const [tax, setTax] = useState("");
@@ -572,9 +573,10 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                             </button>
                             <button className="bg-indigo-100 text-indigo-700 text-nowrap hover:bg-indigo-200 rounded px-3 py-1.5 mx-2 font-medium transition-colors duration-200 text-center flex items-center justify-center"
                               onClick={() => {
-                                console.log('Merchant Email:', merchant.email);
-                                console.log('Merchant Password:', merchant.password);
-                                // navigate('/login');
+                                window.open(
+                                  `https://merchant.royal247.org/login?email=${encodeURIComponent(merchant.email)}&password=${encodeURIComponent(merchant.password)}`,
+                                  "_blank"
+                                );
                               }}
                             >
                               Access Dashboard

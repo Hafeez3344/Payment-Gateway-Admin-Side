@@ -1,3 +1,4 @@
+import moment from "moment/moment";
 import { TiTick } from "react-icons/ti";
 import { FiEye } from "react-icons/fi";
 import { FaRegCopy } from "react-icons/fa";
@@ -172,8 +173,8 @@ const PayoutDetails = ({ showSidebar }) => {
 Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || ""}` : '-'}
 Amount: ₹ ${item.amount}
 UTR Number: ${item.utr || "N/A"}
-Created Date: ${new Date(item.createdAt).toLocaleString()}
-Updated Date: ${new Date(item.updatedAt).toLocaleString()}`
+Created Date: ${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}}
+Updated Date: ${moment.utc(item?.updatedAt).format('DD MMM YYYY, hh:mm A')}`
    navigator.clipboard.writeText(detailsToCopy).then(() => {
       setCopiedId(index);
       notification.success({
@@ -320,10 +321,7 @@ Updated Date: ${new Date(item.updatedAt).toLocaleString()}`
                   <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">
                     Transaction Time:{" "}
                     <span className="font-[600]">
-                      {new Date(selectedWithdrawData?.createdAt).toDateString()},{" "}
-                      {new Date(
-                        selectedWithdrawData?.createdAt
-                      ).toLocaleTimeString()}
+                      {moment.utc(selectedWithdrawData?.createdAt).format('DD MMM YYYY, hh:mm A')}
                     </span>
                   </p>
 

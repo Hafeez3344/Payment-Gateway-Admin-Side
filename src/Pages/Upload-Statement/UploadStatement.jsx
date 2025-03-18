@@ -1,4 +1,5 @@
 import axios from "axios";
+import moment from "moment/moment";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
@@ -305,8 +306,7 @@ const UploadStatement = ({ authorization, showSidebar }) => {
                         </span>
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {new Date(transaction?.createdAt).toDateString()},
-                        {new Date(transaction?.createdAt).toLocaleTimeString()}
+                        {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                       </td>
                       <td className="p-4 flex space-x-2 transaction-view-model">
                         <button
@@ -324,9 +324,7 @@ const UploadStatement = ({ authorization, showSidebar }) => {
                           title={
                             <p className="text-[20px] font-[600] text-center font-sans">
                               {selectedTransaction?.pdfName} | {""}
-                              {new Date(
-                                selectedTransaction?.createdAt
-                              ).toDateString()}
+                              {moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                             </p>
                           }
                           open={open}
@@ -390,13 +388,7 @@ const UploadStatement = ({ authorization, showSidebar }) => {
                           <span className="text-[15px] font-[600] mt-8 block font-sans">
                             Upload Time: {""}
                             <span className="text-[13px] font-[600] text-gray-600">
-                              {new Date(transaction?.createdAt).toDateString()}
-                            </span>
-                            , {""}
-                            <span className="text-[13px] font-[600] text-gray-600">
-                              {new Date(
-                                transaction?.createdAt
-                              ).toLocaleTimeString()}
+                              {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                             </span>
                           </span>
                         </Modal>
