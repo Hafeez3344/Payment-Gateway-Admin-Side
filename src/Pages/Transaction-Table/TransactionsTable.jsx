@@ -1,8 +1,9 @@
 import jsPDF from "jspdf";
-import moment from "moment/moment";
+// import moment from "moment/moment";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
+import moment from 'moment-timezone';
 import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button, } from "antd";
 
 import { FiEye } from "react-icons/fi";
@@ -841,7 +842,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                       {selectedTransaction?.status}
                     </span>
                     <p className="text-[14px] font-[400] ml-6">
-                      {moment.utc(selectedTransaction?.updatedAt).format('DD MMM YYYY, hh:mm A')}
+                      {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
                     </p>
                   </div>
                 </div>

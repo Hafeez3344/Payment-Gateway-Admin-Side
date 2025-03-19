@@ -1,4 +1,4 @@
-import moment from "moment/moment";
+import moment from 'moment-timezone';
 import { TiTick } from "react-icons/ti";
 import { FiEye } from "react-icons/fi";
 import { FaRegCopy } from "react-icons/fa";
@@ -174,7 +174,10 @@ Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || ""}` : '-
 Amount: ₹ ${item.amount}
 UTR Number: ${item.utr || "N/A"}
 Created Date: ${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}}
-Updated Date: ${moment.utc(item?.updatedAt).format('DD MMM YYYY, hh:mm A')}`
+Updated Date: ${moment.utc(item?.updatedAt)
+  .tz('Asia/Kolkata')
+  .format('DD MMM YYYY, hh:mm A')}`
+
    navigator.clipboard.writeText(detailsToCopy).then(() => {
       setCopiedId(index);
       notification.success({
