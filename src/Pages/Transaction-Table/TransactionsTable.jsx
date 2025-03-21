@@ -187,6 +187,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     dateRange
   ]);
 
+  // Add effect to reset page when search params change
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 whenever search criteria changes
+  }, [searchTrnId, searchQuery, selectedFilteredMerchant, selectedFilteredBank, dateRange, merchant]);
+
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setOpen(true);
@@ -469,35 +474,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-
-                <Space direction="vertical" size={10}>
-                  <RangePicker
-                    value={dateRange}
-                    onChange={(dates) => {
-                      setDateRange(dates);
-                    }}
-                  />
-                </Space>
-                {/* Search By TRN Is */}
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by TRN-ID"
-                    value={searchTrnId}
-                    onChange={(e) => setSearchTrnId(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                {/* Search by UTR*/}
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by UTR"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
                 {/* DropDown of status */}
                 <div>
                   <Select
@@ -559,6 +535,35 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                       },
                       ...allBanks,
                     ]}
+                  />
+                </div>
+                {/* Search by date  */}
+                <Space direction="vertical" size={10}>
+                  <RangePicker
+                    value={dateRange}
+                    onChange={(dates) => {
+                      setDateRange(dates);
+                    }}
+                  />
+                </Space>
+                {/* Search By TRN / Search By UTR */}
+                {/* <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div> */}
+                {/* Search by UTR*/}
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by UTR / Trn No"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
               </div>
@@ -667,6 +672,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
               <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
               <Pagination
                 className="self-center md:self-auto"
+                current={currentPage}
                 onChange={(e) => setCurrentPage(e)}
                 defaultCurrent={1}
                 total={totalPages * 10}
