@@ -14,7 +14,7 @@ import BACKEND_URL, {
   fn_getAllTransactionApi,
   fn_updateTransactionStatusApi,
   fn_getMerchantApi,
-  fn_getAllBanksData,
+  fn_getOverAllBanksData,
 } from "../../api/api";
 
 // import { io } from "socket.io-client";
@@ -83,7 +83,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
   const fetchBanks = async () => {
     try {
-      const result = await fn_getAllBanksData("");
+      const result = await fn_getOverAllBanksData("");
       if (result?.status) {
         setAllBanks(
           result?.data?.data?.map((item) => {
@@ -94,7 +94,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   UPI - <span className="font-[400]">{item.iban}</span>
                 </span>
               ) : (
-                item.bankName
+                <span>
+                  {item.bankName} - <span className="font-[400]">{item.iban}</span>
+                </span>
               ),
             };
           })
@@ -520,7 +522,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 {/* Search by Bank */}
                 <div>
                   <Select
-                    className="w-40"
+                    className="w-60"
                     placeholder="Select Bank"
                     value={selectedFilteredBank}
                     onChange={(e) => {

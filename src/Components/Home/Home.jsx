@@ -91,7 +91,7 @@ const Home = ({ authorization, showSidebar }) => {
     } catch (err) {
       console.error('Error fetching data:', err);
       setError("Failed to fetch dashboard data");
-      setRecentTransactions([]); 
+      setRecentTransactions([]);
     } finally {
       setLoading(false);
     }

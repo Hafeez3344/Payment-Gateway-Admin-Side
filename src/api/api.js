@@ -1,10 +1,12 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "https://backend.royal247.org";
+export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement";
+
+// const BACKEND_URL = "https://backend.royal247.org";
 // const BACKEND_URL = "https://test-backend.royal247.org";
-//  const BACKEND_URL = "http://46.202.166.64:5001";
-export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
+
+const BACKEND_URL = "http://46.202.166.64:5001";
 // const BACKEND_URL = "http://46.202.166.64:8000";
 // export const BACKEND_URL = "http://192.168.1.18:8888"
 
@@ -176,6 +178,26 @@ export const fn_getAllBanksData = async (accountType, page = 1) => {
             ? "disable=true"
             : `accountType=${accountType}&disable=false`
             }&page=${page}`;
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getOverAllBanksData = async () => {
+    try {
+        const token = Cookies.get("token");
+        const url = `${BACKEND_URL}/bank/getAll`;
 
         const response = await axios.get(url, {
             headers: {
@@ -365,17 +387,17 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         const token = Cookies.get("token");
         const type = Cookies.get("type");
         const adminId = Cookies.get("adminId");
-        
+
         // Construct URL with date range parameters
         let url = `${BACKEND_URL}/ledger/getAllAdmin?limit=100&page=${pageNumber}`;
-        
+
         // Add other parameters
         if (status) url += `&status=${status}`;
         if (searchTrnId) url += `&trnNo=${searchTrnId}`;
         if (searchQuery) url += `&utr=${searchQuery}`;
         if (merchantId) url += `&merchantId=${merchantId}`;
         if (bankId) url += `&bankId=${bankId}`;
-        
+
         // Add date range parameters if they exist
         // if (dateRange && dateRange[0]) {
         //     url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
@@ -385,18 +407,18 @@ export const fn_getAllTransactionApi = async (status, pageNumber, searchTrnId, s
         if (dateRange && dateRange[0]) {
             const startDate = new Date(dateRange[0].$d);
             const endDate = new Date(dateRange[1].$d);
-            
+
             // Adjust for timezone difference and set start date to beginning of day
             startDate.setHours(0, 0, 0, 0);
             const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
-            
+
             // Adjust for timezone difference and set end date to end of day
             endDate.setHours(23, 59, 59, 999);
             const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
-            
+
             url += `&startDate=${startISOString}`;
             url += `&endDate=${endISOString}`;
-          }
+        }
 
         const response = await axios.get(url, {
             headers: {
@@ -424,9 +446,9 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         const token = Cookies.get("token");
         const type = Cookies.get("type");
         const adminId = Cookies.get("adminId");
-        
+
         let url = `${BACKEND_URL}/ledger/getAllAdminWithoutPag`;
-        
+
         // Add query parameters
         const params = new URLSearchParams();
         if (type === "staff") params.append("adminStaffId", adminId);
@@ -435,7 +457,7 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         if (searchQuery) params.append("utr", searchQuery);
         if (merchantId) params.append("merchantId", merchantId);
         if (bankId) params.append("bankId", bankId);
-        
+
         // Add date range if present
         // if (dateRange && dateRange[0]) {
         //     params.append("startDate", new Date(dateRange[0].$d).toISOString());
@@ -445,19 +467,19 @@ export const fn_getAdminsTransactionApi = async (status, searchTrnId, searchQuer
         if (dateRange && dateRange[0]) {
             const startDate = new Date(dateRange[0].$d);
             const endDate = new Date(dateRange[1].$d);
-            
+
             // Set start date to beginning of day
             startDate.setHours(0, 0, 0, 0);
-            
+
             // Set end date to end of day
             endDate.setHours(23, 59, 59, 999);
-            
+
             // Adjust for timezone difference
             params.append("startDate", new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString());
             params.append("endDate", new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString());
-          }
+        }
 
-        
+
         // Append params to URL if there are any
         if (params.toString()) {
             url += `?${params.toString()}`;
@@ -665,7 +687,7 @@ export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
     try {
         const token = Cookies.get("token");
         let url = `${BACKEND_URL}/ledger/cardAdminData?status=${status}&filter=${filter}`;
-        
+
         // Add date range parameters if they exist
         // if (dateRange && dateRange[0]) {
         //     url += `&startDate=${new Date(dateRange[0].$d).toISOString()}`;
@@ -676,14 +698,14 @@ export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
             const startDate = new Date(dateRange[0].$d);
             startDate.setHours(0, 0, 0, 0);
             const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
-            
+
             const endDate = new Date(dateRange[1].$d);
             endDate.setHours(23, 59, 59, 999);
             const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
-            
+
             url += `&startDate=${startISOString}`;
             url += `&endDate=${endISOString}`;
-          }
+        }
 
         const response = await axios.get(url, {
             headers: {
