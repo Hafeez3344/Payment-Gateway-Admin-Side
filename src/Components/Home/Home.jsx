@@ -69,7 +69,7 @@ const Home = ({ authorization, showSidebar }) => {
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
-      setTotalTrns(approvedData?.data?.totalTransaction);
+      setTotalTrns(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
@@ -131,7 +131,7 @@ const Home = ({ authorization, showSidebar }) => {
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
-      setTotalTrns(approvedData?.data?.totalTransaction);
+      setTotalTrns(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
@@ -279,33 +279,36 @@ const Home = ({ authorization, showSidebar }) => {
 
         {/* Boxes Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
-          <Boxes
-            number={verifiedTransactions}
-            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
-            title={"SYSTEM APPROVED TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
-            }
-            link={"/transactions?status=Approved"}
-          />
-          <Boxes
-            number={unverifiedTransactions}
-            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
-            title={"PENDING TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
-            }
-            link={"/transactions?status=Pending"}
-          />
-          <Boxes
-            number={declineTransactions}
-            amount={verifiedTransactions + unverifiedTransactions + declineTransactions}
-            title={"FAILED TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
-            }
-            link={"/transactions?status=Decline"}
-          />
+          <div
+            className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
+            style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
+          >
+            <h2 className="text-[13px] uppercase font-[500]">SYSTEM APPROVED TRANSACTIONS</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(verifiedTransactions).toFixed(2)}</p>
+            <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
+              No. of Transactions: <span className="font-[700]">{cardData.approved.totalTransaction || 0}</span>
+            </p>
+          </div>
+          <div
+            className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
+            style={{ backgroundImage: "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))" }}
+          >
+            <h2 className="text-[13px] uppercase font-[500]">PENDING TRANSACTIONS</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(unverifiedTransactions).toFixed(2)}</p>
+            <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
+              No. of Transactions: <span className="font-[700]">{cardData.pending.totalTransaction || 0}</span>
+            </p>
+          </div>
+          <div
+            className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
+            style={{ backgroundImage: "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))" }}
+          >
+            <h2 className="text-[13px] uppercase font-[500]">FAILED TRANSACTIONS</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(declineTransactions).toFixed(2)}</p>
+            <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
+              No. of Transactions: <span className="font-[700]">{cardData.failed.totalTransaction || 0}</span>
+            </p>
+          </div>
           <div
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
             style={{ backgroundImage: "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))" }}
