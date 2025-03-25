@@ -37,6 +37,8 @@ const Home = ({ authorization, showSidebar }) => {
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
 
+  const totalHeight = window.innerHeight - 366;
+
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
@@ -83,7 +85,7 @@ const Home = ({ authorization, showSidebar }) => {
 
       // Update recent transactions
       if (recentTrxData?.status && recentTrxData?.data?.data) {
-        setRecentTransactions(recentTrxData.data.data.slice(0, 10));
+        setRecentTransactions(recentTrxData.data.data.slice(0, 15));
       } else {
         setRecentTransactions([]);
       }
@@ -283,10 +285,10 @@ const Home = ({ authorization, showSidebar }) => {
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
             style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">SYSTEM APPROVED TRANSACTIONS</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(verifiedTransactions).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">Available Amount</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(verifiedTransactions).toFixed(2) - Number(adminCharges).toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{cardData.approved.totalTransaction || 0}</span>
+              Total Transactions: <span className="font-[700]">{Number(verifiedTransactions).toFixed(2) || 0}</span>
             </p>
           </div>
           <div
@@ -346,7 +348,7 @@ const Home = ({ authorization, showSidebar }) => {
           </div>
 
           {/* Recent Transactions Section */}
-          <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
+          <div className="bg-white p-6 rounded shadow w-full flex-1 overflow-auto" style={{ minHeight: `${totalHeight}px`, maxHeight: `${totalHeight}px` }}>
             <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
             <p className="text-[11px] font-[500] text-gray-500 pt-1">
               Customer is an individual or business that purchases the goods or services, and the process has evolved to include real-time tracking.
