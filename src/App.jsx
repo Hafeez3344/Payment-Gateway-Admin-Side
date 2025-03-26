@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Cookies from "js-cookie";
 import Home from "./Components/Home/Home";
 import NavBar from "./Components/NabBar/NavBar";
-import Footer from "./Components/Footer/Footer";
+import Footer from "./Components/Footer/Footer"; 
 import SideBar from "./Components/Sidebar/SideBar";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
