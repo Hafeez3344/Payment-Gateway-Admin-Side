@@ -526,7 +526,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               }`}
                           >
                             <td className="p-4 text-[13px] text-nowrap">
-                              {index + 1}
+                              {(currentPage - 1) * 20 + index + 1}
                             </td>
                             <td className="p-4 text-[13px] text-nowrap">
                               {moment.utc(log?.createdAt).format('DD MMM YYYY, hh:mm A')}
@@ -849,14 +849,18 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       className="self-center md:self-auto"
                       onChange={(page) => setCurrentPage(page)}
                       current={currentPage}
-                      total={totalPages * 10}
+                      total={(totalPages * 20)/2}
+                      showQuickJumper={false}
+                      showSizeChanger={false}
                     />
                   ) : (
                     <Pagination
                       className="self-center md:self-auto"
                       onChange={(page) => setCurrentPage(page)}
                       current={currentPage}
-                      total={totalPages * 20}
+                      total={(totalPages * 20)/2}
+                      showQuickJumper={false}
+                      showSizeChanger={false}
                     />
                   )}
                 </div>
