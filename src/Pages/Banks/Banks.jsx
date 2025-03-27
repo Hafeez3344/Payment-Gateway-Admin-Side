@@ -66,9 +66,10 @@ const BankManagement = ({ authorization, showSidebar }) => {
     if (tab === "banklogs") {
       setLoadingLogs(true);
       try {
-        const result = await fn_getAllBankLogs();
+        const result = await fn_getAllBankLogs(currentPage || 1);
         if (result.status) {
           setBankLogs(result.data);
+          setTotalPages(result?.totalPages || 1);
         }
       } catch (error) {
         console.error("Error fetching bank logs:", error);
@@ -218,9 +219,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
       if (data?.iban === "") {
         notification.error({
           message: "Error",
-          description: `Enter ${
-            activeTab === "bank" ? "IFSC Number" : "UPI ID"
-          }`,
+          description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
+            }`,
           placement: "topRight",
         });
         return;
@@ -385,9 +385,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
   return (
     <>
       <div
-        className={`bg-gray-100 transition-all duration-500 ${
-          showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+          }`}
         style={{ minHeight: `${containerHeight}px` }}
       >
         <div className="p-7">
@@ -478,6 +477,9 @@ const BankManagement = ({ authorization, showSidebar }) => {
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-[#ECF0FA]">
                     <tr>
+                      <th className="p-3 text-[13px] font-[600] text-nowrap">
+                        Sr. No.
+                      </th>
                       {activeTab === "banklogs" && (
                         <th className="p-3 text-[13px] font-[600] text-nowrap">
                           Date
@@ -488,7 +490,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       </th>
                       {activeTab !== "banklogs" && (
                         <th className="pl-20 text-[13px] font-[600] text-nowrap">
-                          {activeTab === "upi" ? "UPI ID" : "IFSC"}
+                          {activeTab === "upi" ? "UPI ID" : activeTab === "bank" ? "IFSC" : "IFSC/UPI"}
                         </th>
                       )}
                       <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
@@ -520,10 +522,12 @@ const BankManagement = ({ authorization, showSidebar }) => {
                         filteredBankLogs.map((log, index) => (
                           <tr
                             key={index}
-                            className={`border-t border-b ${
-                              index % 2 === 0 ? "bg-white" : ""
-                            }`}
+                            className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                              }`}
                           >
+                            <td className="p-4 text-[13px] text-nowrap">
+                              {index + 1}
+                            </td>
                             <td className="p-4 text-[13px] text-nowrap">
                               {moment.utc(log?.createdAt).format('DD MMM YYYY, hh:mm A')}
                             </td>
@@ -561,21 +565,20 @@ const BankManagement = ({ authorization, showSidebar }) => {
                             </td>
                             <td className="text-center">
                               <button
-                                className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                                  log.status?.toLowerCase() === "active"
-                                    ? "bg-[#DCFCE7] text-[#22C55E]"
-                                    : log.status?.toLowerCase() === "inactive"
+                                className={`px-2 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${log.status?.toLowerCase() === "active"
+                                  ? "bg-[#DCFCE7] text-[#22C55E]"
+                                  : log.status?.toLowerCase() === "inactive"
                                     ? "bg-[#FFE4E4] text-[#DC2626]"
                                     : log.status?.toLowerCase() === "disabled"
-                                    ? "bg-[#F3F4F6] text-[#4B5563]"
-                                    : log.status?.toLowerCase() === "enable"
-                                    ? "bg-[#E0F2FE] text-[#0369A1]"
-                                    : "bg-[#F3F4F6] text-[#4B5563]"
-                                }`}
+                                      ? "bg-[#F3F4F6] text-[#4B5563]"
+                                      : log.status?.toLowerCase() === "enable"
+                                        ? "bg-[#E0F2FE] text-[#0369A1]"
+                                        : "bg-[#F3F4F6] text-[#4B5563]"
+                                  }`}
                               >
                                 {log.status
                                   ? log.status.charAt(0).toUpperCase() +
-                                    log.status.slice(1).toLowerCase()
+                                  log.status.slice(1).toLowerCase()
                                   : "N/A"}
                               </button>
                             </td>
@@ -597,13 +600,15 @@ const BankManagement = ({ authorization, showSidebar }) => {
                         return (
                           <tr
                             key={index}
-                            className={`border-t border-b ${
-                              index % 2 === 0 ? "bg-white" : ""
-                            }`}
+                            className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                              }`}
                           >
+                            <td className="p-4 text-[13px] text-nowrap">
+                              {index + 1}
+                            </td>
                             <td className="p-3 text-[13px] font-[600]">
                               <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                                {activeTab === "bank" ? (
+                                {account?.accountType === "bank" ? (
                                   <div className="flex items-center gap-[3px]">
                                     <span className="whitespace-nowrap capitalize">
                                       {account.bankName}
@@ -668,11 +673,10 @@ const BankManagement = ({ authorization, showSidebar }) => {
                             </td>
                             <td className="text-center">
                               <button
-                                className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                                  account?.block === false
-                                    ? "bg-[#10CB0026] text-[#0DA000]"
-                                    : "bg-[#FF173D33] text-[#D50000]"
-                                }`}
+                                className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                                  ? "bg-[#10CB0026] text-[#0DA000]"
+                                  : "bg-[#FF173D33] text-[#D50000]"
+                                  }`}
                               >
                                 {!account?.block ? "Active" : "Inactive"}
                               </button>
@@ -735,6 +739,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                             account?._id,
                                             {
                                               disable: true,
+                                              block: true
                                             }
                                           );
                                           if (response?.status) {
@@ -765,8 +770,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                         const response = await fn_BankUpdate(
                                           account?._id,
                                           {
-                                            remainingLimit:
-                                              account?.accountLimit,
+                                            remainingLimit: account?.accountLimit,
+                                            remainingTransLimit: account?.noOfTrans
                                           }
                                         );
                                         if (response?.status) {
@@ -839,12 +844,21 @@ const BankManagement = ({ authorization, showSidebar }) => {
                 {/* Add pagination below table */}
                 <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
                   <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
-                  <Pagination
-                    className="self-center md:self-auto"
-                    onChange={(page) => setCurrentPage(page)}
-                    current={currentPage}
-                    total={totalPages * 10}
-                  />
+                  {activeTab !== "banklogs" ? (
+                    <Pagination
+                      className="self-center md:self-auto"
+                      onChange={(page) => setCurrentPage(page)}
+                      current={currentPage}
+                      total={totalPages * 10}
+                    />
+                  ) : (
+                    <Pagination
+                      className="self-center md:self-auto"
+                      onChange={(page) => setCurrentPage(page)}
+                      current={currentPage}
+                      total={totalPages * 20}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -959,9 +973,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
                 setData((prev) => ({ ...prev, iban: e.target.value }))
               }
               className="w-full text-[12px]"
-              placeholder={`${
-                activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
-              }`}
+              placeholder={`${activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
+                }`}
             />
           </div>
           {/* account Holder Name */}

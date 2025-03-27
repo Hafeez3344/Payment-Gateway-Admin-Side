@@ -883,10 +883,10 @@ export const fn_getAllWithdrawTransactions = async (pageNumber) => {
     }
 };
 
-export const fn_getAllBankLogs = async () => {
+export const fn_getAllBankLogs = async (page) => {
     try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${BACKEND_URL}/banklog/getAll`, {
+        const response = await axios.get(`${BACKEND_URL}/banklog/getAll?page=${page}&limit=20`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -894,7 +894,8 @@ export const fn_getAllBankLogs = async () => {
         });
         return {
             status: true,
-            data: response.data?.data || []
+            data: response.data?.data || [],
+            totalPages: response.data?.totalPages || [],
         };
     } catch (error) {
         console.error("Error fetching bank logs:", error);

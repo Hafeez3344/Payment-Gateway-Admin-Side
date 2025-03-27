@@ -36,6 +36,7 @@ const Home = ({ authorization, showSidebar }) => {
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
+  const [merchantAvailBalance, setMerchantAvailBalance] = useState(0);
 
   const totalHeight = window.innerHeight - 366;
 
@@ -63,11 +64,6 @@ const Home = ({ authorization, showSidebar }) => {
         fn_getAllTransactionApi(null, 1, null, null, null, dateRange),
         fn_getAdminsTransactionApi(null, null, null, null, dateRange)
       ]);
-      console.log("activeFilter ", activeFilter);
-      console.log("approvedData ", approvedData);
-      console.log("pendingData ", pendingData);
-      console.log("declineData ", declineData);
-      console.log("totalData ", totalData);
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
@@ -75,6 +71,7 @@ const Home = ({ authorization, showSidebar }) => {
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
+      setMerchantAvailBalance(approvedData?.data?.merchantAvailBalance);
 
       // Set card data
       setCardData({
@@ -137,6 +134,7 @@ const Home = ({ authorization, showSidebar }) => {
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotalTransactions(totalData?.data?.data || 0);
+      setMerchantAvailBalance(approvedData?.data?.merchantAvailBalance);
 
       // Set card data
       setCardData({
@@ -285,10 +283,10 @@ const Home = ({ authorization, showSidebar }) => {
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
             style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">Available Amount</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(verifiedTransactions).toFixed(2) - Number(adminCharges).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">Available BALANCE</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(merchantAvailBalance).toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              Total Transactions: <span className="font-[700]">{Number(verifiedTransactions).toFixed(2) || 0}</span>
+              Approved Payments: <span className="font-[700]">{Number(verifiedTransactions).toFixed(2) || 0}</span>
             </p>
           </div>
           <div
