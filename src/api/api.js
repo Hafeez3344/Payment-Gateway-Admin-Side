@@ -1,12 +1,12 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-// const BACKEND_URL = "https://backend.royal247.org";
+const BACKEND_URL = "https://backend.royal247.org";
 export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement";
 
 // const BACKEND_URL = "https://test-backend.royal247.org";
 
-const BACKEND_URL = "http://46.202.166.64:5001";
+// const BACKEND_URL = "http://46.202.166.64:5001";
 // const BACKEND_URL = "http://46.202.166.64:8000";
 // export const BACKEND_URL = "http://192.168.1.18:8888"
 
