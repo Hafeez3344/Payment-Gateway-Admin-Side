@@ -849,7 +849,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       className="self-center md:self-auto"
                       onChange={(page) => setCurrentPage(page)}
                       current={currentPage}
-                      total={(totalPages * 20)/2}
+                      total={(totalPages * 20) / 2}
                       showQuickJumper={false}
                       showSizeChanger={false}
                     />
@@ -858,7 +858,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       className="self-center md:self-auto"
                       onChange={(page) => setCurrentPage(page)}
                       current={currentPage}
-                      total={(totalPages * 20)/2}
+                      total={(totalPages * 20) / 2}
                       showQuickJumper={false}
                       showSizeChanger={false}
                     />

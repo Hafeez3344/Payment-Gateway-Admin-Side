@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Cookies from "js-cookie";
 import Home from "./Components/Home/Home";
 import NavBar from "./Components/NabBar/NavBar";
-import Footer from "./Components/Footer/Footer"; 
+import Footer from "./Components/Footer/Footer";
 import SideBar from "./Components/Sidebar/SideBar";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
@@ -23,6 +23,7 @@ import Commission from "./Pages/Commission/Commission";
 import Withdraw from "./Pages/Withdraw-Page/Withdraw";
 import Payout from "./Pages/Payout/Payout";
 import PayoutDetails from "./Pages/Payout/PayoutDetails";
+import WalletTransfer from "./Pages/WalletTransfer/WalletTransfer";
 
 function App() {
   const [authorization, setAuthorization] = useState(
@@ -79,6 +80,15 @@ function App() {
             path="/manual-verified-transactions"
             element={
               <ManualVerifiedTransactions
+                authorization={authorization}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/wallet-transfer"
+            element={
+              <WalletTransfer
                 authorization={authorization}
                 showSidebar={showSidebar}
               />

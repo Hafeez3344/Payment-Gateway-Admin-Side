@@ -2,10 +2,8 @@ import Cookies from "js-cookie";
 import { BsBank } from "react-icons/bs";
 import { LuLogOut } from "react-icons/lu";
 import { TbBookUpload } from "react-icons/tb";
-import { FaHeadphones } from "react-icons/fa";
 import { TbReportSearch } from "react-icons/tb";
 import { FaMoneyBillWave } from "react-icons/fa";
-import { FaHandHoldingUsd } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -14,6 +12,7 @@ import { MdOutlineCurrencyExchange } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PiHandWithdraw, PiNotebook } from "react-icons/pi";
 import { FaPeopleGroup, FaRegCircleUser } from "react-icons/fa6";
+import { CgArrowsExchangeV } from "react-icons/cg";
 
 
 const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
@@ -66,6 +65,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
         </button>
       </div>
       <div className="mt-[10px] mb-[50px] overflow-auto" style={{ height: "calc(100vh - 115px)" }}>
+        {/* dashboard */}
         {loginType === "admin" && (
           <Menu
             onClick={() => handleMenuClick("dashboard", "/")}
@@ -74,32 +74,58 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "dashboard"}
           />
         )}
+        {/* transactions */}
         <Menu
           onClick={() => handleMenuClick("transactions", "/transactions")}
           label="Transactions"
           icon={<PiNotebook className="text-[20px]" />}
           isActive={selectedPage === "transactions"}
         />
+        {/* withdraw request */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
-              handleMenuClick("merchant-management", "/merchant-management")
+              handleMenuClick("withdraw", "/withdraw")
             }
-            label="Merchant Management"
-            icon={<FaRegCircleUser className="text-[20px]" />}
-            isActive={selectedPage === "merchant-management"}
+            label="Withdraw Requests"
+            icon={<PiHandWithdraw className="text-[20px]" />}
+            isActive={selectedPage === "withdraw"}
           />
         )}
+        {/* payout */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
-              handleMenuClick("commission", "/commission")
+              handleMenuClick("payout", "/payout")
             }
-            label="Pay-In"
-            icon={<FaHandHoldingUsd className="text-[20px]" />}
-            isActive={selectedPage === "commission"}
+            label="Payout"
+            icon={<FaMoneyBillWave className="text-[20px]" />}
+            isActive={selectedPage === "payout"}
           />
         )}
+        {/* wallet transfer */}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("walletTransfer", "/wallet-transfer")
+            }
+            label="Wallet Transfer"
+            icon={<CgArrowsExchangeV className="text-[22px]" />}
+            isActive={selectedPage === "wallet-transfer"}
+          />
+        )}
+        {/* exchange rate */}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("currency-exchange", "/currency-exchange")
+            }
+            label="Exchange Rate"
+            icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
+            isActive={selectedPage === "currency-exchange"}
+          />
+        )}
+        {/* banks-management */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
@@ -111,44 +137,18 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
           />
 
         )}
+        {/* merchant management */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
-              handleMenuClick("currency-exchange", "/currency-exchange")
+              handleMenuClick("merchant-management", "/merchant-management")
             }
-            label="Exchange Rate"
-            icon={<MdOutlineCurrencyExchange className="text-[20px]" />}
-            isActive={selectedPage === "currency-exchange"}
+            label="Merchant Management"
+            icon={<FaRegCircleUser className="text-[20px]" />}
+            isActive={selectedPage === "merchant-management"}
           />
         )}
-        <Menu
-          onClick={() =>
-            handleMenuClick("withdraw", "/withdraw")
-          }
-          label="Withdraw Requests"
-          icon={<PiHandWithdraw className="text-[20px]" />}
-          isActive={selectedPage === "withdraw"}
-        />
-        {/* {loginType === "admin" && (
-          <Menu
-            onClick={() =>
-              handleMenuClick("support-help-center", "/support-help-center")
-            }
-            label="Support / Help Center"
-            icon={<FaHeadphones className="text-[20px]" />}
-            isActive={selectedPage === "support-help-center"}
-          />
-        )} */}
-        {loginType === "admin" && (
-          <Menu
-            onClick={() => {
-              handleMenuClick("upload-statement", "/upload-statement")
-            }}
-            label="Upload Statement"
-            icon={<TbBookUpload className="text-[20px]" />}
-            isActive={selectedPage === "upload-statement"}
-          />
-        )}
+        {/* reports */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
@@ -159,26 +159,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "reports"}
           />
         )}
-         {loginType === "admin" && (
-          <Menu
-            onClick={() =>
-              handleMenuClick("payout", "/payout")
-            }
-            label="Payout"
-            icon={<FaMoneyBillWave className="text-[20px]" />}
-            isActive={selectedPage === "payout"}
-          />
-        )}
-        {loginType === "admin" && (
-          <Menu
-            onClick={() =>
-              handleMenuClick("system-configuration", "/system-configuration")
-            }
-            label="Settings"
-            icon={<IoSettingsOutline className="text-[20px]" />}
-            isActive={selectedPage === "system-configuration"}
-          />
-        )}
+        {/* staff */}
         {loginType === "admin" && (
           <Menu
             onClick={() =>
@@ -190,6 +171,50 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization }) => {
             isActive={selectedPage === "staff"}
           />
         )}
+        {/* upload statement */}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() => {
+              handleMenuClick("upload-statement", "/upload-statement")
+            }}
+            label="Upload Statement"
+            icon={<TbBookUpload className="text-[20px]" />}
+            isActive={selectedPage === "upload-statement"}
+          />
+        )}
+        {/* settings */}
+        {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("system-configuration", "/system-configuration")
+            }
+            label="Settings"
+            icon={<IoSettingsOutline className="text-[20px]" />}
+            isActive={selectedPage === "system-configuration"}
+          />
+        )}
+
+        {/* {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("commission", "/commission")
+            }
+            label="Pay-In"
+            icon={<FaHandHoldingUsd className="text-[20px]" />}
+            isActive={selectedPage === "commission"}
+          />
+        )} */}
+        {/* {loginType === "admin" && (
+          <Menu
+            onClick={() =>
+              handleMenuClick("support-help-center", "/support-help-center")
+            }
+            label="Support / Help Center"
+            icon={<FaHeadphones className="text-[20px]" />}
+            isActive={selectedPage === "support-help-center"}
+          />
+        )} */}
+
       </div>
       <div
         onClick={fn_logout}

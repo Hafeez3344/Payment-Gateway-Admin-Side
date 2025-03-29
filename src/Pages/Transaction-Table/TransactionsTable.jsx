@@ -74,38 +74,38 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
     if (!socket.connected) {
       socket.connect(); // Connect only if not already connected
-      socket.emit("registerUser", { userId, role:'admin' });
+      socket.emit("registerUser", { userId, role: 'admin' });
     }
 
-  return () => {
+    return () => {
       socket.off("ledgerUpdated");
-  };
-    
+    };
+
   }, []);
 
 
 
-   // Listen for real-time updates
-   useEffect(() => {
+  // Listen for real-time updates
+  useEffect(() => {
     socket.on("ledgerUpdated", (data) => {
-        console.log("Ledger Update Received:", data);
+      console.log("Ledger Update Received:", data);
 
-        setTransactions((prevLedgers) => {
-            if (data.type === "created") {
-                return [data.ledger, ...prevLedgers];
-            } else if (data.type === "updated") {
-                return prevLedgers.map((ledger) =>
-                    ledger._id === data.ledger._id ? data.ledger : ledger
-                );
-            }
-            return prevLedgers;
-        });
+      setTransactions((prevLedgers) => {
+        if (data.type === "created") {
+          return [data.ledger, ...prevLedgers];
+        } else if (data.type === "updated") {
+          return prevLedgers.map((ledger) =>
+            ledger._id === data.ledger._id ? data.ledger : ledger
+          );
+        }
+        return prevLedgers;
+      });
     });
 
     return () => {
-        socket.off("ledgerUpdated");
+      socket.off("ledgerUpdated");
     };
-}, []);
+  }, []);
 
   // useEffect(() => {
   //   socket.on("getMerchantLedger", (data) => {
