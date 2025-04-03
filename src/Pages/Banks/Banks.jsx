@@ -51,6 +51,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
     accountLimit: "",
     noOfTrans: "",
     accountHolderName: "",
+    crypto: "",
   });
   const [bankLogs, setBankLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -146,6 +147,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
       accountLimit: "",
       noOfTrans: "",
       accountHolderName: "",
+      crypto: "",
     });
     setIsEditMode(false);
     setEditAccountId(null);
@@ -179,6 +181,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
       accountLimit: account.accountLimit,
       noOfTrans: account.noOfTrans,
       accountHolderName: account.accountHolderName,
+      crypto: account.crypto,
     });
     setEditAccountId(account._id);
     setIsEditMode(true);
@@ -187,10 +190,19 @@ const BankManagement = ({ authorization, showSidebar }) => {
 
   const fn_submit = async () => {
     try {
-      if (activeTab === "upi" && !data?.image) {
+      if ((activeTab === "upi" || activeTab === "crypto") && !data?.image) {
         notification.error({
           message: "Error",
           description: "QR Code is required",
+          placement: "topRight",
+        });
+        return;
+      }
+
+      if (activeTab === "crypto" && !data?.crypto) {
+        notification.error({
+          message: "Error",
+          description: "Crypto ID is required",
           placement: "topRight",
         });
         return;
@@ -216,7 +228,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
           return;
         }
       }
-      if (data?.iban === "") {
+      if (data?.iban === "" && activeTab !== "crypto") {
         notification.error({
           message: "Error",
           description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
@@ -258,6 +270,14 @@ const BankManagement = ({ authorization, showSidebar }) => {
         formData.append("accountNo", data?.accountNo);
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
+        formData.append("accountLimit", data?.accountLimit);
+        formData.append("noOfTrans", data?.noOfTrans);
+        formData.append("accountHolderName", data?.accountHolderName);
+        formData.append("block", true);
+      } else if (activeTab === "crypto") {
+        formData.append("image", data?.image);
+        formData.append("accountType", activeTab);
+        formData.append("iban", data?.crypto); // Changed from crypto to iban
         formData.append("accountLimit", data?.accountLimit);
         formData.append("noOfTrans", data?.noOfTrans);
         formData.append("accountHolderName", data?.accountHolderName);
@@ -308,6 +328,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
           accountLimit: "",
           noOfTrans: "",
           accountHolderName: "",
+          crypto: "",
         });
         setIsEditMode(false);
         setEditAccountId(null);
@@ -431,6 +452,19 @@ const BankManagement = ({ authorization, showSidebar }) => {
                     className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
                     style={{
                       backgroundImage:
+                        activeTab === "crypto"
+                          ? "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))"
+                          : "none",
+                    }}
+                    onClick={() => setActiveTab("crypto")}
+                  >
+                    Crypto
+                  </button>
+
+                  <button
+                    className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
+                    style={{
+                      backgroundImage:
                         activeTab === "disabledBanks"
                           ? "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))"
                           : "none",
@@ -490,7 +524,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                       </th>
                       {activeTab !== "banklogs" && (
                         <th className="pl-20 text-[13px] font-[600] text-nowrap">
-                          {activeTab === "upi" ? "UPI ID" : activeTab === "bank" ? "IFSC" : "IFSC/UPI"}
+                          {activeTab === "upi" ? "UPI ID" : activeTab === "bank" ? "IFSC" : activeTab === "crypto" ? "Crypto Wallet ID" : ""}
                         </th>
                       )}
                       <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
@@ -608,7 +642,16 @@ const BankManagement = ({ authorization, showSidebar }) => {
                             </td>
                             <td className="p-3 text-[13px] font-[600]">
                               <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                                {account?.accountType === "bank" ? (
+                                {account?.accountType === "crypto" ? (
+                                  <div className="flex items-center gap-[3px]">
+                                    <span className="whitespace-nowrap">
+                                      Crypto Account
+                                    </span>
+                                    {/* <span className="text-gray-600 text-nowrap">
+                                      - {account.iban}
+                                    </span> */}
+                                  </div>
+                                ) : account?.accountType === "bank" ? (
                                   <div className="flex items-center gap-[3px]">
                                     <span className="whitespace-nowrap capitalize">
                                       {account.bankName}
@@ -632,7 +675,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                               <div className="ml-14">
                                 {" "}
                                 <span className="whitespace-nowrap">
-                                  {account.iban}
+                                  {account.accountType === "crypto" ? account.iban : account.iban}
                                 </span>
                               </div>
                             </td>
@@ -652,8 +695,8 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       : "inherit",
                                 }}
                               >
-                                ₹ {account.accountLimit} / ₹{" "}
-                                {account.remainingLimit}
+                                {account.accountType === "crypto" ? "$" : "₹"} {account.accountLimit} / {" "}
+                                {account.accountType === "crypto" ? "$" : "₹"} {account.remainingLimit}
                               </div>
                             </td>
 
@@ -690,19 +733,20 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                       checked={!account?.block}
                                       onChange={async (checked) => {
                                         try {
-                                          // Pass the current activeTab value which will be either "bank" or "upi"
-                                          const response =
-                                            await fn_BankActivateApi(
-                                              account?._id,
-                                              activeTab
-                                            );
+                                          const response = await fn_BankUpdate(
+                                            account?._id,
+                                            {
+                                              block: !checked,
+                                              accountType: account.accountType
+                                            }
+                                          );
                                           if (response?.status) {
                                             fetchAllBanksData(activeTab);
                                             notification.success({
                                               message: "Status Updated",
                                               description: checked
-                                                ? `${activeTab.toUpperCase()} Activated`
-                                                : `${activeTab.toUpperCase()} Deactivated`,
+                                                ? `${account.accountType.toUpperCase()} Activated`
+                                                : `${account.accountType.toUpperCase()} Deactivated`,
                                               placement: "topRight",
                                             });
                                           } else {
@@ -710,14 +754,14 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                               message: "Error",
                                               description:
                                                 response.message ||
-                                                `Failed to update ${activeTab} status`,
+                                                `Failed to update ${account.accountType} status`,
                                               placement: "topRight",
                                             });
                                           }
                                         } catch (error) {
                                           notification.error({
                                             message: "Error",
-                                            description: `Failed to update ${activeTab} status`,
+                                            description: `Failed to update ${account.accountType} status`,
                                             placement: "topRight",
                                           });
                                         }
@@ -957,93 +1001,188 @@ const BankManagement = ({ authorization, showSidebar }) => {
             </div>
           </>
         )}
-        <div className="flex gap-4">
-          {/* IFCS No. */}
-          <div className="flex-1 my-2">
-            <p className="text-[12px] font-[500] pb-1">
-              {activeTab === "bank" ? (
-                <>
-                  IFSC No. <span className="text-[#D50000]">*</span>
-                </>
-              ) : (
-                <>
-                  UPI ID <span className="text-[#D50000]">*</span>
-                </>
-              )}
-            </p>
-            <Input
-              value={data?.iban}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, iban: e.target.value }))
-              }
-              className="w-full text-[12px]"
-              placeholder={`${activeTab === "bank" ? "Enter IFSC Number" : "Enter UPI ID"
-                }`}
-            />
-          </div>
-          {/* account Holder Name */}
-          <div className="flex-1 my-2">
-            <p className="text-[12px] font-[500] pb-1">
-              Account Holder Name <span className="text-[#D50000]">*</span>
-            </p>
-            <Input
-              value={data?.accountHolderName}
-              onChange={(e) =>
-                setData((prev) => ({
-                  ...prev,
-                  accountHolderName: e.target.value,
-                }))
-              }
-              className="w-full text-[12px]"
-              placeholder="Account Holder Name"
-            />
-          </div>
-        </div>
-        <div className="flex gap-4">
-          {/* Account Limit */}
-          <div className="flex-1 my-2">
-            <p className="text-[12px] font-[500] pb-1">
-              Account Limit <span className="text-[#D50000]">*</span>
-            </p>
-            <Input
-              value={data?.accountLimit}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, accountLimit: e.target.value }))
-              }
-              className="w-full text-[12px]"
-              placeholder="Account Limit "
-            />
-          </div>
-          <div className="flex-1 my-2">
-            <p className="text-[12px] font-[500] pb-1">
-              No of Transactions <span className="text-[#D50000]">*</span>
-            </p>
-            <Input
-              value={data?.noOfTrans}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, noOfTrans: e.target.value }))
-              }
-              className="w-full text-[12px]"
-              placeholder="No of Transactions"
-            />
-          </div>
-        </div>
-        {/* UPI QR Code in new row */}
+        {activeTab === "crypto" && (
+          <>
+            <div className="flex gap-4">
+              {/* Crypto ID */}
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Crypto Wallet ID <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.crypto}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, crypto: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Enter Crupto Wallet ID"
+                />
+              </div>
+              {/* Account Holder Name */}
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Holder Name <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.accountHolderName}
+                  onChange={(e) =>
+                    setData((prev) => ({
+                      ...prev,
+                      accountHolderName: e.target.value,
+                    }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Account Holder Name"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4">
+              {/* Account Limit */}
+              {/* <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Limit <span className="text-[#D50000]">*</span>
+                </p>
+
+                <Input
+                  value={data?.accountLimit}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, accountLimit: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Account Limit"
+                />
+              </div> */}
+
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Limit <span className="text-[#D50000]">*</span>
+                  {activeTab === "crypto" && (
+                    <span className="ml-2 text-gray-500">($)</span>
+                  )}
+                </p>
+                <div className="relative">
+                  <Input
+                    value={data?.accountLimit}
+                    onChange={(e) =>
+                      setData((prev) => ({ ...prev, accountLimit: e.target.value }))
+                    }
+                    className={`w-full text-[12px] ${activeTab === "crypto" ? "pr-8" : ""}`}
+                    placeholder="Account Limit"
+                  />
+                  {activeTab === "crypto" && (
+                    <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      $
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  No of Transactions <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.noOfTrans}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, noOfTrans: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="No of Transactions"
+                />
+              </div>
+            </div>
+            {/* Crypto QR Code */}
+            <div className="flex-1 my-2">
+              <p className="text-[12px] font-[500] pb-1">
+                Crypto QR Code <span className="text-[#D50000]">*</span>
+              </p>
+              <Input
+                type="file"
+                required
+                onChange={(e) =>
+                  setData((prev) => ({ ...prev, image: e.target.files[0] }))
+                }
+                className="w-full text-[12px]"
+                placeholder="Select QR Code"
+              />
+            </div>
+          </>
+        )}
         {activeTab === "upi" && (
-          <div className="flex-1 my-2">
-            <p className="text-[12px] font-[500] pb-1">
-              UPI QR Code <span className="text-[#D50000]">*</span>
-            </p>
-            <Input
-              type="file"
-              required
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, image: e.target.files[0] }))
-              }
-              className="w-full text-[12px]"
-              placeholder="Select QR Code"
-            />
-          </div>
+          <>
+            <div className="flex gap-4">
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  UPI ID <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.iban}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, iban: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Enter UPI ID"
+                />
+              </div>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Holder Name <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.accountHolderName}
+                  onChange={(e) =>
+                    setData((prev) => ({
+                      ...prev,
+                      accountHolderName: e.target.value,
+                    }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Account Holder Name"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Limit <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.accountLimit}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, accountLimit: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Account Limit"
+                />
+              </div>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  No of Transactions <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.noOfTrans}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, noOfTrans: e.target.value }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="No of Transactions"
+                />
+              </div>
+            </div>
+            <div className="flex-1 my-2">
+              <p className="text-[12px] font-[500] pb-1">
+                UPI QR Code <span className="text-[#D50000]">*</span>
+              </p>
+              <Input
+                type="file"
+                required
+                onChange={(e) =>
+                  setData((prev) => ({ ...prev, image: e.target.files[0] }))
+                }
+                className="w-full text-[12px]"
+                placeholder="Select QR Code"
+              />
+            </div>
+          </>
         )}
       </Modal>
       <Modal
