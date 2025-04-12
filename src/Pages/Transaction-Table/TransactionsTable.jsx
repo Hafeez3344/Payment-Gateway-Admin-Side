@@ -2,8 +2,17 @@ import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import moment from 'moment-timezone';
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button, } from "antd";
+import moment from "moment-timezone";
+import {
+  Pagination,
+  Modal,
+  Input,
+  notification,
+  DatePicker,
+  Space,
+  Select,
+  Button,
+} from "antd";
 import Cookies from "js-cookie";
 import { FiEye } from "react-icons/fi";
 import { IoMdCheckmark } from "react-icons/io";
@@ -18,7 +27,6 @@ import BACKEND_URL, {
 } from "../../api/api";
 
 import { io } from "socket.io-client";
-
 
 const TransactionsTable = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -67,23 +75,18 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     }
   };
 
-
-
   useEffect(() => {
     const userId = Cookies.get("adminId");
 
     if (!socket.connected) {
       socket.connect(); // Connect only if not already connected
-      socket.emit("registerUser", { userId, role: 'admin' });
+      socket.emit("registerUser", { userId, role: "admin" });
     }
 
     return () => {
       socket.off("ledgerUpdated");
     };
-
   }, []);
-
-
 
   // Listen for real-time updates
   useEffect(() => {
@@ -114,33 +117,66 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   //     fetchTransactions(currentPage || 1, merchant);
   //   });
 
-
   //   socket.on("error", (error) => {
   //       console.error("Socket Error:", error.message);
   //   });
 
   // }, []);
 
+  // const fetchBanks = async () => {
+  //   try {
+  //     const result = await fn_getOverAllBanksData("");
+  //     if (result?.status) {
+  //       setAllBanks(
+  //         result?.data?.data?.map((item) => {
+  //           return {
+  //             value: item._id,
+  //             label:
+  //               item.bankName === "UPI" ? (
+  //                 <span>
+  //                   UPI - <span className="font-[400]">{item.iban}</span>
+  //                 </span>
+  //               ) : (
+  //                 <span>
+  //                   {item.bankName} -{" "}
+  //                   <span className="font-[400]">{item.iban}</span>
+  //                 </span>
+  //               ),
+  //           };
+  //         })
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching banks:", error);
+  //   }
+  // };
+
   const fetchBanks = async () => {
     try {
       const result = await fn_getOverAllBanksData("");
       if (result?.status) {
-        setAllBanks(
-          result?.data?.data?.map((item) => {
-            return {
-              value: item._id,
-              label: item.bankName === "UPI" ? (
+        const banks = result?.data?.data?.map((item) => {
+          return {
+            value: item._id,
+            label:
+              item.accountType === "upi" ? (
                 <span>
                   UPI - <span className="font-[400]">{item.iban}</span>
                 </span>
+              ) : item.accountType === "crypto" ? (
+                <span>
+                  Crypto - <span className="font-[400]">{item.iban}</span>
+                </span>
               ) : (
                 <span>
-                  {item.bankName} - <span className="font-[400]">{item.iban}</span>
+                  {item.bankName} -{" "}
+                  <span className="font-[400]">{item.iban}</span>
                 </span>
               ),
-            };
-          })
-        );
+          };
+        });
+  
+        setAllBanks(banks);
       }
     } catch (error) {
       console.error("Error fetching banks:", error);
@@ -226,13 +262,20 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     searchQuery,
     selectedFilteredMerchant,
     selectedFilteredBank,
-    dateRange
+    dateRange,
   ]);
 
   // Add effect to reset page when search params change
   useEffect(() => {
     setCurrentPage(1); // Reset to page 1 whenever search criteria changes
-  }, [searchTrnId, searchQuery, selectedFilteredMerchant, selectedFilteredBank, dateRange, merchant]);
+  }, [
+    searchTrnId,
+    searchQuery,
+    selectedFilteredMerchant,
+    selectedFilteredBank,
+    dateRange,
+    merchant,
+  ]);
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -300,7 +343,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       const firstPageRows = 12;
       const subsequentPageRows = 13;
 
-      const headers = ["TRN-ID", "Date", "User Name", "Bank Name", "Merchant", "Amount", "UTR#", "Status"];
+      const headers = [
+        "TRN-ID",
+        "Date",
+        "User Name",
+        "Bank Name",
+        "Merchant",
+        "Amount",
+        "UTR#",
+        "Status",
+      ];
       const columnWidths = [25, 50, 25, 55, 30, 30, 35, 25];
 
       const startX = margin;
@@ -312,10 +364,13 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       pdf.setFontSize(16);
       pdf.text("Transaction Report", pageWidth / 2, 20, { align: "center" });
       pdf.setFontSize(12);
-      pdf.text(`Generated on: ${new Date().toUTCString()}`, pageWidth / 2, 30, { align: "center" });
+      pdf.text(`Generated on: ${new Date().toUTCString()}`, pageWidth / 2, 30, {
+        align: "center",
+      });
 
       // Calculate total pages needed
-      const remainingTrns = allTrns.length > firstPageRows ? allTrns.length - firstPageRows : 0;
+      const remainingTrns =
+        allTrns.length > firstPageRows ? allTrns.length - firstPageRows : 0;
       const additionalPages = Math.ceil(remainingTrns / subsequentPageRows);
       const totalPages = additionalPages + (allTrns.length > 0 ? 1 : 0);
 
@@ -351,21 +406,32 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? `${moment.utc(trn?.createdAt).format('DD MMM YYYY, hh:mm A')}` : "", currentX + 3, startY + 8);
+          pdf.text(
+            trn.createdAt
+              ? `${moment.utc(trn?.createdAt).format("DD MMM YYYY, hh:mm A")}`
+              : "",
+            currentX + 3,
+            startY + 8
+          );
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
 
           const bankName =
-            trn.bankId?.bankName === "UPI" ? `UPI - ${trn.bankId?.iban || ""}` : trn.bankId?.bankName || "N/A";
+            trn.bankId?.bankName === "UPI"
+              ? `UPI - ${trn.bankId?.iban || ""}`
+              : trn.bankId?.bankName || "N/A";
           pdf.text(bankName, currentX + 3, startY + 8);
           currentX += columnWidths[3];
 
-          const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
+          const merchantName =
+            trn.merchantId?.merchantName || trn.merchant || "N/A";
           pdf.text(merchantName, currentX + 3, startY + 8);
           currentX += columnWidths[4];
 
-          pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, { align: "left" });
+          pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, {
+            align: "left",
+          });
           totalAmount += parseFloat(trn.total) || 0; // Add to totalAmount
           currentX += columnWidths[5];
           pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
@@ -400,7 +466,10 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
 
-        const pageTransactions = allTrns.slice(processedTrns, processedTrns + subsequentPageRows);
+        const pageTransactions = allTrns.slice(
+          processedTrns,
+          processedTrns + subsequentPageRows
+        );
         pageTransactions.forEach((trn, index) => {
           startY += rowHeight;
           if (index % 2 === 1) {
@@ -411,21 +480,32 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
           currentX = startX;
           pdf.text(trn.trnNo?.toString() || "", currentX + 3, startY + 8);
           currentX += columnWidths[0];
-          pdf.text(trn.createdAt ? `${moment.utc(trn?.createdAt).format('DD MMM YYYY, hh:mm A')}` : "", currentX + 3, startY + 8);
+          pdf.text(
+            trn.createdAt
+              ? `${moment.utc(trn?.createdAt).format("DD MMM YYYY, hh:mm A")}`
+              : "",
+            currentX + 3,
+            startY + 8
+          );
           currentX += columnWidths[1];
           pdf.text(trn.username || "GUEST", currentX + 3, startY + 8);
           currentX += columnWidths[2];
 
           const bankName =
-            trn.bankId?.bankName === "UPI" ? `UPI - ${trn.bankId?.iban || ""}` : trn.bankId?.bankName || "N/A";
+            trn.bankId?.bankName === "UPI"
+              ? `UPI - ${trn.bankId?.iban || ""}`
+              : trn.bankId?.bankName || "N/A";
           pdf.text(bankName, currentX + 3, startY + 8);
           currentX += columnWidths[3];
 
-          const merchantName = trn.merchantId?.merchantName || trn.merchant || "N/A";
+          const merchantName =
+            trn.merchantId?.merchantName || trn.merchant || "N/A";
           pdf.text(merchantName, currentX + 3, startY + 8);
           currentX += columnWidths[4];
 
-          pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, { align: "left" });
+          pdf.text(`${trn.total || "0"} INR`, currentX + 3, startY + 8, {
+            align: "left",
+          });
           totalAmount += parseFloat(trn.total) || 0; // Add to totalAmount
           currentX += columnWidths[5];
           pdf.text(trn.utr?.toString() || "", currentX + 3, startY + 8);
@@ -447,10 +527,23 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       let currentX = startX;
       pdf.setFontSize(10);
       pdf.text("Subtotal", currentX + 3, lastPageStartY + 8); // Label for subtotal
-      currentX += columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3] + columnWidths[4] + columnWidths[5]; // Skip other columns for subtotal row
-      pdf.text(`${totalAmount.toFixed(2)} INR`, currentX + 3, lastPageStartY + 8, { align: "left" }); // Total amount
+      currentX +=
+        columnWidths[0] +
+        columnWidths[1] +
+        columnWidths[2] +
+        columnWidths[3] +
+        columnWidths[4] +
+        columnWidths[5]; // Skip other columns for subtotal row
+      pdf.text(
+        `${totalAmount.toFixed(2)} INR`,
+        currentX + 3,
+        lastPageStartY + 8,
+        { align: "left" }
+      ); // Total amount
 
-      pdf.save(`transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      pdf.save(
+        `transaction_report_${new Date().toISOString().slice(0, 10)}.pdf`
+      );
       setLoader(false);
       notification.success({
         message: "Success",
@@ -469,7 +562,20 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   };
 
   function getMonthName(monthIndex) {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return months[monthIndex];
   }
 
@@ -477,8 +583,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     <>
       <div
         style={{ minHeight: `${containerHeight}px` }}
-        className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-          }`}
+        className={`bg-gray-100 transition-all duration-500 ${
+          showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       >
         <div className="p-7">
           <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
@@ -571,9 +678,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     options={[
                       {
                         value: "",
-                        label: (
-                          <span className="text-gray-400">All Bank</span>
-                        ),
+                        label: <span className="text-gray-400">All Bank</span>,
                       },
                       ...allBanks,
                     ]}
@@ -630,7 +735,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="9" className="text-center p-4">Loading...</td>
+                      <td colSpan="9" className="text-center p-4">
+                        Loading...
+                      </td>
                     </tr>
                   ) : transactions.length > 0 ? (
                     transactions.map((transaction) => (
@@ -642,14 +749,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
+                          {moment
+                            .utc(transaction?.createdAt)
+                            .format("DD MMM YYYY, hh:mm A")}
                         </td>
-                        <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                        <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.username && transaction?.username !== ""
                             ? transaction?.username
                             : "GUEST"}
                         </td>
-                        <td className="p-4 text-nowrap">
+                        {/* <td className="p-4 text-nowrap">
                           {transaction?.bankId?.bankName !== "UPI" ? (
                             <div className="">
                               <span className="text-[13px] font-[700] text-black whitespace-nowrap">
@@ -661,6 +770,39 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                               <p className="text-[13px] font-[700] text-black ">
                                 UPI<span className="font-[400]"> - {transaction?.bankId?.iban}</span>
                               </p>
+                            </div>
+                          )}
+                        </td> */}
+                        <td className="p-4 text-nowrap">
+                          {transaction?.bankId?.accountType === "upi" ? (
+                            <div className="">
+                              <p className="text-[13px] font-[700] text-black">
+                                UPI
+                                <span className="font-[400]">
+                                  {" "}
+                                  - {transaction?.bankId?.iban}
+                                </span>
+                              </p>
+                            </div>
+                          ) : transaction?.bankId?.accountType === "crypto" ? (
+                            <div className="">
+                              <p className="text-[13px] font-[700] text-black">
+                                Crypto
+                                <span className="font-[400]">
+                                  {" "}
+                                  - {transaction?.bankId?.iban}
+                                </span>
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="">
+                              <span className="text-[13px] font-[700] text-black whitespace-nowrap">
+                                {transaction?.bankId?.bankName}
+                                <span className="font-[400]">
+                                  {" "}
+                                  - {transaction?.bankId?.accountNo}
+                                </span>
+                              </span>
                             </div>
                           )}
                         </td>
@@ -676,14 +818,15 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                         </td>
                         <td className="p-4 text-[13px] font-[500]">
                           <span
-                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status === "Pending"
+                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${
+                              transaction?.status === "Approved"
+                                ? "bg-[#10CB0026] text-[#0DA000]"
+                                : transaction?.status === "Pending"
                                 ? "bg-[#FFC70126] text-[#FFB800]"
                                 : transaction?.status === "Manual Verified"
-                                  ? "bg-[#0865e851] text-[#0864E8]"
-                                  : "bg-[#FF7A8F33] text-[#FF002A]"
-                              }`}
+                                ? "bg-[#0865e851] text-[#0864E8]"
+                                : "bg-[#FF7A8F33] text-[#FF002A]"
+                            }`}
                           >
                             {transaction?.status?.charAt(0).toUpperCase() +
                               transaction?.status?.slice(1)}
@@ -769,7 +912,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 },
                 {
                   label: "Date & Time:",
-                  value: `${moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
+                  value: `${moment
+                    .utc(selectedTransaction?.createdAt)
+                    .format("DD MMM YYYY, hh:mm A")}`,
                 },
                 {
                   label: "Bank Name:",
@@ -802,14 +947,15 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                           <FaIndianRupeeSign className="mt-[2px]" />
                         ) : null
                       }
-                      className={`w-[50%] text-[12px] input-placeholder-black ${isEdit &&
+                      className={`w-[50%] text-[12px] input-placeholder-black ${
+                        isEdit &&
                         (field.label === "Amount:" || field?.label === "UTR#:")
-                        ? "bg-white"
-                        : "bg-gray-200"
-                        }`}
+                          ? "bg-white"
+                          : "bg-gray-200"
+                      }`}
                       readOnly={
                         isEdit &&
-                          (field.label === "Amount:" || field?.label === "UTR#:")
+                        (field.label === "Amount:" || field?.label === "UTR#:")
                           ? false
                           : true
                       }
@@ -850,10 +996,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                     Approve Transaction
                   </button>
                   <button
-                    className={`flex p-2 rounded text-[13px] ${declineButtonClicked
-                      ? "bg-[#140e0f33] text-black"
-                      : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"
-                      }`}
+                    className={`flex p-2 rounded text-[13px] ${
+                      declineButtonClicked
+                        ? "bg-[#140e0f33] text-black"
+                        : "bg-[#FF405F33] hover:bg-[#FF405F50] text-[#FF3F5F]"
+                    }`}
                     onClick={() =>
                       setDeclinedButtonClicked(!declineButtonClicked)
                     }
@@ -873,23 +1020,28 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
               {selectedTransaction?.trnStatus !== "Transaction Pending" && (
                 <div>
                   <div className="flex items-center mt-4">
-                    <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
+                    <p className="text-[14px] font-[700] mr-2">
+                      Transaction Activity:
+                    </p>
                   </div>
                   <div className="flex items-center mt-4">
                     <span
-                      className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
-                        ? "text-[#0DA000]"
-                        : selectedTransaction?.status === "Pending"
+                      className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${
+                        selectedTransaction?.status === "Approved"
+                          ? "text-[#0DA000]"
+                          : selectedTransaction?.status === "Pending"
                           ? "text-[#FFB800]"
                           : selectedTransaction?.status === "Manual Verified"
-                            ? "text-[#0864E8]"
-                            : "text-[#FF002A]"
-                        }`}
+                          ? "text-[#0864E8]"
+                          : "text-[#FF002A]"
+                      }`}
                     >
                       {selectedTransaction?.status}
                     </span>
                     <p className="text-[14px] font-[400] ml-6">
-                      {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
+                      {moment(selectedTransaction?.updatedAt)
+                        .tz("Asia/Kolkata")
+                        .format("DD MMM YYYY, hh:mm A")}
                     </p>
                   </div>
                 </div>
@@ -897,7 +1049,9 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
 
               {selectedTransaction?.transactionReason ? (
                 <div className="flex items-center mt-2">
-                  <p className="text-[14px] font-[700] mr-2">Reason for Decline:</p>
+                  <p className="text-[14px] font-[700] mr-2">
+                    Reason for Decline:
+                  </p>
                   <p className="text-[14px] font-[400] capitalize">
                     {selectedTransaction?.transactionReason}
                   </p>

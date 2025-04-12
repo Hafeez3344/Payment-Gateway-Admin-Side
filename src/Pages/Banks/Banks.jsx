@@ -645,7 +645,7 @@ const BankManagement = ({ authorization, showSidebar }) => {
                                 {account?.accountType === "crypto" ? (
                                   <div className="flex items-center gap-[3px]">
                                     <span className="whitespace-nowrap">
-                                      Crypto Account
+                                      Crypto
                                     </span>
                                     {/* <span className="text-gray-600 text-nowrap">
                                       - {account.iban}

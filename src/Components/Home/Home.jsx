@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoDotFill } from "react-icons/go";
 import { FaCircleExclamation } from "react-icons/fa6";
-import { fn_getAdminsTransactionApi, fn_getCardDataByStatus, fn_getAllTransactionApi } from "../../api/api";
+import {
+  fn_getAdminsTransactionApi,
+  fn_getCardDataByStatus,
+  fn_getAllTransactionApi,
+} from "../../api/api";
 import graph from "../../assets/graph.png";
 import {
   Chart as ChartJS,
@@ -25,11 +29,11 @@ const Home = ({ authorization, showSidebar }) => {
   const [cardData, setCardData] = useState({
     approved: {},
     pending: {},
-    failed: {}
+    failed: {},
   });
   const { RangePicker } = DatePicker;
   const [totalTrns, setTotalTrns] = useState(0);
-  const [adminCharges, setAdminCharges] = useState("")
+  const [adminCharges, setAdminCharges] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [dateRange, setDateRange] = useState([null, null]);
   const [totalTransaction, setTotalTransactions] = useState(0);
@@ -51,19 +55,14 @@ const Home = ({ authorization, showSidebar }) => {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [
-        approvedData,
-        pendingData,
-        declineData,
-        totalData,
-        recentTrxData
-      ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', activeFilter, dateRange),
-        fn_getCardDataByStatus('Pending', activeFilter, dateRange),
-        fn_getCardDataByStatus('Decline', activeFilter, dateRange),
-        fn_getAllTransactionApi(null, 1, null, null, null, dateRange),
-        fn_getAdminsTransactionApi(null, null, null, null, dateRange)
-      ]);
+      const [approvedData, pendingData, declineData, totalData, recentTrxData] =
+        await Promise.all([
+          fn_getCardDataByStatus("Approved", activeFilter, dateRange),
+          fn_getCardDataByStatus("Pending", activeFilter, dateRange),
+          fn_getCardDataByStatus("Decline", activeFilter, dateRange),
+          fn_getAllTransactionApi(null, 1, null, null, null, dateRange),
+          fn_getAdminsTransactionApi(null, null, null, null, dateRange),
+        ]);
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
@@ -77,7 +76,7 @@ const Home = ({ authorization, showSidebar }) => {
       setCardData({
         approved: approvedData?.data || {},
         pending: pendingData?.data || {},
-        failed: declineData?.data || {}
+        failed: declineData?.data || {},
       });
 
       // Update recent transactions
@@ -86,9 +85,8 @@ const Home = ({ authorization, showSidebar }) => {
       } else {
         setRecentTransactions([]);
       }
-
     } catch (err) {
-      console.error('Error fetching data:', err);
+      console.error("Error fetching data:", err);
       setError("Failed to fetch dashboard data");
       setRecentTransactions([]);
     } finally {
@@ -104,7 +102,7 @@ const Home = ({ authorization, showSidebar }) => {
 
   const resetFilters = () => {
     setDateRange([null, null]);
-    setActiveFilter('all');
+    setActiveFilter("all");
     fetchAllData();
   };
 
@@ -113,19 +111,14 @@ const Home = ({ authorization, showSidebar }) => {
     setActiveFilter(filterType);
     setDateRange([null, null]);
     try {
-      const [
-        approvedData,
-        pendingData,
-        declineData,
-        totalData,
-        recentTrxData
-      ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', filterType, null),
-        fn_getCardDataByStatus('Pending', filterType, null),
-        fn_getCardDataByStatus('Decline', filterType, null),
-        fn_getAllTransactionApi(null, 1, null, null, null, null),
-        fn_getAdminsTransactionApi(null, null, null, null, null)
-      ]);
+      const [approvedData, pendingData, declineData, totalData, recentTrxData] =
+        await Promise.all([
+          fn_getCardDataByStatus("Approved", filterType, null),
+          fn_getCardDataByStatus("Pending", filterType, null),
+          fn_getCardDataByStatus("Decline", filterType, null),
+          fn_getAllTransactionApi(null, 1, null, null, null, null),
+          fn_getAdminsTransactionApi(null, null, null, null, null),
+        ]);
 
       // Set transaction counts
       setVerifiedTransactions(approvedData?.data?.data || 0);
@@ -140,7 +133,7 @@ const Home = ({ authorization, showSidebar }) => {
       setCardData({
         approved: approvedData?.data || {},
         pending: pendingData?.data || {},
-        failed: declineData?.data || {}
+        failed: declineData?.data || {},
       });
 
       // Update recent transactions
@@ -149,9 +142,8 @@ const Home = ({ authorization, showSidebar }) => {
       } else {
         setRecentTransactions([]);
       }
-
     } catch (err) {
-      console.error('Error fetching filtered data:', err);
+      console.error("Error fetching filtered data:", err);
       setError("Failed to fetch filtered data");
       setRecentTransactions([]);
     } finally {
@@ -222,8 +214,9 @@ const Home = ({ authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -233,26 +226,44 @@ const Home = ({ authorization, showSidebar }) => {
           <div className="flex items-center space-x-2">
             <div className="flex space-x-2 text-[12px]">
               <button
-                onClick={() => handleFilterClick('all')} className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                onClick={() => handleFilterClick("all")}
+                className={`${
+                  activeFilter === "all"
+                    ? "text-white bg-[#0864E8]"
+                    : "text-black"
+                } border w-[70px] sm:w-[70px] p-1 rounded`}
+              >
                 ALL
               </button>
               <button
-                onClick={() => handleFilterClick('today')}
-                className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                onClick={() => handleFilterClick("today")}
+                className={`${
+                  activeFilter === "today"
+                    ? "text-white bg-[#0864E8]"
+                    : "text-black"
+                } 
                   border w-[70px] sm:w-[70px] p-1 rounded`}
               >
                 TODAY
               </button>
               <button
-                onClick={() => handleFilterClick('7days')}
-                className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                onClick={() => handleFilterClick("7days")}
+                className={`${
+                  activeFilter === "7days"
+                    ? "text-white bg-[#0864E8]"
+                    : "text-black"
+                } 
                   border w-[70px] sm:w-[70px] p-1 rounded`}
               >
                 7 DAYS
               </button>
               <button
-                onClick={() => handleFilterClick('30days')}
-                className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                onClick={() => handleFilterClick("30days")}
+                className={`${
+                  activeFilter === "30days"
+                    ? "text-white bg-[#0864E8]"
+                    : "text-black"
+                } 
                   border w-[70px] sm:w-[70px] p-1.5 rounded`}
               >
                 30 DAYS
@@ -268,7 +279,7 @@ const Home = ({ authorization, showSidebar }) => {
                     resetFilters();
                   } else {
                     setDateRange(dates);
-                    setActiveFilter('custom');
+                    setActiveFilter("custom");
                   }
                 }}
                 className="bg-gray-100"
@@ -281,45 +292,82 @@ const Home = ({ authorization, showSidebar }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
           <div
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
-            style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))",
+            }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">Available BALANCE</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(merchantAvailBalance).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">
+              Available BALANCE
+            </h2>
+            <p className="mt-[13px] text-[20px] font-[700]">
+              ₹ {Number(merchantAvailBalance).toFixed(2)}
+            </p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              Approved Payments: <span className="font-[700]">{Number(verifiedTransactions).toFixed(2) || 0}</span>
+              Approved Payments:{" "}
+              <span className="font-[700]">
+                {Number(verifiedTransactions).toFixed(2) || 0}
+              </span>
             </p>
           </div>
           <div
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
-            style={{ backgroundImage: "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))" }}
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))",
+            }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">PENDING TRANSACTIONS</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(unverifiedTransactions).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">
+              PENDING TRANSACTIONS
+            </h2>
+            <p className="mt-[13px] text-[20px] font-[700]">
+              ₹ {Number(unverifiedTransactions).toFixed(2)}
+            </p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{cardData.pending.totalTransaction || 0}</span>
+              No. of Transactions:{" "}
+              <span className="font-[700]">
+                {cardData.pending.totalTransaction || 0}
+              </span>
             </p>
           </div>
           <div
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
-            style={{ backgroundImage: "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))" }}
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))",
+            }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">FAILED TRANSACTIONS</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(declineTransactions).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">
+              FAILED TRANSACTIONS
+            </h2>
+            <p className="mt-[13px] text-[20px] font-[700]">
+              ₹ {Number(declineTransactions).toFixed(2)}
+            </p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{cardData.failed.totalTransaction || 0}</span>
+              No. of Transactions:{" "}
+              <span className="font-[700]">
+                {cardData.failed.totalTransaction || 0}
+              </span>
             </p>
           </div>
           <div
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
-            style={{ backgroundImage: "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))" }}
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))",
+            }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">ADMIN COMMISSION</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(adminCharges).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">
+              ADMIN COMMISSION
+            </h2>
+            <p className="mt-[13px] text-[20px] font-[700]">
+              ₹ {Number(adminCharges).toFixed(2)}
+            </p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{totalTrns}</span>
+              No. of Transactions:{" "}
+              <span className="font-[700]">{totalTrns}</span>
             </p>
           </div>
-
         </div>
 
         {/* Graph and Recent Transactions */}
@@ -334,9 +382,21 @@ const Home = ({ authorization, showSidebar }) => {
                   arrival.To begin, enter your order number.
                 </p>
                 <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
-                  <Stat label="System Approved" value={verifiedTransactions} color="#029868" />
-                  <Stat label="Pending" value={unverifiedTransactions} color="#F67A03" />
-                  <Stat label="Decline" value={declineTransactions} color="#FF3E5E" />
+                  <Stat
+                    label="System Approved"
+                    value={verifiedTransactions}
+                    color="#029868"
+                  />
+                  <Stat
+                    label="Pending"
+                    value={unverifiedTransactions}
+                    color="#F67A03"
+                  />
+                  <Stat
+                    label="Decline"
+                    value={declineTransactions}
+                    color="#FF3E5E"
+                  />
                 </div>
               </div>
               <div className="w-full h-[300px]">
@@ -346,10 +406,18 @@ const Home = ({ authorization, showSidebar }) => {
           </div>
 
           {/* Recent Transactions Section */}
-          <div className="bg-white p-6 rounded shadow w-full flex-1 overflow-auto" style={{ minHeight: `${totalHeight}px`, maxHeight: `${totalHeight}px` }}>
+          <div
+            className="bg-white p-6 rounded shadow w-full flex-1 overflow-auto"
+            style={{
+              minHeight: `${totalHeight}px`,
+              maxHeight: `${totalHeight}px`,
+            }}
+          >
             <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
             <p className="text-[11px] font-[500] text-gray-500 pt-1">
-              Customer is an individual or business that purchases the goods or services, and the process has evolved to include real-time tracking.
+              Customer is an individual or business that purchases the goods or
+              services, and the process has evolved to include real-time
+              tracking.
             </p>
 
             <div className="">
@@ -364,7 +432,11 @@ const Home = ({ authorization, showSidebar }) => {
                 recentTransactions.map((transaction, index) => (
                   <RecentTransaction
                     key={index}
-                    name={transaction?.bankId?.bankName || "UPI"}
+                    name={
+                      transaction?.bankId?.accountType === "crypto"
+                        ? "Crypto"
+                        : transaction?.bankId?.bankName || "UPI"
+                    }
                     utrId={transaction?.utr || "N/A"}
                     status={transaction?.status || "Pending"}
                     color={getStatusColor(transaction?.status)}
@@ -372,7 +444,9 @@ const Home = ({ authorization, showSidebar }) => {
                   />
                 ))
               ) : (
-                <p className="text-center py-4 text-gray-500">No recent transactions</p>
+                <p className="text-center py-4 text-gray-500">
+                  No recent transactions
+                </p>
               )}
             </div>
           </div>
@@ -385,14 +459,14 @@ const Home = ({ authorization, showSidebar }) => {
 // Add this helper function for status colors
 const getStatusColor = (status) => {
   switch (status) {
-    case 'Approved':
-      return '#029868';
-    case 'Decline':
-      return '#FF3F5E';
-    case 'Pending':
-      return '#F67A03';
+    case "Approved":
+      return "#029868";
+    case "Decline":
+      return "#FF3F5E";
+    case "Pending":
+      return "#F67A03";
     default:
-      return '#7987A1';
+      return "#7987A1";
   }
 };
 
